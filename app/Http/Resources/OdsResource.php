@@ -14,7 +14,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="description", type="string", example="Erradicar la pobreza en todas sus formas y en todo el mundo."),
  *     @OA\Property(property="color", type="string", example="#D32F2F"),  
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-01-26T21:44:24"),
- *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-01-26T21:44:24")
  * )
  */
 
@@ -30,13 +29,12 @@ class OdsResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
-            'code' => $this->code,  // Código del ODS
-            'name' => $this->name,
-            'description' => $this->description,
-            'color' => $this->color,  // Color asociado al ODS
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'id' => $this->id?? null,
+            'code' => $this->code?? null,  // Código del ODS
+            'name' => $this->name?? null,
+            'description' => $this->description?? null,
+            'color' => $this->color?? null,  // Color asociado al ODS
+            'created_at' => $this->created_at?? null,
         ];
     }
 }

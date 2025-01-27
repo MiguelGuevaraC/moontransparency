@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 255)->nullable();
             $table->string('type', 100)->nullable();
-            $table->string('status', 100)->default('Activo')->nullable();
+            $table->string('status', 100)->default('En Progreso')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->string('location')->nullable();

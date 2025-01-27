@@ -23,5 +23,5 @@ Route::group(["middleware" => ["auth:sanctum"]], function () {
     require __DIR__ . '/Api/PermissionApi.php';  //PERMISSIONS
     require __DIR__ . '/Api/ProyectApi.php';  //PROYECTS
     require __DIR__ . '/Api/OdsApi.php';  //ODS
-
+    require __DIR__ . '/Api/AllyApi.php';  //ALLIES
 });

@@ -6,6 +6,498 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/moontransparency/public/api/ally": {
+            "get": {
+                "tags": [
+                    "Ally"
+                ],
+                "summary": "Obtener información de aliados con filtros y ordenamiento",
+                "operationId": "1f48126aa82b3d3b921a2a8b5ecbd9a2",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "ruc_dni",
+                        "in": "query",
+                        "description": "RUC o DNI del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 20
+                        }
+                    },
+                    {
+                        "name": "first_name",
+                        "in": "query",
+                        "description": "Nombre del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 100
+                        }
+                    },
+                    {
+                        "name": "last_name",
+                        "in": "query",
+                        "description": "Apellido del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 100
+                        }
+                    },
+                    {
+                        "name": "business_name",
+                        "in": "query",
+                        "description": "Nombre comercial del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "phone",
+                        "in": "query",
+                        "description": "Número de teléfono del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^\\d{9}$"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "Correo electrónico del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    },
+                    {
+                        "name": "area_of_interest",
+                        "in": "query",
+                        "description": "Área de interés del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "participation_type",
+                        "in": "query",
+                        "description": "Tipo de participación del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de aliados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Ally"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Mensaje de error",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ally"
+                ],
+                "summary": "Crear aliado",
+                "operationId": "f7f3c6e7484e9cfa83b91180805eb3e6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "ruc_dni"
+                                ],
+                                "properties": {
+                                    "ruc_dni": {
+                                        "description": "RUC o DNI del aliado",
+                                        "type": "string"
+                                    },
+                                    "first_name": {
+                                        "description": "Nombre del aliado",
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "description": "Apellido del aliado",
+                                        "type": "string"
+                                    },
+                                    "business_name": {
+                                        "description": "Nombre comercial del aliado",
+                                        "type": "string"
+                                    },
+                                    "phone": {
+                                        "description": "Número de teléfono del aliado",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "Correo electrónico del aliado",
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "area_of_interest": {
+                                        "description": "Área de interés del aliado",
+                                        "type": "string"
+                                    },
+                                    "participation_type": {
+                                        "description": "Tipo de participación del aliado",
+                                        "type": "string"
+                                    },
+                                    "images": {
+                                        "description": "Imágenes del aliado",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Aliado creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ally"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "La validación falló."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/ally/{id}": {
+            "get": {
+                "tags": [
+                    "Ally"
+                ],
+                "summary": "Obtener detalles de un aliado por ID",
+                "operationId": "891c230ebe66bed3ce540fffad7cda88",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del aliado",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles del aliado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ally"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Aliado no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Aliado no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ally"
+                ],
+                "summary": "Actualizar un aliado",
+                "operationId": "1ce1fe12a088c95599f39399c06b8e5c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "ruc_dni"
+                                ],
+                                "properties": {
+                                    "ruc_dni": {
+                                        "description": "RUC o DNI del aliado",
+                                        "type": "string"
+                                    },
+                                    "first_name": {
+                                        "description": "Nombre del aliado",
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "description": "Apellido del aliado",
+                                        "type": "string"
+                                    },
+                                    "business_name": {
+                                        "description": "Nombre comercial del aliado",
+                                        "type": "string"
+                                    },
+                                    "phone": {
+                                        "description": "Número de teléfono del aliado",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "Correo electrónico del aliado",
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "area_of_interest": {
+                                        "description": "Área de interés del aliado",
+                                        "type": "string"
+                                    },
+                                    "participation_type": {
+                                        "description": "Tipo de participación del aliado",
+                                        "type": "string"
+                                    },
+                                    "images": {
+                                        "description": "Imágenes del aliado",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Aliado actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ally"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Datos inválidos"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Aliado no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Aliado no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error interno del servidor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Ally"
+                ],
+                "summary": "Eliminar un aliado por ID",
+                "operationId": "c222d6075052c6659484bd2b8d9ed9e3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Aliado eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Aliado eliminado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Aliado no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/searchByDni/{dni}": {
             "get": {
                 "tags": [
@@ -1133,6 +1625,53 @@
     },
     "components": {
         "schemas": {
+            "Ally": {
+                "title": "Ally",
+                "description": "Modelo de Ally",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": "1"
+                    },
+                    "ruc_dni": {
+                        "type": "string",
+                        "example": "123456789"
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "example": "Juan"
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "example": "Pérez"
+                    },
+                    "business_name": {
+                        "type": "string",
+                        "example": "Empresa XYZ"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "987654321"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "juan.perez@example.com"
+                    },
+                    "images": {
+                        "type": "string",
+                        "example": "image1.jpg,image2.jpg"
+                    },
+                    "area_of_interest": {
+                        "type": "string",
+                        "example": "Tecnología"
+                    },
+                    "participation_type": {
+                        "type": "string",
+                        "example": "Expositor"
+                    }
+                },
+                "type": "object"
+            },
             "Ods": {
                 "title": "ODS",
                 "description": "Modelo de ODS",
@@ -1158,11 +1697,6 @@
                         "example": "#D32F2F"
                     },
                     "created_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2025-01-26T21:44:24"
-                    },
-                    "updated_at": {
                         "type": "string",
                         "format": "date-time",
                         "example": "2025-01-26T21:44:24"
@@ -1284,11 +1818,11 @@
                     },
                     "impact_initial": {
                         "type": "string",
-                        "example": "0%"
+                        "example": "0"
                     },
                     "impact_final": {
                         "type": "string",
-                        "example": "50%"
+                        "example": "50"
                     },
                     "ods": {
                         "type": "array",
@@ -1297,11 +1831,6 @@
                         }
                     },
                     "created_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2025-01-26T21:44:24"
-                    },
-                    "updated_at": {
                         "type": "string",
                         "format": "date-time",
                         "example": "2025-01-26T21:44:24"
@@ -1371,6 +1900,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Ally",
+            "description": "Ally"
+        },
         {
             "name": "Search",
             "description": "Search"

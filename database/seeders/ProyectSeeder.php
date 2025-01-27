@@ -20,7 +20,7 @@ class ProyectSeeder extends Seeder
         $project=Proyect::create([
             'name' => 'Proyecto de Energía Renovable',
             'type' => 'Energía',
-            'status' => 'Activo',
+            'status' => 'En Progreso',
             'start_date' => '2025-01-01',
             'end_date' => '2025-12-31',
             'location' => "(-77.032, -12.045)",

@@ -21,15 +21,15 @@ class ProyectResource extends JsonResource
  *     @OA\Property(property="description", type="string", example="Proyecto para implementar fuentes de energía renovable en comunidades rurales."),
  *     @OA\Property(property="budget_estimated", type="number", format="float", example="500000"),
  *     @OA\Property(property="nro_beneficiaries", type="integer", example="5000"),
- *     @OA\Property(property="impact_initial", type="string", example="0%"),
- *     @OA\Property(property="impact_final", type="string", example="50%"),
- *  *     @OA\Property(
+ *     @OA\Property(property="impact_initial", type="string", example="0"),
+ *     @OA\Property(property="impact_final", type="string", example="50"),
+ *     @OA\Property(
  *         property="ods",
  *         type="array",
  *         @OA\Items(ref="#/components/schemas/Ods")
  *     ),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-01-26T21:44:24"),
- *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-01-26T21:44:24")
+
  * )
  */
     public function toArray($request)
@@ -50,7 +50,6 @@ class ProyectResource extends JsonResource
             'impact_final'      => $this->impact_final ?? null,
             'ods'               => $this->ods ? OdsResource::collection($this->ods) : null,
             'created_at'        => $this->created_at,
-            'updated_at'        => $this->updated_at,
         ];
     }
 
