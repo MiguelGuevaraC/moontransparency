@@ -96,9 +96,14 @@ class ProyectController extends Controller
  *                 @OA\Property(property="status", type="string", example="Activo", enum={"Activo", "Inactivo"}),
  *                 @OA\Property(property="start_date", type="string", format="date", example="2025-01-01"),
  *                 @OA\Property(property="end_date", type="string", format="date", example="2025-12-31"),
- *@OA\Property(property="location", type="string", pattern="^\(-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?\)$", example="(-77.032, -12.045)", description="Coordenadas GPS en formato (longitud, latitud)"),
-
- *                 @OA\Property(property="images", type="string", format="binary", description="Imagen del proyecto"),
+ *                 @OA\Property(property="location", type="string", pattern="^\(-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?\)$", example="(-77.032, -12.045)", description="Coordenadas GPS en formato (longitud, latitud)"),
+ *
+ *                 @OA\Property(
+ *                     property="images",
+ *                     type="array",
+ *                     @OA\Items(type="string", format="binary"),
+ *                     description="Imágenes del proyecto"
+ *                 ),
  *                 @OA\Property(property="description", type="string", example="Proyecto para implementar fuentes de energía renovable en comunidades rurales."),
  *                 @OA\Property(property="budget_estimated", type="number", format="float", example="500000"),
  *                 @OA\Property(property="nro_beneficiaries", type="integer", example="5000"),
@@ -119,7 +124,7 @@ class ProyectController extends Controller
     }
 
 /**
- * @OA\Put(
+ * @OA\Post(
  *     path="/moontransparency/public/api/proyect/{id}",
  *     summary="Actualizar un proyecto",
  *     tags={"Proyect"},
@@ -136,8 +141,14 @@ class ProyectController extends Controller
  *                 @OA\Property(property="status", type="string", enum={"Activo", "Inactivo"}, example="Activo"),
  *                 @OA\Property(property="start_date", type="string", format="date", example="2025-01-01"),
  *                 @OA\Property(property="end_date", type="string", format="date", example="2025-12-31"),
- *@OA\Property(property="location", type="string", pattern="^\(-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?\)$", example="(-77.032, -12.045)", description="Coordenadas GPS en formato (longitud, latitud)"),
- *                 @OA\Property(property="images", type="file", description="Imágenes del proyecto"),
+ *                 @OA\Property(property="location", type="string", pattern="^\(-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?\)$", example="(-77.032, -12.045)", description="Coordenadas GPS en formato (longitud, latitud)"),
+ *
+ *                 @OA\Property(
+ *                     property="images",
+ *                     type="array",
+ *                     @OA\Items(type="string", format="binary"),
+ *                     description="Imágenes del proyecto"
+ *                 ),
  *                 @OA\Property(property="description", type="string", example="Descripción actualizada del proyecto"),
  *                 @OA\Property(property="budget_estimated", type="number", format="float", example=10000.50),
  *                 @OA\Property(property="nro_beneficiaries", type="integer", example=150),
