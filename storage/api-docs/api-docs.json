@@ -1290,6 +1290,12 @@
                         "type": "string",
                         "example": "50%"
                     },
+                    "ods": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Ods"
+                        }
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time",

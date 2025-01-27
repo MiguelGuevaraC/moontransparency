@@ -23,30 +23,35 @@ class ProyectResource extends JsonResource
  *     @OA\Property(property="nro_beneficiaries", type="integer", example="5000"),
  *     @OA\Property(property="impact_initial", type="string", example="0%"),
  *     @OA\Property(property="impact_final", type="string", example="50%"),
+ *  *     @OA\Property(
+ *         property="ods",
+ *         type="array",
+ *         @OA\Items(ref="#/components/schemas/Ods")
+ *     ),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-01-26T21:44:24"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-01-26T21:44:24")
  * )
  */
-public function toArray($request)
-{
-    return [
-        'id' => $this->id,
-        'name' => $this->name,
-        'type' => $this->type,
-        'status' => $this->status,
-        'start_date' => $this->start_date,
-        'end_date' => $this->end_date,
-        'location' => $this->location,
-        'images' => $this->images ? explode(',', $this->images) : [],  // Asumiendo que las imágenes están almacenadas como una cadena separada por comas
-        'description' => $this->description,
-        'budget_estimated' => $this->budget_estimated,
-        'nro_beneficiaries' => $this->nro_beneficiaries,
-        'impact_initial' => $this->impact_initial,
-        'impact_final' => $this->impact_final,
-        'created_at' => $this->created_at,
-        'updated_at' => $this->updated_at,
-    ];
-}
-
+    public function toArray($request)
+    {
+        return [
+            'id'                => $this->id ?? null,
+            'name'              => $this->name ?? null,
+            'type'              => $this->type ?? null,
+            'status'            => $this->status ?? null,
+            'start_date'        => $this->start_date ?? null,
+            'end_date'          => $this->end_date ?? null,
+            'location'          => $this->location ?? null,
+            'images'            => $this->images ? explode(',', $this->images) : [], // Asumiendo que las imágenes están almacenadas como una cadena separada por comas
+            'description'       => $this->description ?? null,
+            'budget_estimated'  => $this->budget_estimated ?? null,
+            'nro_beneficiaries' => $this->nro_beneficiaries ?? null,
+            'impact_initial'    => $this->impact_initial ?? null,
+            'impact_final'      => $this->impact_final ?? null,
+            'ods'               => $this->ods ? OdsResource::collection($this->ods) : null,
+            'created_at'        => $this->created_at,
+            'updated_at'        => $this->updated_at,
+        ];
+    }
 
 }
