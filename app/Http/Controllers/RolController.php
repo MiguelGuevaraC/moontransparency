@@ -162,14 +162,14 @@ class RolController extends Controller
                 'message' => 'Este Rol No puede ser Eliminado',
             ], 422);
         }
-        $deleted = $this->rolService->destroyById($id);
+        $deleted = $this->rolService->getRolById($id);
 
         if (!$deleted) {
             return response()->json([
                 'error' => 'Rol No Encontrado.',
             ], 404);
         }
-
+        $deleted = $this->rolService->destroyById($id);
         return response()->json([
             'message' => 'Rol eliminado exitosamente',
         ], 200);

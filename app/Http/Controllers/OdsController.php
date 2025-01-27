@@ -20,22 +20,16 @@ class OdsController extends Controller
 /**
  * @OA\Get(
  *     path="/moontransparency/public/api/ods",
- *     summary="Obtener información de proyectos con filtros y ordenamiento",
+ *     summary="Obtener información de ODS con filtros y ordenamiento",
  *     tags={"Ods"},
  *     security={{"bearerAuth": {}}},
- *     @OA\Parameter(name="name", in="query", description="Filtrar por nombre de proyecto", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="type", in="query", description="Filtrar por tipo de proyecto", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="status", in="query", description="Filtrar por estado de proyecto", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="start_date", in="query", description="Filtrar por fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
- *     @OA\Parameter(name="end_date", in="query", description="Filtrar por fecha de fin", required=false, @OA\Schema(type="string", format="date")),
+ *     @OA\Parameter(name="name", in="query", description="Filtrar por nombre de ODS", required=false, @OA\Schema(type="string")),
  *     @OA\Parameter(name="description", in="query", description="Filtrar por descripción", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="budget_estimated", in="query", description="Filtrar por presupuesto estimado", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="nro_beneficiaries", in="query", description="Filtrar por número de beneficiarios", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="impact_initial", in="query", description="Filtrar por impacto inicial", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="impact_final", in="query", description="Filtrar por impacto final", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
+  *     @OA\Parameter(name="color", in="query", description="Color Ods", required=false, @OA\Schema(type="string")),
+   *     @OA\Parameter(name="code", in="query", description="Codigo Ods", required=false, @OA\Schema(type="string")),
+ 
  *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
- *     @OA\Response(response=200, description="Lista de proyectos", @OA\JsonContent(ref="#/components/schemas/Ods")),
+ *     @OA\Response(response=200, description="Lista de ODS", @OA\JsonContent(ref="#/components/schemas/Ods")),
  *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(type="object", @OA\Property(property="error", type="string")))
  * )
  */
@@ -54,10 +48,10 @@ class OdsController extends Controller
 /**
  * @OA\Get(
  *     path="/moontransparency/public/api/ods/{id}",
- *     summary="Obtener detalles de un proyecto por ID",
+ *     summary="Obtener detalles de un ODS por ID",
  *     tags={"Ods"},
  *     security={{"bearerAuth": {}}},
- *     @OA\Parameter(name="id", in="path", description="ID del proyecto", required=true, @OA\Schema(type="integer", example=1)),
+ *     @OA\Parameter(name="id", in="path", description="ID del ODS", required=true, @OA\Schema(type="integer", example=1)),
  *     @OA\Response(response=200, description="Odso encontrado", @OA\JsonContent(ref="#/components/schemas/Ods")),
  *     @OA\Response(response=404, description="Odso no encontrado", @OA\JsonContent(type="object", @OA\Property(property="error", type="string", example="Odso no encontrado")))
  * )

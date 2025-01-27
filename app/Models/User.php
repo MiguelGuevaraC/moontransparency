@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -27,7 +26,7 @@ class User extends Authenticatable
         'phone',
         'email',
         'status',
-        'rol_id'
+        'rol_id',
     ];
 
     /**
@@ -38,6 +37,24 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    const filters = [
+        'type_document'   => '=',
+        'number_document' => 'like',
+        'names'           => 'like',
+        'username'        => 'like',
+        'address'         => 'like',
+        'phone'           => 'like',
+        'email'           => 'like',
+    ];
+
+    /**
+     * Campos de ordenación disponibles.
+     */
+    const sorts = [
+        'id'   => 'desc',
+        'name' => 'desc',
     ];
 
     /**

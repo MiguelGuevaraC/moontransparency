@@ -21,8 +21,6 @@ class UpdateUserRequest extends UpdateRequest
 
     public function rules()
     {
-        $id = $this->route('id'); // Obtén el ID de la ruta, que se asume que es el ID del usuario
-    
         return [
       
         ];

@@ -29,11 +29,11 @@ class UpdateProyectRequest extends UpdateRequest
         return [
             'name' => 'required|string|max:255',
             'type' => 'required|string|max:100',
-            'status' => 'required|string|in:Activo,Inactivo',
+  
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'location' => 'required|string|max:255',
-            'images' => 'nullable|string', // Asegúrate de que el campo sea una lista separada por comas de imágenes
+            'location'          => 'nullable|string|max:255',
+       'images.*' => 'nullable|file|mimes:jpeg,jpg,png,gif|max:2048',
             'description' => 'nullable|string',
             'budget_estimated' => 'required|numeric|min:0',
             'nro_beneficiaries' => 'required|integer|min:1',
@@ -54,7 +54,7 @@ class UpdateProyectRequest extends UpdateRequest
             'name.string' => 'El nombre del proyecto debe ser una cadena de texto.',
             'name.max' => 'El nombre del proyecto no puede exceder los 255 caracteres.',
             'type.required' => 'El tipo de proyecto es obligatorio.',
-            'status.required' => 'El estado del proyecto es obligatorio.',
+         
             'start_date.required' => 'La fecha de inicio es obligatoria.',
             'start_date.date' => 'La fecha de inicio debe ser una fecha válida.',
             'end_date.required' => 'La fecha de fin es obligatoria.',
@@ -66,7 +66,9 @@ class UpdateProyectRequest extends UpdateRequest
             'budget_estimated.min' => 'El presupuesto debe ser al menos 0.',
             'nro_beneficiaries.required' => 'El número de beneficiarios es obligatorio.',
             'nro_beneficiaries.integer' => 'El número de beneficiarios debe ser un valor entero.',
-
+            'images.*.file' => 'Cada archivo debe ser un archivo válido.',
+            'images.*.mimes' => 'Solo se permiten archivos de tipo: jpeg, jpg, png, gif.',
+            'images.*.max' => 'El archivo no debe exceder los 2 MB.',
         ];
     }
 

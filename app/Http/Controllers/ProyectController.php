@@ -189,18 +189,15 @@ class ProyectController extends Controller
 
     public function destroy($id)
     {
-        if ($id == 1) {
-            return response()->json([
-                'message' => 'Este Proyecto No puede ser Eliminado',
-            ], 422);
-        }
-        $deleted = $this->proyectService->destroyById($id);
 
-        if (! $deleted) {
+        $proyect = $this->proyectService->getProyectById($id);
+
+        if (! $proyect) {
             return response()->json([
                 'error' => 'Proyecto No Encontrado.',
             ], 404);
         }
+        $proyect = $this->proyectService->destroyById($id);
 
         return response()->json([
             'message' => 'Proyect eliminado exitosamente',

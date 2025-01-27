@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Requests\UserRequest;
 
 use App\Http\Requests\IndexRequest;
@@ -24,8 +23,14 @@ class IndexUserRequest extends IndexRequest
     public function rules(): array
     {
         return [
-            'names' => 'nullable|string',
-            'username' => 'nullable|string',
+
+            'type_document'   => 'nullable|string',
+            'number_document' => 'nullable|string',
+            'names'           => 'nullable|string',
+            'username'        => 'nullable|string',
+            'address'         => 'nullable|string',
+            'phone'           => 'nullable|string',
+            'email'           => 'nullable|string',
 
         ];
     }
