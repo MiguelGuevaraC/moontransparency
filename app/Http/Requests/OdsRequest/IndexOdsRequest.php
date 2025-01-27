@@ -4,7 +4,7 @@ namespace App\Http\Requests\OdsRequest;
 
 use App\Http\Requests\IndexRequest;
 
-class OdsRequest extends IndexRequest
+class IndexOdsRequest extends IndexRequest
 {
     /**
      * Determine if the user is authorized to make this request.
