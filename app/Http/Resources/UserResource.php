@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -21,11 +20,11 @@ class UserResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name ?? 'Sin Nombre',
-            'username' => $this->username ?? 'Sin Correo',
-            'rol_id' => $this->rol_id ?? 'Sin Tipo Usuario ID',
-            'rol' => $this->rol ? new RolResource($this->rol) : 'Sin Tipo Usuario',
+            'id'       => $this->id,
+            'name'     => $this->name ?? null,
+            'username' => $this->username ?? null,
+            'rol_id'   => $this->rol_id ?? null,
+            'rol'      => $this->rol ? new RolResource($this->rol) : null,
         ];
 
     }

@@ -13,13 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('permissions', function (Blueprint $table) {
+     
+        Schema::create('ods', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
-            $table->string('route')->nullable();
-            $table->string('type')->nullable();
-            $table->string('status')->default('Activo')->nullable();
-            
+            $table->string('code', 10)->nullable();
+            $table->string('name', 255)->nullable();
+            $table->text('description')->nullable();
+            $table->string('color', 7)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('permissions');
+        Schema::dropIfExists('ods');
     }
 };

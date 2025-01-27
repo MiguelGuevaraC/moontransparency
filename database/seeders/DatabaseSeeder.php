@@ -17,5 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call(PermissionSeeder::class);
         $this->call(TypeUserAccessSeeder::class);
         $this->call(UsersSeeders::class);
+        $this->call(OdsSeeders::class);
+        $this->call(ProyectSeeder::class);
     }
 }

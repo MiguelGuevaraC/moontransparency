@@ -576,6 +576,554 @@
                 ]
             }
         },
+        "/moontransparency/public/api/proyect": {
+            "get": {
+                "tags": [
+                    "Proyect"
+                ],
+                "summary": "Obtener información de proyectos con filtros y ordenamiento",
+                "operationId": "39bdf9094f36ecb6f40d7edfd67bb2f0",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filtrar por nombre de proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filtrar por tipo de proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filtrar por estado de proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Filtrar por fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Filtrar por fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "description",
+                        "in": "query",
+                        "description": "Filtrar por descripción",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "budget_estimated",
+                        "in": "query",
+                        "description": "Filtrar por presupuesto estimado",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "nro_beneficiaries",
+                        "in": "query",
+                        "description": "Filtrar por número de beneficiarios",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "impact_initial",
+                        "in": "query",
+                        "description": "Filtrar por impacto inicial",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "impact_final",
+                        "in": "query",
+                        "description": "Filtrar por impacto final",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de proyectos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Proyect"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Proyect"
+                ],
+                "summary": "Crear proyecto",
+                "operationId": "250d74364f145c0ababe9980b8a8cd8a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "type",
+                                    "status",
+                                    "start_date",
+                                    "end_date",
+                                    "location",
+                                    "budget_estimated",
+                                    "nro_beneficiaries"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Proyecto de Energía Renovable"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "Energía"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Activo",
+                                            "Inactivo"
+                                        ],
+                                        "example": "Activo"
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-01-01"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-12-31"
+                                    },
+                                    "location": {
+                                        "description": "Coordenadas GPS en formato (longitud, latitud)",
+                                        "type": "string",
+                                        "pattern": "^\\(-?\\d+(\\.\\d+)?,\\s*-?\\d+(\\.\\d+)?\\)$",
+                                        "example": "(-77.032, -12.045)"
+                                    },
+                                    "images": {
+                                        "description": "Imagen del proyecto",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Proyecto para implementar fuentes de energía renovable en comunidades rurales."
+                                    },
+                                    "budget_estimated": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": "500000"
+                                    },
+                                    "nro_beneficiaries": {
+                                        "type": "integer",
+                                        "example": "5000"
+                                    },
+                                    "impact_initial": {
+                                        "type": "string",
+                                        "example": "0"
+                                    },
+                                    "impact_final": {
+                                        "type": "string",
+                                        "example": "50"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Proyecto creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Proyect"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "La validación falló."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/proyect/{id}": {
+            "get": {
+                "tags": [
+                    "Proyect"
+                ],
+                "summary": "Obtener detalles de un proyecto por ID",
+                "operationId": "f3b854dca0bbdbf7a8b9022e8b514f55",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del proyecto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Proyecto encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Proyect"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Proyecto no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Proyecto no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Proyect"
+                ],
+                "summary": "Actualizar un proyecto",
+                "operationId": "8d35121dd536e974e0b751cf1bcb6a0d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "type",
+                                    "status",
+                                    "start_date",
+                                    "end_date",
+                                    "location",
+                                    "budget_estimated",
+                                    "nro_beneficiaries"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Proyecto actualizado"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "Educación"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Activo",
+                                            "Inactivo"
+                                        ],
+                                        "example": "Activo"
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-01-01"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-12-31"
+                                    },
+                                    "location": {
+                                        "description": "Coordenadas GPS en formato (longitud, latitud)",
+                                        "type": "string",
+                                        "pattern": "^\\(-?\\d+(\\.\\d+)?,\\s*-?\\d+(\\.\\d+)?\\)$",
+                                        "example": "(-77.032, -12.045)"
+                                    },
+                                    "images": {
+                                        "description": "Imágenes del proyecto",
+                                        "type": "file"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Descripción actualizada del proyecto"
+                                    },
+                                    "budget_estimated": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 10000.5
+                                    },
+                                    "nro_beneficiaries": {
+                                        "type": "integer",
+                                        "example": 150
+                                    },
+                                    "impact_initial": {
+                                        "type": "string",
+                                        "example": "Impacto inicial del proyecto"
+                                    },
+                                    "impact_final": {
+                                        "type": "string",
+                                        "example": "Impacto final esperado del proyecto"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Proyecto actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Proyect"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Datos inválidos"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Proyecto no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Proyecto no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error interno del servidor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Proyect"
+                ],
+                "summary": "Eliminar un proyecto por ID",
+                "operationId": "563fec0eb56ff9aa08b2f568a2e3199d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Proyecto eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Proyecto eliminado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Proyecto no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/rol": {
             "get": {
                 "tags": [
@@ -1461,6 +2009,43 @@
     },
     "components": {
         "schemas": {
+            "Ods": {
+                "title": "ODS",
+                "description": "Modelo de ODS",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": "1"
+                    },
+                    "code": {
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Fin de la Pobreza"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Erradicar la pobreza en todas sus formas y en todo el mundo."
+                    },
+                    "color": {
+                        "type": "string",
+                        "example": "#D32F2F"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
+                    }
+                },
+                "type": "object"
+            },
             "Permission": {
                 "title": "Permission",
                 "description": "Permission model",
@@ -1518,6 +2103,78 @@
                     },
                     "permission": {
                         "$ref": "#/components/schemas/Permission"
+                    }
+                },
+                "type": "object"
+            },
+            "Proyect": {
+                "title": "Proyecto",
+                "description": "Modelo de Proyecto",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": "1"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Proyecto de Energía Renovable"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "Energía"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "Activo"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-01-01"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-12-31"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example": "Zona rural, Perú"
+                    },
+                    "images": {
+                        "type": "string",
+                        "example": "Imagen Ruta"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Proyecto para implementar fuentes de energía renovable en comunidades rurales."
+                    },
+                    "budget_estimated": {
+                        "type": "number",
+                        "format": "float",
+                        "example": "500000"
+                    },
+                    "nro_beneficiaries": {
+                        "type": "integer",
+                        "example": "5000"
+                    },
+                    "impact_initial": {
+                        "type": "string",
+                        "example": "0%"
+                    },
+                    "impact_final": {
+                        "type": "string",
+                        "example": "50%"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
                     }
                 },
                 "type": "object"
@@ -1595,6 +2252,10 @@
         {
             "name": "Permission",
             "description": "Permission"
+        },
+        {
+            "name": "Proyect",
+            "description": "Proyect"
         },
         {
             "name": "Rol",

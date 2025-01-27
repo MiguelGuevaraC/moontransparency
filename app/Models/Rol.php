@@ -12,6 +12,7 @@ class Rol extends Model
     protected $fillable = [
         'id',
         'name',
+        
         'status',
         'created_at',
         'updated_at',

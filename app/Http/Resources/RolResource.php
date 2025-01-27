@@ -25,8 +25,8 @@ class RolResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name ?? 'Sin Nombre',
-            'status' => $this->status ?? 'Sin Estado',
+            'name' => $this->name ?? null,
+            'status' => $this->status ?? null,
             'permissions' => $this->permissions->isEmpty()
                 ? []  // Si no hay permisos, devuelve un array vacío
                 : PermissionResource::collection($this->permissions),  // Usamos el recurso para formatear los permisos

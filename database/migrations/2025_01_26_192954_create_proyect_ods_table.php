@@ -13,13 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('permissions', function (Blueprint $table) {
+        Schema::create('proyect_ods', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
-            $table->string('route')->nullable();
-            $table->string('type')->nullable();
-            $table->string('status')->default('Activo')->nullable();
-            
+            $table->foreignId('proyect_id')->nullable()->unsigned()->constrained('proyects');
+            $table->foreignId('ods_id')->nullable()->unsigned()->constrained('ods');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -32,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('permissions');
+        Schema::dropIfExists('proyect_ods');
     }
 };

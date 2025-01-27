@@ -6,18 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Permission extends Model
+class ProyectOds extends Model
 {
     use SoftDeletes;
     protected $fillable = [
         'id',
-        'name',
-        'route',
-        'type',
-        'status',
+        'proyect_id',
+        'ods_id',
         'created_at',
-        'updated_at',
-        'deleted_at',
     ];
     protected $hidden = [
 
@@ -26,9 +22,8 @@ class Permission extends Model
         'deleted_at',
     ];
     const filters = [
-        'name' => 'like',
-        'type' => 'like',
-        'status' => 'like',
+        'proyect_id'=> '=',
+        'ods_id'=> '=',
     ];
 
     /**
@@ -36,12 +31,6 @@ class Permission extends Model
      */
     const sorts = [
         'id' => 'desc',
-        'type' => 'desc',
-        'name' => 'desc',
     ];
 
-    public function roles()
-    {
-        return $this->belongsToMany(Rol::class, 'permission_rols', 'permission_id', 'rol_id');
-    }
 }
