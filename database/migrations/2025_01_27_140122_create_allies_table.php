@@ -15,12 +15,12 @@ return new class extends Migration
     {
         Schema::create('allies', function (Blueprint $table) {
             $table->id();
-            $table->string('ruc_dni', 20)->unique();
+            $table->string('ruc_dni', 20);
             $table->string('first_name', 100);
             $table->string('last_name', 100);
             $table->string('business_name');
             $table->string('phone', 15);
-            $table->string('email')->unique();
+            $table->string('email');
             $table->text('area_of_interest');
             $table->string('participation_type', 255);
             $table->string('images')->nullable();
