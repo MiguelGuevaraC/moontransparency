@@ -6,6 +6,379 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/moontransparency/public/api/activity": {
+            "get": {
+                "tags": [
+                    "Activity"
+                ],
+                "summary": "Obtener información de Activitys con filtros y ordenamiento",
+                "operationId": "a58d42bb4654f8993c6fc2d25785263c",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filtrar por nombre de Activity",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Filtrar por fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Filtrar por fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "project_id",
+                        "in": "query",
+                        "description": "Filtrar por ID del proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "objective",
+                        "in": "query",
+                        "description": "Filtrar por objetivo de la actividad",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "total_amount",
+                        "in": "query",
+                        "description": "Filtrar por monto total de la actividad",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    },
+                    {
+                        "name": "collected_amount",
+                        "in": "query",
+                        "description": "Filtrar por monto recolectado",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filtrar por estado de la actividad",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de Activitys",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Activity"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Activity"
+                ],
+                "summary": "Crear Activity",
+                "operationId": "43230c5172e418969d6e915bbf2fc69f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ActivityRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Donación creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Activity"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "La validación falló."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/activity/{id}": {
+            "get": {
+                "tags": [
+                    "Activity"
+                ],
+                "summary": "Obtener detalles de un Activity por ID",
+                "operationId": "d20fe9bf1ffccc58590e0f95798f466c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del Activity",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Donación encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Activity"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Donación no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Donación no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Activity"
+                ],
+                "summary": "Actualizar un Activity",
+                "operationId": "ccc0c4e2036d1c05745fa418e86d0c46",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ActivityRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Donación actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Activity"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Datos inválidos"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Donación no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Donación no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error interno del servidor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Activity"
+                ],
+                "summary": "Eliminar un Activity por ID",
+                "operationId": "9622fe8f59f33594d7a19d54261d293c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Donación eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Donación eliminado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Donación no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/ally": {
             "get": {
                 "tags": [
@@ -924,6 +1297,779 @@
                 ]
             }
         },
+        "/moontransparency/public/api/donation": {
+            "get": {
+                "tags": [
+                    "Donation"
+                ],
+                "summary": "Obtener información de donations con filtros y ordenamiento",
+                "operationId": "3523ef7c250cd8660867194cdadab10a",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filtrar por nombre de donation",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "project_id",
+                        "in": "query",
+                        "description": "Filtrar por ID del proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "activity_id",
+                        "in": "query",
+                        "description": "Filtrar por ID de actividad",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date_donation",
+                        "in": "query",
+                        "description": "Filtrar por fecha de donation",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "ally_id",
+                        "in": "query",
+                        "description": "Filtrar por ID del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "details",
+                        "in": "query",
+                        "description": "Filtrar por detalles de la donation",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "contribution_type",
+                        "in": "query",
+                        "description": "Filtrar por tipo de contribución",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "amount",
+                        "in": "query",
+                        "description": "Filtrar por monto de la donation",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    },
+                    {
+                        "name": "evidence",
+                        "in": "query",
+                        "description": "Filtrar por evidencia de la donation",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de donations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Donation"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Donation"
+                ],
+                "summary": "Crear Donation",
+                "operationId": "32caa88df2c9f34875c93737ff607424",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DonationRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Donación creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Donation"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "La validación falló."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/donation/{id}": {
+            "get": {
+                "tags": [
+                    "Donation"
+                ],
+                "summary": "Obtener detalles de un donation por ID",
+                "operationId": "151ac2fa82cac664a1b7f1d10c1eb913",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del donation",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Donación encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Donation"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Donación no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Donación no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Donation"
+                ],
+                "summary": "Actualizar un donation",
+                "operationId": "9b9fd4df6658221ef76f600f8a64b65b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DonationRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Donación actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Donation"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Datos inválidos"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Donación no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Donación no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error interno del servidor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Donation"
+                ],
+                "summary": "Eliminar un donation por ID",
+                "operationId": "8a60e8a4a4c8cf59673d765508480597",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Donación eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Donación eliminado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Donación no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/Indicator": {
+            "get": {
+                "tags": [
+                    "Indicator"
+                ],
+                "summary": "Obtener información de Indicators con filtros y ordenamiento",
+                "operationId": "91c2ffd1bb2530ac4d9ec7735c18fd8c",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filtrar por nombre de Indicator",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "project_id",
+                        "in": "query",
+                        "description": "Filtrar por ID del proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "indicator_name",
+                        "in": "query",
+                        "description": "Filtrar por nombre del indicador",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "target_value",
+                        "in": "query",
+                        "description": "Filtrar por valor objetivo",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    },
+                    {
+                        "name": "progress_value",
+                        "in": "query",
+                        "description": "Filtrar por valor de progreso",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    },
+                    {
+                        "name": "unit",
+                        "in": "query",
+                        "description": "Filtrar por unidad del indicador",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de Indicators",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Indicator"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Indicator"
+                ],
+                "summary": "Crear Indicator",
+                "operationId": "ea79a0d6bbea3edc062d4255d2f0d6d2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/IndicatorRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Donación creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Indicator"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "La validación falló."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/Indicator/{id}": {
+            "get": {
+                "tags": [
+                    "Indicator"
+                ],
+                "summary": "Obtener detalles de un Indicator por ID",
+                "operationId": "f0ab7424e78ee4df5bd3b11d8dcc3805",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del Indicator",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Donación encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Indicator"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Donación no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Donación no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Indicator"
+                ],
+                "summary": "Actualizar un Indicator",
+                "operationId": "8417e1386bb7f14d840c0ada973163fc",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/IndicatorRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Donación actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Indicator"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Datos inválidos"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Donación no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Donación no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error interno del servidor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Indicator"
+                ],
+                "summary": "Eliminar un Indicator por ID",
+                "operationId": "717c5af4688ecc38f9c217f29b586a19",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Donación eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Donación eliminado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Donación no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/ods": {
             "get": {
                 "tags": [
@@ -1232,80 +2378,7 @@
                     "content": {
                         "multipart/form-data": {
                             "schema": {
-                                "required": [
-                                    "name",
-                                    "type",
-                                    "status",
-                                    "start_date",
-                                    "end_date",
-                                    "location",
-                                    "budget_estimated",
-                                    "nro_beneficiaries"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Proyecto de Energía Renovable"
-                                    },
-                                    "type": {
-                                        "type": "string",
-                                        "example": "Energía"
-                                    },
-                                    "status": {
-                                        "type": "string",
-                                        "enum": [
-                                            "Activo",
-                                            "Inactivo"
-                                        ],
-                                        "example": "Activo"
-                                    },
-                                    "start_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2025-01-01"
-                                    },
-                                    "end_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2025-12-31"
-                                    },
-                                    "location": {
-                                        "description": "Coordenadas GPS en formato (longitud, latitud)",
-                                        "type": "string",
-                                        "pattern": "^\\(-?\\d+(\\.\\d+)?,\\s*-?\\d+(\\.\\d+)?\\)$",
-                                        "example": "(-77.032, -12.045)"
-                                    },
-                                    "images": {
-                                        "description": "Imágenes del proyecto",
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "format": "binary"
-                                        }
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "Proyecto para implementar fuentes de energía renovable en comunidades rurales."
-                                    },
-                                    "budget_estimated": {
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": "500000"
-                                    },
-                                    "nro_beneficiaries": {
-                                        "type": "integer",
-                                        "example": "5000"
-                                    },
-                                    "impact_initial": {
-                                        "type": "string",
-                                        "example": "0"
-                                    },
-                                    "impact_final": {
-                                        "type": "string",
-                                        "example": "50"
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/ProyectRequest"
                             }
                         }
                     }
@@ -1420,80 +2493,7 @@
                     "content": {
                         "multipart/form-data": {
                             "schema": {
-                                "required": [
-                                    "name",
-                                    "type",
-                                    "status",
-                                    "start_date",
-                                    "end_date",
-                                    "location",
-                                    "budget_estimated",
-                                    "nro_beneficiaries"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Proyecto actualizado"
-                                    },
-                                    "type": {
-                                        "type": "string",
-                                        "example": "Educación"
-                                    },
-                                    "status": {
-                                        "type": "string",
-                                        "enum": [
-                                            "Activo",
-                                            "Inactivo"
-                                        ],
-                                        "example": "Activo"
-                                    },
-                                    "start_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2025-01-01"
-                                    },
-                                    "end_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2025-12-31"
-                                    },
-                                    "location": {
-                                        "description": "Coordenadas GPS en formato (longitud, latitud)",
-                                        "type": "string",
-                                        "pattern": "^\\(-?\\d+(\\.\\d+)?,\\s*-?\\d+(\\.\\d+)?\\)$",
-                                        "example": "(-77.032, -12.045)"
-                                    },
-                                    "images": {
-                                        "description": "Imágenes del proyecto",
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "format": "binary"
-                                        }
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "Descripción actualizada del proyecto"
-                                    },
-                                    "budget_estimated": {
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": 10000.5
-                                    },
-                                    "nro_beneficiaries": {
-                                        "type": "integer",
-                                        "example": 150
-                                    },
-                                    "impact_initial": {
-                                        "type": "string",
-                                        "example": "Impacto inicial del proyecto"
-                                    },
-                                    "impact_final": {
-                                        "type": "string",
-                                        "example": "Impacto final esperado del proyecto"
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/ProyectRequest"
                             }
                         }
                     }
@@ -1621,10 +2621,446 @@
                     }
                 ]
             }
+        },
+        "/moontransparency/public/api/survey": {
+            "get": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Obtener información de Surveys con filtros y ordenamiento",
+                "operationId": "1c581aae899aaad5f2562acfcf56c248",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "project_id",
+                        "in": "query",
+                        "description": "ID del proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "survey_name",
+                        "in": "query",
+                        "description": "Nombre de la encuesta",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "description",
+                        "in": "query",
+                        "description": "Descripción de la encuesta",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de Surveys",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Survey"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Crear Survey",
+                "operationId": "43edc69bc9f3ac8a24ac5c86f0c7d52e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SurveyRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Donación creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Survey"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "La validación falló."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/survey/{id}": {
+            "get": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Obtener detalles de un Survey por ID",
+                "operationId": "b0eb0d41be562b1fba1997326d2544f2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del Survey",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Donación encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Survey"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Donación no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Donación no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Actualizar un Survey",
+                "operationId": "3c76011836495748da8ccea6b9ac0b7b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SurveyRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Donación actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Survey"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Datos inválidos"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Donación no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Donación no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error interno del servidor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Eliminar un Survey por ID",
+                "operationId": "fee51a3d8ac48a1f6e2b69e349fbc549",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Donación eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Donación eliminado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Donación no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
         "schemas": {
+            "ActivityRequest": {
+                "required": [
+                    "project_id"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Proyecto de Energía Renovable"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-01-01"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-12-31"
+                    },
+                    "project_id": {
+                        "type": "integer",
+                        "example": "101"
+                    },
+                    "objective": {
+                        "type": "string",
+                        "example": "Implementar fuentes de energía renovable."
+                    },
+                    "total_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": "500000"
+                    },
+                    "collected_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": "200000"
+                    }
+                },
+                "type": "object"
+            },
+            "Activity": {
+                "title": "Activity",
+                "description": "Modelo de Activity",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": "1"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Proyecto de Energía Renovable"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-01-01"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-12-31"
+                    },
+                    "project_id": {
+                        "type": "integer",
+                        "example": "101"
+                    },
+                    "objective": {
+                        "type": "string",
+                        "example": "Implementar fuentes de energía renovable."
+                    },
+                    "total_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": "500000"
+                    },
+                    "collected_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": "200000"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "Activo"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
+                    }
+                },
+                "type": "object"
+            },
             "Ally": {
                 "title": "Ally",
                 "description": "Modelo de Ally",
@@ -1668,6 +3104,177 @@
                     "participation_type": {
                         "type": "string",
                         "example": "Expositor"
+                    }
+                },
+                "type": "object"
+            },
+            "DonationRequest": {
+                "required": [
+                    "project_id",
+                    "activity_id",
+                    "date_donation",
+                    "ally_id",
+                    "details",
+                    "contribution_type",
+                    "amount"
+                ],
+                "properties": {
+                    "project_id": {
+                        "type": "integer",
+                        "example": "101"
+                    },
+                    "activity_id": {
+                        "type": "integer",
+                        "example": "2001"
+                    },
+                    "date_donation": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-01-01"
+                    },
+                    "ally_id": {
+                        "type": "integer",
+                        "example": "3001"
+                    },
+                    "details": {
+                        "type": "string",
+                        "example": "Implementación de energía renovable en zonas rurales."
+                    },
+                    "contribution_type": {
+                        "type": "string",
+                        "example": "Energía"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": "500000"
+                    },
+                    "evidence": {
+                        "description": "Ruta del archivo de evidencia",
+                        "type": "string",
+                        "example": "Ruta/a/imagen.jpg"
+                    }
+                },
+                "type": "object"
+            },
+            "Donation": {
+                "title": "Donation",
+                "description": "Modelo de Donation",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": "1"
+                    },
+                    "project_id": {
+                        "type": "integer",
+                        "example": "101"
+                    },
+                    "activity_id": {
+                        "type": "integer",
+                        "example": "2001"
+                    },
+                    "date_donation": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-01-01"
+                    },
+                    "ally_id": {
+                        "type": "integer",
+                        "example": "3001"
+                    },
+                    "details": {
+                        "type": "string",
+                        "example": "Implementación de energía renovable en zonas rurales."
+                    },
+                    "contribution_type": {
+                        "type": "string",
+                        "example": "Energía"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": "500000"
+                    },
+                    "evidence": {
+                        "type": "string",
+                        "example": "Ruta/a/imagen.jpg"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
+                    }
+                },
+                "type": "object"
+            },
+            "IndicatorRequest": {
+                "required": [
+                    "project_id",
+                    "indicator_name",
+                    "target_value",
+                    "progress_value",
+                    "unit"
+                ],
+                "properties": {
+                    "project_id": {
+                        "type": "integer",
+                        "example": "101"
+                    },
+                    "indicator_name": {
+                        "type": "string",
+                        "example": "Energía Renovable"
+                    },
+                    "target_value": {
+                        "type": "number",
+                        "format": "float",
+                        "example": "1000000"
+                    },
+                    "progress_value": {
+                        "type": "number",
+                        "format": "float",
+                        "example": "500000"
+                    },
+                    "unit": {
+                        "type": "string",
+                        "example": "KWh"
+                    }
+                },
+                "type": "object"
+            },
+            "Indicator": {
+                "title": "Indicator",
+                "description": "Modelo de Indicator",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": "1"
+                    },
+                    "project_id": {
+                        "type": "integer",
+                        "example": "101"
+                    },
+                    "indicator_name": {
+                        "type": "string",
+                        "example": "Energía Renovable"
+                    },
+                    "target_value": {
+                        "type": "number",
+                        "format": "float",
+                        "example": "1000000"
+                    },
+                    "progress_value": {
+                        "type": "number",
+                        "format": "float",
+                        "example": "500000"
+                    },
+                    "unit": {
+                        "type": "string",
+                        "example": "KWh"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
                     }
                 },
                 "type": "object"
@@ -1761,6 +3368,74 @@
                     },
                     "permission": {
                         "$ref": "#/components/schemas/Permission"
+                    }
+                },
+                "type": "object"
+            },
+            "ProyectRequest": {
+                "required": [
+                    "name",
+                    "type",
+                    "status",
+                    "start_date",
+                    "end_date",
+                    "location",
+                    "budget_estimated",
+                    "nro_beneficiaries"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Proyecto de Energía Renovable"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "Energía"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-01-01"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-12-31"
+                    },
+                    "location": {
+                        "description": "Coordenadas GPS en formato (longitud, latitud)",
+                        "type": "string",
+                        "pattern": "^\\(-?\\d+(\\.\\d+)?,\\s*-?\\d+(\\.\\d+)?\\)$",
+                        "example": "(-77.032, -12.045)"
+                    },
+                    "images": {
+                        "description": "Imágenes del proyecto",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "binary"
+                        }
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Proyecto para implementar fuentes de energía renovable en comunidades rurales."
+                    },
+                    "budget_estimated": {
+                        "type": "number",
+                        "format": "float",
+                        "example": "500000"
+                    },
+                    "nro_beneficiaries": {
+                        "type": "integer",
+                        "example": "5000"
+                    },
+                    "impact_initial": {
+                        "type": "string",
+                        "example": "0"
+                    },
+                    "impact_final": {
+                        "type": "string",
+                        "example": "50"
                     }
                 },
                 "type": "object"
@@ -1865,6 +3540,56 @@
                 },
                 "type": "object"
             },
+            "SurveyRequest": {
+                "required": [
+                    "project_id",
+                    "survey_name",
+                    "description"
+                ],
+                "properties": {
+                    "project_id": {
+                        "type": "integer",
+                        "example": "101"
+                    },
+                    "survey_name": {
+                        "type": "string",
+                        "example": "Encuesta de Energía Renovable"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Encuesta para evaluar el uso de energía renovable en zonas rurales."
+                    }
+                },
+                "type": "object"
+            },
+            "Survey": {
+                "title": "Survey",
+                "description": "Modelo de Survey",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": "1"
+                    },
+                    "project_id": {
+                        "type": "integer",
+                        "example": "101"
+                    },
+                    "survey_name": {
+                        "type": "string",
+                        "example": "Encuesta de Energía Renovable"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Encuesta para evaluar el uso de energía renovable en zonas rurales."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
+                    }
+                },
+                "type": "object"
+            },
             "User": {
                 "title": "User",
                 "description": "User model",
@@ -1901,6 +3626,10 @@
     },
     "tags": [
         {
+            "name": "Activity",
+            "description": "Activity"
+        },
+        {
             "name": "Ally",
             "description": "Ally"
         },
@@ -1913,12 +3642,24 @@
             "description": "Authentication"
         },
         {
+            "name": "Donation",
+            "description": "Donation"
+        },
+        {
+            "name": "Indicator",
+            "description": "Indicator"
+        },
+        {
             "name": "Ods",
             "description": "Ods"
         },
         {
             "name": "Proyect",
             "description": "Proyect"
+        },
+        {
+            "name": "Survey",
+            "description": "Survey"
         }
     ]
 }

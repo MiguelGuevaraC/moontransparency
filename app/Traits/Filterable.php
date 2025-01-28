@@ -43,7 +43,7 @@ trait Filterable
     {
         if ($operator === 'between' && is_array($value)) {
             $from = $value['from'] ?? null;
-            $to = $value['to'] ?? null;
+            $to   = $value['to'] ?? null;
 
             if ($from && $to) {
                 $query->whereBetween($filter, [$from, $to]);
@@ -73,6 +73,9 @@ trait Filterable
                 break;
             case '=':
                 $query->where($filter, '=', $value);
+                break;
+            case 'date': // Nuevo operador para filtrar por una fecha exacta
+                $query->whereDate($filter, '=', $value);
                 break;
             default:
                 break;

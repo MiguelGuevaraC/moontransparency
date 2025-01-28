@@ -25,9 +25,10 @@ class UpdateAllyRequest extends UpdateRequest
     public function rules()
     {
         $id = $this->route('id'); // Obtén el ID de la ruta, que se asume que es el ID del usuario
-    
+
         return [
-            'ruc_dni'            => 'required|string|max:11|unique:allies,ruc_dni,{$id},id,deleted_at,NULL',
+            'ruc_dni'            => "required|string|max:11|unique:allies,ruc_dni,{$id},id,deleted_at,NULL",
+
             'first_name'         => 'nullable|string|max:100',
             'last_name'          => 'nullable|string|max:100',
             'business_name'      => 'nullable|string',
