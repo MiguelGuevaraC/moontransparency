@@ -52,12 +52,12 @@ class ActivityController extends Controller
 /**
  * @OA\Get(
  *     path="/moontransparency/public/api/activity/{id}",
- *     summary="Obtener detalles de un Activity por ID",
+ *     summary="Obtener detalles de un Actividad por ID",
  *     tags={"Activity"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="id", in="path", description="ID del Activity", required=true, @OA\Schema(type="integer", example=1)),
- *     @OA\Response(response=200, description="Donación encontrado", @OA\JsonContent(ref="#/components/schemas/Activity")),
- *     @OA\Response(response=404, description="Donación no encontrado", @OA\JsonContent(type="object", @OA\Property(property="error", type="string", example="Donación no encontrado")))
+ *     @OA\Response(response=200, description="Actividad encontrada", @OA\JsonContent(ref="#/components/schemas/Activity")),
+ *     @OA\Response(response=404, description="Actividad no encontrada", @OA\JsonContent(type="object", @OA\Property(property="error", type="string", example="Actividad no encontrada")))
  * )
  */
 
@@ -68,7 +68,7 @@ class ActivityController extends Controller
 
         if (! $rol) {
             return response()->json([
-                'error' => 'Donación No Encontrado',
+                'error' => 'Actividad No Encontrada',
             ], 404);
         }
 
@@ -80,7 +80,7 @@ class ActivityController extends Controller
  *     path="/moontransparency/public/api/activity",
  *     summary="Crear Activity",
  *     tags={"Activity"},
- *     security={{"bearerAuth": {}}},
+ *     security={{"bearerAuth": {}}},  
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\MediaType(
@@ -88,10 +88,21 @@ class ActivityController extends Controller
  *             @OA\Schema(ref="#/components/schemas/ActivityRequest")
  *         )
  *     ),
- *     @OA\Response(response=200, description="Donación creada exitosamente", @OA\JsonContent(ref="#/components/schemas/Activity")),
- *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="La validación falló.")))
+ *     @OA\Response(
+ *         response=200,
+ *         description="Actividad creada exitosamente",
+ *         @OA\JsonContent(ref="#/components/schemas/Activity")
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Error de validación",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Error de validación")
+ *         )
+ *     )
  * )
  */
+
     public function store(StoreActivityRequest $request)
     {
         $rol = $this->activityService->createActivity($request->validated());
@@ -103,19 +114,46 @@ class ActivityController extends Controller
  *     path="/moontransparency/public/api/activity/{id}",
  *     summary="Actualizar un Activity",
  *     tags={"Activity"},
- *     security={{"bearerAuth": {}}},
- *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
-  *     @OA\RequestBody(
+ *     security={{"bearerAuth": {}}},  
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         @OA\Schema(type="integer", example=1)
+ *     ),
+ *     @OA\RequestBody(
  *         required=true,
  *         @OA\MediaType(
  *             mediaType="multipart/form-data",
  *             @OA\Schema(ref="#/components/schemas/ActivityRequest")
  *         )
  *     ),
- *     @OA\Response(response=200, description="Donación actualizado exitosamente", @OA\JsonContent(ref="#/components/schemas/Activity")),
- *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Datos inválidos"))),
- *     @OA\Response(response=404, description="Donación no encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Donación no encontrado"))),
- *     @OA\Response(response=500, description="Error interno", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error interno del servidor")))
+ *     @OA\Response(
+ *         response=200,
+ *         description="Actividad actualizada exitosamente",
+ *         @OA\JsonContent(ref="#/components/schemas/Activity")
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Error de validación",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Error de validación")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Actividad no encontrada",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Actividad no encontrada")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Error interno",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Error interno del servidor")
+ *         )
+ *     )
  * )
  */
 
@@ -124,15 +162,10 @@ class ActivityController extends Controller
 
         $validatedData = $request->validated();
 
-        if ($id == 1) {
-            return response()->json([
-                'message' => 'Esta Donación No puede ser Editado',
-            ], 422);
-        }
         $rol = $this->activityService->getActivityById($id);
         if (! $rol) {
             return response()->json([
-                'error' => 'Donación No Encontrado',
+                'error' => 'Actividad No Encontrada',
             ], 404);
         }
 
@@ -143,12 +176,12 @@ class ActivityController extends Controller
 /**
  * @OA\Delete(
  *     path="/moontransparency/public/api/activity/{id}",
- *     summary="Eliminar un Activity por ID",
+ *     summary="Eliminar un Actividadpor ID",
  *     tags={"Activity"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
- *     @OA\Response(response=200, description="Donación eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Donación eliminado exitosamente"))),
- *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Donación no encontrado"))),
+ *     @OA\Response(response=200, description="Actividad eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Actividad eliminado exitosamente"))),
+ *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Actividad no encontrada"))),
 
  * )
  */
@@ -160,13 +193,13 @@ class ActivityController extends Controller
 
         if (! $proyect) {
             return response()->json([
-                'error' => 'Donación No Encontrado.',
+                'error' => 'Actividad No Encontrada.',
             ], 404);
         }
         $proyect = $this->activityService->destroyById($id);
 
         return response()->json([
-            'message' => 'Activity eliminado exitosamente',
+            'message' => 'Actividadeliminado exitosamente',
         ], 200);
     }
 

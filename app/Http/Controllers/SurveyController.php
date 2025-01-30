@@ -52,23 +52,23 @@ class SurveyController extends Controller
  *     tags={"Survey"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="id", in="path", description="ID del Survey", required=true, @OA\Schema(type="integer", example=1)),
- *     @OA\Response(response=200, description="Donación encontrado", @OA\JsonContent(ref="#/components/schemas/Survey")),
- *     @OA\Response(response=404, description="Donación no encontrado", @OA\JsonContent(type="object", @OA\Property(property="error", type="string", example="Donación no encontrado")))
+ *     @OA\Response(response=200, description="Encuesta encontrado", @OA\JsonContent(ref="#/components/schemas/Survey")),
+ *     @OA\Response(response=404, description="Encuesta No Encontrada", @OA\JsonContent(type="object", @OA\Property(property="error", type="string", example="Encuesta No Encontrada")))
  * )
  */
 
     public function show($id)
     {
 
-        $rol = $this->surveyService->getSurveyById($id);
+        $survey = $this->surveyService->getSurveyById($id);
 
-        if (! $rol) {
+        if (! $survey) {
             return response()->json([
-                'error' => 'Donación No Encontrado',
+                'error' => 'Encuesta No Encontrada',
             ], 404);
         }
 
-        return new SurveyResource($rol);
+        return new SurveyResource($survey);
     }
 
 /**
@@ -84,14 +84,14 @@ class SurveyController extends Controller
  *             @OA\Schema(ref="#/components/schemas/SurveyRequest")
  *         )
  *     ),
- *     @OA\Response(response=200, description="Donación creada exitosamente", @OA\JsonContent(ref="#/components/schemas/Survey")),
- *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="La validación falló.")))
+ *     @OA\Response(response=200, description="Encuesta creada exitosamente", @OA\JsonContent(ref="#/components/schemas/Survey")),
+ *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
  * )
  */
     public function store(StoreSurveyRequest $request)
     {
-        $rol = $this->surveyService->createSurvey($request->validated());
-        return new SurveyResource($rol);
+        $survey = $this->surveyService->createSurvey($request->validated());
+        return new SurveyResource($survey);
     }
 
 /**
@@ -108,9 +108,9 @@ class SurveyController extends Controller
  *             @OA\Schema(ref="#/components/schemas/SurveyRequest")
  *         )
  *     ),
- *     @OA\Response(response=200, description="Donación actualizado exitosamente", @OA\JsonContent(ref="#/components/schemas/Survey")),
- *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Datos inválidos"))),
- *     @OA\Response(response=404, description="Donación no encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Donación no encontrado"))),
+ *     @OA\Response(response=200, description="Encuesta actualizado exitosamente", @OA\JsonContent(ref="#/components/schemas/Survey")),
+ *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
+ *     @OA\Response(response=404, description="Encuesta No Encontrada", @OA\JsonContent(@OA\Property(property="error", type="string", example="Encuesta No Encontrada"))),
  *     @OA\Response(response=500, description="Error interno", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error interno del servidor")))
  * )
  */
@@ -120,19 +120,14 @@ class SurveyController extends Controller
 
         $validatedData = $request->validated();
 
-        if ($id == 1) {
+        $survey = $this->surveyService->getSurveyById($id);
+        if (! $survey) {
             return response()->json([
-                'message' => 'Esta Donación No puede ser Editado',
-            ], 422);
-        }
-        $rol = $this->surveyService->getSurveyById($id);
-        if (! $rol) {
-            return response()->json([
-                'error' => 'Donación No Encontrado',
+                'error' => 'Encuesta No Encontrada',
             ], 404);
         }
 
-        $updatedCompany = $this->surveyService->updateSurvey($rol, $validatedData);
+        $updatedCompany = $this->surveyService->updateSurvey($survey, $validatedData);
         return new SurveyResource($updatedCompany);
     }
 
@@ -143,8 +138,8 @@ class SurveyController extends Controller
  *     tags={"Survey"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
- *     @OA\Response(response=200, description="Donación eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Donación eliminado exitosamente"))),
- *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Donación no encontrado"))),
+ *     @OA\Response(response=200, description="Encuesta eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Encuesta eliminado exitosamente"))),
+ *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Encuesta No Encontrada"))),
 
  * )
  */
@@ -152,14 +147,14 @@ class SurveyController extends Controller
     public function destroy($id)
     {
 
-        $proyect = $this->surveyService->getSurveyById($id);
+        $survey = $this->surveyService->getSurveyById($id);
 
-        if (! $proyect) {
+        if (! $survey) {
             return response()->json([
-                'error' => 'Donación No Encontrado.',
+                'error' => 'Encuesta No Encontrada.',
             ], 404);
         }
-        $proyect = $this->surveyService->destroyById($id);
+        $survey = $this->surveyService->destroyById($id);
 
         return response()->json([
             'message' => 'Survey eliminado exitosamente',

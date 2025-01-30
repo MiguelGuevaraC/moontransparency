@@ -20,12 +20,16 @@ class RolService
 
     public function updateRol($Rol, array $data)
     {
+        
         $Rol->update($data);
         return $Rol;
     }
 
     public function destroyById($id)
     {
+        if ($id == 1) {
+            return false; // No se permite la eliminación del usuario con ID 1
+        }
         // Encuentra y elimina el registro si existe
         return Rol::find($id)?->delete() ?? false;
     }

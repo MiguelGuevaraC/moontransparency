@@ -21,7 +21,7 @@ class DonationController extends Controller
 /**
  * @OA\Get(
  *     path="/moontransparency/public/api/donation",
- *     summary="Obtener información de donations con filtros y ordenamiento",
+ *     summary="Obtener información de donaciones con filtros y ordenamiento",
  *     tags={"Donation"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="name", in="query", description="Filtrar por nombre de donation", required=false, @OA\Schema(type="string")),
@@ -35,7 +35,7 @@ class DonationController extends Controller
  *     @OA\Parameter(name="evidence", in="query", description="Filtrar por evidencia de la donation", required=false, @OA\Schema(type="string")),
  *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
  *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
- *     @OA\Response(response=200, description="Lista de donations", @OA\JsonContent(ref="#/components/schemas/Donation")),
+ *     @OA\Response(response=200, description="Lista de donaciones", @OA\JsonContent(ref="#/components/schemas/Donation")),
  *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(type="object", @OA\Property(property="error", type="string")))
  * )
  */
@@ -54,12 +54,12 @@ class DonationController extends Controller
 /**
  * @OA\Get(
  *     path="/moontransparency/public/api/donation/{id}",
- *     summary="Obtener detalles de un donation por ID",
+ *     summary="Obtener detalles de un Donación por ID",
  *     tags={"Donation"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="id", in="path", description="ID del donation", required=true, @OA\Schema(type="integer", example=1)),
  *     @OA\Response(response=200, description="Donación encontrado", @OA\JsonContent(ref="#/components/schemas/Donation")),
- *     @OA\Response(response=404, description="Donación no encontrado", @OA\JsonContent(type="object", @OA\Property(property="error", type="string", example="Donación no encontrado")))
+ *     @OA\Response(response=404, description="Donación No Encontrada", @OA\JsonContent(type="object", @OA\Property(property="error", type="string", example="Donación No Encontrada")))
  * )
  */
 
@@ -70,7 +70,7 @@ class DonationController extends Controller
 
         if (! $rol) {
             return response()->json([
-                'error' => 'Donación No Encontrado',
+                'error' => 'Donación No Encontrada',
             ], 404);
         }
 
@@ -91,7 +91,7 @@ class DonationController extends Controller
  *         )
  *     ),
  *     @OA\Response(response=200, description="Donación creada exitosamente", @OA\JsonContent(ref="#/components/schemas/Donation")),
- *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="La validación falló.")))
+ *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
  * )
  */
     public function store(StoreDonationRequest $request)
@@ -115,8 +115,8 @@ class DonationController extends Controller
  *         )
  *     ),
  *     @OA\Response(response=200, description="Donación actualizado exitosamente", @OA\JsonContent(ref="#/components/schemas/Donation")),
- *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Datos inválidos"))),
- *     @OA\Response(response=404, description="Donación no encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Donación no encontrado"))),
+ *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
+ *     @OA\Response(response=404, description="Donación No Encontrada", @OA\JsonContent(@OA\Property(property="error", type="string", example="Donación No Encontrada"))),
  *     @OA\Response(response=500, description="Error interno", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error interno del servidor")))
  * )
  */
@@ -126,15 +126,10 @@ class DonationController extends Controller
 
         $validatedData = $request->validated();
 
-        if ($id == 1) {
-            return response()->json([
-                'message' => 'Esta Donación No puede ser Editado',
-            ], 422);
-        }
         $rol = $this->donationService->getDonationById($id);
         if (! $rol) {
             return response()->json([
-                'error' => 'Donación No Encontrado',
+                'error' => 'Donación No Encontrada',
             ], 404);
         }
 
@@ -145,12 +140,12 @@ class DonationController extends Controller
 /**
  * @OA\Delete(
  *     path="/moontransparency/public/api/donation/{id}",
- *     summary="Eliminar un donation por ID",
+ *     summary="Eliminar un Donación por ID",
  *     tags={"Donation"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
- *     @OA\Response(response=200, description="Donación eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Donación eliminado exitosamente"))),
- *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Donación no encontrado"))),
+ *     @OA\Response(response=200, description="Donación eliminada", @OA\JsonContent(@OA\Property(property="message", type="string", example="Donación eliminada exitosamente"))),
+ *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Donación No Encontrada"))),
 
  * )
  */
@@ -162,13 +157,13 @@ class DonationController extends Controller
 
         if (! $activity) {
             return response()->json([
-                'error' => 'Donación No Encontrado.',
+                'error' => 'Donación No Encontrada.',
             ], 404);
         }
         $activity = $this->donationService->destroyById($id);
 
         return response()->json([
-            'message' => 'Donation eliminado exitosamente',
+            'message' => 'Donación eliminada exitosamente',
         ], 200);
     }
 

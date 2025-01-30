@@ -142,7 +142,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Donación creada exitosamente",
+                        "description": "Actividad creada exitosamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -159,7 +159,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "La validación falló."
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -180,7 +180,7 @@
                 "tags": [
                     "Activity"
                 ],
-                "summary": "Obtener detalles de un Activity por ID",
+                "summary": "Obtener detalles de un Actividad por ID",
                 "operationId": "d20fe9bf1ffccc58590e0f95798f466c",
                 "parameters": [
                     {
@@ -196,7 +196,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Donación encontrado",
+                        "description": "Actividad encontrada",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -206,14 +206,14 @@
                         }
                     },
                     "404": {
-                        "description": "Donación no encontrado",
+                        "description": "Actividad no encontrada",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Donación no encontrado"
+                                            "example": "Actividad no encontrada"
                                         }
                                     },
                                     "type": "object"
@@ -257,7 +257,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Donación actualizado exitosamente",
+                        "description": "Actividad actualizada exitosamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -274,7 +274,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Datos inválidos"
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -283,14 +283,14 @@
                         }
                     },
                     "404": {
-                        "description": "Donación no encontrado",
+                        "description": "Actividad no encontrada",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Donación no encontrado"
+                                            "example": "Actividad no encontrada"
                                         }
                                     },
                                     "type": "object"
@@ -325,7 +325,7 @@
                 "tags": [
                     "Activity"
                 ],
-                "summary": "Eliminar un Activity por ID",
+                "summary": "Eliminar un Actividadpor ID",
                 "operationId": "9622fe8f59f33594d7a19d54261d293c",
                 "parameters": [
                     {
@@ -340,14 +340,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Donación eliminado",
+                        "description": "Actividad eliminado",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Donación eliminado exitosamente"
+                                            "example": "Actividad eliminado exitosamente"
                                         }
                                     },
                                     "type": "object"
@@ -363,7 +363,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Donación no encontrado"
+                                            "example": "Actividad no encontrada"
                                         }
                                     },
                                     "type": "object"
@@ -605,7 +605,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "La validación falló."
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -766,7 +766,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Datos inválidos"
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -1302,7 +1302,7 @@
                 "tags": [
                     "Donation"
                 ],
-                "summary": "Obtener información de donations con filtros y ordenamiento",
+                "summary": "Obtener información de donaciones con filtros y ordenamiento",
                 "operationId": "3523ef7c250cd8660867194cdadab10a",
                 "parameters": [
                     {
@@ -1411,7 +1411,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Lista de donations",
+                        "description": "Lista de donaciones",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1477,7 +1477,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "La validación falló."
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -1498,7 +1498,7 @@
                 "tags": [
                     "Donation"
                 ],
-                "summary": "Obtener detalles de un donation por ID",
+                "summary": "Obtener detalles de un Donación por ID",
                 "operationId": "151ac2fa82cac664a1b7f1d10c1eb913",
                 "parameters": [
                     {
@@ -1524,14 +1524,14 @@
                         }
                     },
                     "404": {
-                        "description": "Donación no encontrado",
+                        "description": "Donación No Encontrada",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Donación no encontrado"
+                                            "example": "Donación No Encontrada"
                                         }
                                     },
                                     "type": "object"
@@ -1592,7 +1592,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Datos inválidos"
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -1601,14 +1601,14 @@
                         }
                     },
                     "404": {
-                        "description": "Donación no encontrado",
+                        "description": "Donación No Encontrada",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Donación no encontrado"
+                                            "example": "Donación No Encontrada"
                                         }
                                     },
                                     "type": "object"
@@ -1643,7 +1643,7 @@
                 "tags": [
                     "Donation"
                 ],
-                "summary": "Eliminar un donation por ID",
+                "summary": "Eliminar un Donación por ID",
                 "operationId": "8a60e8a4a4c8cf59673d765508480597",
                 "parameters": [
                     {
@@ -1658,14 +1658,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Donación eliminado",
+                        "description": "Donación eliminada",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Donación eliminado exitosamente"
+                                            "example": "Donación eliminada exitosamente"
                                         }
                                     },
                                     "type": "object"
@@ -1681,7 +1681,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Donación no encontrado"
+                                            "example": "Donación No Encontrada"
                                         }
                                     },
                                     "type": "object"
@@ -1833,7 +1833,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Donación creada exitosamente",
+                        "description": "Indicador creada exitosamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1850,7 +1850,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "La validación falló."
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -1887,7 +1887,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Donación encontrado",
+                        "description": "Indicador encontrado",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1897,14 +1897,14 @@
                         }
                     },
                     "404": {
-                        "description": "Donación no encontrado",
+                        "description": "Indicador no encontrado",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Donación no encontrado"
+                                            "example": "Indicador no encontrado"
                                         }
                                     },
                                     "type": "object"
@@ -1948,7 +1948,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Donación actualizado exitosamente",
+                        "description": "Indicador actualizado exitosamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1965,7 +1965,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Datos inválidos"
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -1974,14 +1974,14 @@
                         }
                     },
                     "404": {
-                        "description": "Donación no encontrado",
+                        "description": "Indicador no encontrado",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Donación no encontrado"
+                                            "example": "Indicador no encontrado"
                                         }
                                     },
                                     "type": "object"
@@ -2031,14 +2031,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Donación eliminado",
+                        "description": "Indicador eliminado",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Donación eliminado exitosamente"
+                                            "example": "Indicador eliminado exitosamente"
                                         }
                                     },
                                     "type": "object"
@@ -2054,7 +2054,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Donación no encontrado"
+                                            "example": "Indicador no encontrado"
                                         }
                                     },
                                     "type": "object"
@@ -2402,7 +2402,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "La validación falló."
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -2517,7 +2517,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Datos inválidos"
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -2729,7 +2729,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Donación creada exitosamente",
+                        "description": "Encuesta creada exitosamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2746,7 +2746,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "La validación falló."
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -2783,7 +2783,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Donación encontrado",
+                        "description": "Encuesta encontrado",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2793,14 +2793,14 @@
                         }
                     },
                     "404": {
-                        "description": "Donación no encontrado",
+                        "description": "Encuesta No Encontrada",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Donación no encontrado"
+                                            "example": "Encuesta No Encontrada"
                                         }
                                     },
                                     "type": "object"
@@ -2844,7 +2844,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Donación actualizado exitosamente",
+                        "description": "Encuesta actualizado exitosamente",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2861,7 +2861,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Datos inválidos"
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -2870,14 +2870,14 @@
                         }
                     },
                     "404": {
-                        "description": "Donación no encontrado",
+                        "description": "Encuesta No Encontrada",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Donación no encontrado"
+                                            "example": "Encuesta No Encontrada"
                                         }
                                     },
                                     "type": "object"
@@ -2927,14 +2927,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Donación eliminado",
+                        "description": "Encuesta eliminado",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Donación eliminado exitosamente"
+                                            "example": "Encuesta eliminado exitosamente"
                                         }
                                     },
                                     "type": "object"
@@ -2950,7 +2950,7 @@
                                     "properties": {
                                         "error": {
                                             "type": "string",
-                                            "example": "Donación no encontrado"
+                                            "example": "Encuesta No Encontrada"
                                         }
                                     },
                                     "type": "object"

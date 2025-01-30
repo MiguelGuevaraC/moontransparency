@@ -24,7 +24,7 @@ class AllyController extends Controller
  *     summary="Obtener información de aliados con filtros y ordenamiento",
  *     tags={"Ally"},
  *     security={{"bearerAuth": {}}},
- * 
+ *
  *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
  *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
  *     @OA\Parameter(name="ruc_dni", in="query", description="RUC o DNI del aliado", required=false, @OA\Schema(type="string", maxLength=20)),
@@ -69,7 +69,6 @@ class AllyController extends Controller
  * )
  */
 
-
     public function show($id)
     {
 
@@ -77,7 +76,7 @@ class AllyController extends Controller
 
         if (! $rol) {
             return response()->json([
-                'error' => 'Allyo No Encontrado',
+                'error' => 'Aliado No Encontrado',
             ], 404);
         }
 
@@ -114,8 +113,18 @@ class AllyController extends Controller
  *             )
  *         )
  *     ),
- *     @OA\Response(response=200, description="Aliado creado exitosamente", @OA\JsonContent(ref="#/components/schemas/Ally")),
- *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="La validación falló.")))
+ *     @OA\Response(
+ *         response=200,
+ *         description="Aliado creado exitosamente",
+ *         @OA\JsonContent(ref="#/components/schemas/Ally")
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Error de validación",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Error de validación")
+ *         )
+ *     )
  * )
  */
 
@@ -151,31 +160,48 @@ class AllyController extends Controller
  *                     type="array",
  *                     @OA\Items(type="string", format="binary"),
  *                     description="Imágenes del aliado"
- *                 ),
- 
+ *                 )
  *             )
  *         )
  *     ),
- *     @OA\Response(response=200, description="Aliado actualizado exitosamente", @OA\JsonContent(ref="#/components/schemas/Ally")),
- *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Datos inválidos"))),
- *     @OA\Response(response=404, description="Aliado no encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Aliado no encontrado"))),
- *     @OA\Response(response=500, description="Error interno", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error interno del servidor")))
+ *     @OA\Response(
+ *         response=200,
+ *         description="Aliado actualizado exitosamente",
+ *         @OA\JsonContent(ref="#/components/schemas/Ally")
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Error de validación",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Error de validación")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Aliado no encontrado",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Aliado no encontrado")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Error interno",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="error", type="string", example="Error interno del servidor")
+ *         )
+ *     )
  * )
  */
-public function update(UpdateAllyRequest $request, $id)
+
+    public function update(UpdateAllyRequest $request, $id)
     {
 
         $validatedData = $request->validated();
 
-        if ($id == 1) {
-            return response()->json([
-                'message' => 'Este Allyo No puede ser Editado',
-            ], 422);
-        }
         $rol = $this->allyService->getAllyById($id);
         if (! $rol) {
             return response()->json([
-                'error' => 'Allyo No Encontrado',
+                'error' => 'Aliado No Encontrado',
             ], 404);
         }
 
@@ -195,7 +221,6 @@ public function update(UpdateAllyRequest $request, $id)
  * )
  */
 
-
     public function destroy($id)
     {
 
@@ -203,7 +228,7 @@ public function update(UpdateAllyRequest $request, $id)
 
         if (! $ally) {
             return response()->json([
-                'error' => 'Allyo No Encontrado.',
+                'error' => 'Aliado No Encontrado.',
             ], 404);
         }
         $ally = $this->allyService->destroyById($id);

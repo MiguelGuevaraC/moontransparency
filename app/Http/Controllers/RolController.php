@@ -118,7 +118,7 @@ class RolController extends Controller
     //  *         )
     //  *     ),
     //  *     @OA\Response(response=200, description="Rol actualizado exitosamente", @OA\JsonContent(ref="#/components/schemas/Rol")),
-    //  *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Datos inválidos")))
+    //  *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"),
     //  * )
     //  */
 

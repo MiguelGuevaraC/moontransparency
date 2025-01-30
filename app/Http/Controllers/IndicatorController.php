@@ -11,11 +11,11 @@ use Illuminate\Http\Request;
 
 class IndicatorController extends Controller
 {
-    protected $activityService;
+    protected $indicatorService;
 
-    public function __construct(IndicatorService $activityService)
+    public function __construct(IndicatorService $indicatorService)
     {
-        $this->activityService = $activityService;
+        $this->indicatorService = $indicatorService;
     }
 
 /**
@@ -55,23 +55,23 @@ class IndicatorController extends Controller
  *     tags={"Indicator"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="id", in="path", description="ID del Indicator", required=true, @OA\Schema(type="integer", example=1)),
- *     @OA\Response(response=200, description="Donación encontrado", @OA\JsonContent(ref="#/components/schemas/Indicator")),
- *     @OA\Response(response=404, description="Donación no encontrado", @OA\JsonContent(type="object", @OA\Property(property="error", type="string", example="Donación no encontrado")))
+ *     @OA\Response(response=200, description="Indicador encontrado", @OA\JsonContent(ref="#/components/schemas/Indicator")),
+ *     @OA\Response(response=404, description="Indicador no encontrado", @OA\JsonContent(type="object", @OA\Property(property="error", type="string", example="Indicador no encontrado")))
  * )
  */
 
     public function show($id)
     {
 
-        $rol = $this->activityService->getIndicatorById($id);
+        $indicator = $this->indicatorService->getIndicatorById($id);
 
-        if (! $rol) {
+        if (! $indicator) {
             return response()->json([
-                'error' => 'Donación No Encontrado',
+                'error' => 'Indicador No Encontrado',
             ], 404);
         }
 
-        return new IndicatorResource($rol);
+        return new IndicatorResource($indicator);
     }
 
 /**
@@ -87,14 +87,14 @@ class IndicatorController extends Controller
  *             @OA\Schema(ref="#/components/schemas/IndicatorRequest")
  *         )
  *     ),
- *     @OA\Response(response=200, description="Donación creada exitosamente", @OA\JsonContent(ref="#/components/schemas/Indicator")),
- *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="La validación falló.")))
+ *     @OA\Response(response=200, description="Indicador creada exitosamente", @OA\JsonContent(ref="#/components/schemas/Indicator")),
+ *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
  * )
  */
     public function store(StoreIndicatorRequest $request)
     {
-        $rol = $this->activityService->createIndicator($request->validated());
-        return new IndicatorResource($rol);
+        $indicator = $this->indicatorService->createIndicator($request->validated());
+        return new IndicatorResource($indicator);
     }
 
 /**
@@ -104,16 +104,16 @@ class IndicatorController extends Controller
  *     tags={"Indicator"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
-  *     @OA\RequestBody(
+ *     @OA\RequestBody(
  *         required=true,
  *         @OA\MediaType(
  *             mediaType="multipart/form-data",
  *             @OA\Schema(ref="#/components/schemas/IndicatorRequest")
  *         )
  *     ),
- *     @OA\Response(response=200, description="Donación actualizado exitosamente", @OA\JsonContent(ref="#/components/schemas/Indicator")),
- *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Datos inválidos"))),
- *     @OA\Response(response=404, description="Donación no encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Donación no encontrado"))),
+ *     @OA\Response(response=200, description="Indicador actualizado exitosamente", @OA\JsonContent(ref="#/components/schemas/Indicator")),
+ *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
+ *     @OA\Response(response=404, description="Indicador no encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Indicador no encontrado"))),
  *     @OA\Response(response=500, description="Error interno", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error interno del servidor")))
  * )
  */
@@ -123,19 +123,14 @@ class IndicatorController extends Controller
 
         $validatedData = $request->validated();
 
-        if ($id == 1) {
+        $indicator = $this->indicatorService->getIndicatorById($id);
+        if (! $indicator) {
             return response()->json([
-                'message' => 'Esta Donación No puede ser Editado',
-            ], 422);
-        }
-        $rol = $this->activityService->getIndicatorById($id);
-        if (! $rol) {
-            return response()->json([
-                'error' => 'Donación No Encontrado',
+                'error' => 'Indicador No Encontrado',
             ], 404);
         }
 
-        $updatedCompany = $this->activityService->updateIndicator($rol, $validatedData);
+        $updatedCompany = $this->indicatorService->updateIndicator($indicator, $validatedData);
         return new IndicatorResource($updatedCompany);
     }
 
@@ -146,8 +141,8 @@ class IndicatorController extends Controller
  *     tags={"Indicator"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
- *     @OA\Response(response=200, description="Donación eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Donación eliminado exitosamente"))),
- *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Donación no encontrado"))),
+ *     @OA\Response(response=200, description="Indicador eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Indicador eliminado exitosamente"))),
+ *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Indicador no encontrado"))),
 
  * )
  */
@@ -155,14 +150,14 @@ class IndicatorController extends Controller
     public function destroy($id)
     {
 
-        $activity = $this->activityService->getIndicatorById($id);
+        $indicator = $this->indicatorService->getIndicatorById($id);
 
-        if (! $activity) {
+        if (! $indicator) {
             return response()->json([
-                'error' => 'Donación No Encontrado.',
+                'error' => 'Indicador No Encontrado.',
             ], 404);
         }
-        $activity = $this->activityService->destroyById($id);
+        $indicator = $this->indicatorService->destroyById($id);
 
         return response()->json([
             'message' => 'Indicator eliminado exitosamente',

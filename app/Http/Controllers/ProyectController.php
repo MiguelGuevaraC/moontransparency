@@ -92,7 +92,7 @@ class ProyectController extends Controller
  *         )
  *     ),
  *     @OA\Response(response=200, description="Proyecto creado exitosamente", @OA\JsonContent(ref="#/components/schemas/Proyect")),
- *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="La validación falló.")))
+ *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
  * )
  */
     public function store(StoreProyectRequest $request)
@@ -116,7 +116,7 @@ class ProyectController extends Controller
  *         )
  *     ),
  *     @OA\Response(response=200, description="Proyecto actualizado exitosamente", @OA\JsonContent(ref="#/components/schemas/Proyect")),
- *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Datos inválidos"))),
+ *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
  *     @OA\Response(response=404, description="Proyecto no encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Proyecto no encontrado"))),
  *     @OA\Response(response=500, description="Error interno", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error interno del servidor")))
  * )
@@ -126,11 +126,6 @@ class ProyectController extends Controller
 
         $validatedData = $request->validated();
 
-        if ($id == 1) {
-            return response()->json([
-                'message' => 'Este Proyecto No puede ser Editado',
-            ], 422);
-        }
         $rol = $this->proyectService->getProyectById($id);
         if (! $rol) {
             return response()->json([
