@@ -23,11 +23,10 @@ class ProyectService
 
     public function createProyect(array $data): Proyect
     {
-
-        $data['imagesave']=$data['images'];
-        $data['images']=null;
+        $data['imagesave'] = isset($data['images']) ? $data['images'] : null;
+        $data['images'] = null;
         $proyect = Proyect::create($data);
-        if ($proyect) {
+        if ($proyect && isset($data['images'])) {
             $this->commonService->store_photo($data, $proyect, name_folder: 'proyects');
         }
         return $proyect;
@@ -37,11 +36,21 @@ class ProyectService
 
     public function updateProyect(Proyect $proyect, array $data): Proyect
     {
-        $data['imagesave']=$data['images'];
-        $data['images'] = $this->commonService->update_photo($data, $proyect, 'proyects');
+        // Verificar si 'images' existe en $data antes de usarlo
+        if (isset($data['images'])) {
+            $data['imagesave'] = $data['images'];
+            $data['images'] = $this->commonService->update_photo($data, $proyect, 'proyects');
+        } else {
+            // Si 'images' no existe, evitar errores
+            $data['imagesave'] = null;
+            $data['images'] = $proyect->images ?? null;
+        }
+    
         $proyect->update($data);
         return $proyect;
     }
+    
+    
 
     public function destroyById($id)
     {

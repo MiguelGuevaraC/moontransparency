@@ -23,11 +23,10 @@ class AllyService
 
     public function createAlly(array $data): Ally
     {
-
-        $data['imagesave']=$data['images'];
-        $data['images']=null;
+        $data['imagesave'] = isset($data['images']) ? $data['images'] : null;
+        $data['images'] = null;
         $ally = Ally::create($data);
-        if ($ally) {
+        if ($ally && isset($data['images'])) {
             $this->commonService->store_photo($data, $ally, name_folder: 'allies');
         }
         return $ally;
@@ -37,11 +36,12 @@ class AllyService
 
     public function updateAlly(Ally $ally, array $data): Ally
     {
-        $data['imagesave']=$data['images'];
-        $data['images'] = $this->commonService->update_photo($data, $ally, 'allies');
+        $data['imagesave'] = isset($data['images']) ? $data['images'] : null;
+        $data['images'] = isset($data['images']) ? $this->commonService->update_photo($data, $ally, 'allies') : $ally->images;
         $ally->update($data);
         return $ally;
     }
+    
 
     public function destroyById($id)
     {
