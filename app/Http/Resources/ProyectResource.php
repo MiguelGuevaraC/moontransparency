@@ -10,7 +10,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     required={"name", "type", "status", "start_date", "end_date", "location", "budget_estimated", "nro_beneficiaries"},
  *     @OA\Property(property="name", type="string", example="Proyecto de Energía Renovable"),
  *     @OA\Property(property="type", type="string", example="Energía"),
-
  *     @OA\Property(property="start_date", type="string", format="date", example="2025-01-01"),
  *     @OA\Property(property="end_date", type="string", format="date", example="2025-12-31"),
  *     @OA\Property(property="location", type="string", pattern="^\(-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?\)$", example="(-77.032, -12.045)", description="Coordenadas GPS en formato (longitud, latitud)"),
@@ -19,9 +18,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="budget_estimated", type="number", format="float", example="500000"),
  *     @OA\Property(property="nro_beneficiaries", type="integer", example="5000"),
  *     @OA\Property(property="impact_initial", type="string", example="0"),
- *     @OA\Property(property="impact_final", type="string", example="50")
+ *     @OA\Property(property="impact_final", type="string", example="50"),
+ *     @OA\Property(property="ods", type="array", @OA\Items(type="integer"), description="IDs de los Ods relacionados al proyecto")
  * )
  */
+
 
 class ProyectResource extends JsonResource
 {

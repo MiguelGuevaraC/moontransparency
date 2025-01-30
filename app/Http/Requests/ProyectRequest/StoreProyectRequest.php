@@ -31,12 +31,15 @@ class StoreProyectRequest extends StoreRequest
             'start_date'        => 'required|date',
             'end_date'          => 'required|date|after_or_equal:start_date',
             'location'          => 'nullable|string|max:255',
-            'images.*' => 'nullable|file|mimes:jpeg,jpg,png,gif|max:2048',
+            'images.*'          => 'nullable|file|mimes:jpeg,jpg,png,gif|max:2048',
             'description'       => 'nullable|string',
             'budget_estimated'  => 'required|numeric|min:0',
             'nro_beneficiaries' => 'required|integer|min:1',
             'impact_initial'    => 'nullable|string',
             'impact_final'      => 'nullable|string',
+
+            'ods'               => 'required|array',                                 // Asegura que sea un arreglo
+            'ods.*'             => 'required|integer|exists:ods,id,deleted_at,NULL', // Valida que cada ID exista y no esté eliminado
         ];
     }
 
@@ -64,9 +67,15 @@ class StoreProyectRequest extends StoreRequest
             'budget_estimated.min'       => 'El presupuesto debe ser al menos 0.',
             'nro_beneficiaries.required' => 'El número de beneficiarios es obligatorio.',
             'nro_beneficiaries.integer'  => 'El número de beneficiarios debe ser un valor entero.',
-            'images.*.file' => 'Cada archivo debe ser un archivo válido.',
-            'images.*.mimes' => 'Solo se permiten archivos de tipo: jpeg, jpg, png, gif.',
-            'images.*.max' => 'El archivo no debe exceder los 2 MB.',
+            'images.*.file'              => 'Cada archivo debe ser un archivo válido.',
+            'images.*.mimes'             => 'Solo se permiten archivos de tipo: jpeg, jpg, png, gif.',
+            'images.*.max'               => 'El archivo no debe exceder los 2 MB.',
+
+            'ods.required'               => 'El campo Ods es obligatorio si se proporciona.',
+            'ods.array'                  => 'El campo Ods debe ser un arreglo de IDs.',
+            'ods.*.required'             => 'Cada ID de Ods es obligatorio.',
+            'ods.*.integer'              => 'Cada ID de Ods debe ser un número entero.',
+            'ods.*.exists'               => 'El ID de Ods proporcionado no existe o ha sido eliminado.',
         ];
     }
 

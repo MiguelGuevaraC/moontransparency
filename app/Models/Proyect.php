@@ -55,6 +55,8 @@ class Proyect extends Model
 
     public function ods()
     {
-        return $this->belongsToMany(Ods::class, 'proyect_ods', 'proyect_id', 'ods_id');
+        return $this->belongsToMany(Ods::class, 'proyect_ods', 'proyect_id', 'ods_id')
+                    ->whereNull('proyect_ods.deleted_at'); // Filtra solo las relaciones no eliminadas
     }
+    
 }
