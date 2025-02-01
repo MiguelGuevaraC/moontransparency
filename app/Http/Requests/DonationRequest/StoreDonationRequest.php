@@ -25,10 +25,10 @@ class StoreDonationRequest extends StoreRequest
     public function rules()
     {
         return [
-            'proyect_id' => 'required|integer|exists:proyects,id,deleted_at,NULL', // Asegura que el proyecto exista y no esté eliminado
-            'activity_id' => 'required|integer|exists:activities,id,deleted_at,NULL', // Asegura que la actividad exista y no esté eliminada
+            'proyect_id' => 'required|exists:proyects,id,deleted_at,NULL', // Asegura que el proyecto exista y no esté eliminado
+            'activity_id' => 'required|exists:activities,id,deleted_at,NULL', // Asegura que la actividad exista y no esté eliminada
             'date_donation' => 'required|date', // Asegura que la fecha esté en formato válido
-            'ally_id' => 'required|integer|exists:allies,id,deleted_at,NULL', // Asegura que el aliado exista y no esté eliminado
+            'ally_id' => 'required|exists:allies,id,deleted_at,NULL', // Asegura que el aliado exista y no esté eliminado
             'details' => 'required|string|max:500', // Detalles de la donación
             'contribution_type' => 'required|string|max:100', // Tipo de contribución
             'amount' => 'required|numeric|min:0', // Monto de la donación
@@ -45,6 +45,7 @@ class StoreDonationRequest extends StoreRequest
     {
         return [
             'proyect_id.required' => 'El ID del proyecto es obligatorio.',
+            'proyect_id.exists' => 'El ID de proyecto seleccionado no es válido o el proyecto ha sido eliminado.',
             'activity_id.required' => 'El ID de la actividad es obligatorio.',
             'date_donation.required' => 'La fecha de la donación es obligatoria.',
             'ally_id.required' => 'El ID del aliado es obligatorio.',
