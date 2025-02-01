@@ -25,7 +25,7 @@ class DonationController extends Controller
  *     tags={"Donation"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="name", in="query", description="Filtrar por nombre de donation", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="project_id", in="query", description="Filtrar por ID del proyecto", required=false, @OA\Schema(type="integer")),
+ *     @OA\Parameter(name="proyect_id", in="query", description="Filtrar por ID del proyecto", required=false, @OA\Schema(type="integer")),
  *     @OA\Parameter(name="activity_id", in="query", description="Filtrar por ID de actividad", required=false, @OA\Schema(type="integer")),
  *     @OA\Parameter(name="date_donation", in="query", description="Filtrar por fecha de donation", required=false, @OA\Schema(type="string", format="date")),
  *     @OA\Parameter(name="ally_id", in="query", description="Filtrar por ID del aliado", required=false, @OA\Schema(type="integer")),

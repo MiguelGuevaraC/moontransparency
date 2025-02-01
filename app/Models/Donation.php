@@ -11,7 +11,7 @@ class Donation extends Model
     use SoftDeletes;
     protected $fillable = [
         'id',
-        'project_id',
+        'proyect_id',
         'activity_id',
         'date_donation',
         'ally_id',
@@ -33,7 +33,7 @@ class Donation extends Model
         'name'             => 'like',
         'start_date'       => 'date',
         'end_date'         => 'date',
-        'project_id'       => '=',
+        'proyect_id'       => '=',
         'objective'        => 'like',
         'total_amount'     => '=',
         'collected_amount' => '=',

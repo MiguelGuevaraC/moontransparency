@@ -26,7 +26,7 @@ class IndexActivityRequest extends IndexRequest
             'name'=>'nullable|string',
             'start_date'=>'nullable|string',
             'end_date'=>'nullable|string',
-            'project_id'=>'nullable|string',
+            'proyect_id'=>'nullable|string',
             'objective'=>'nullable|string',
             'total_amount'=>'nullable|string',
             'collected_amount'=>'nullable|string',

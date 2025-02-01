@@ -9,7 +9,7 @@ class Indicator extends Model
 {
     protected $fillable = [
         'id',
-        'project_id',
+        'proyect_id',
         'indicator_name',
         'target_value',
         'progress_value',
@@ -24,7 +24,7 @@ class Indicator extends Model
     ];
     const filters = [
 
-        'project_id' => '=',
+        'proyect_id' => '=',
         'indicator_name' => 'like',
         'target_value' => 'like',
         'progress_value' => 'like',

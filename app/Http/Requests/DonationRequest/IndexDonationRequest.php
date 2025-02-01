@@ -24,7 +24,7 @@ class IndexDonationRequest extends IndexRequest
     {
         return [
 
-            'project_id'        => 'nullable|string',
+            'proyect_id'        => 'nullable|string',
             'activity_id'       => 'nullable|string',
             'date_donation'     => 'nullable|string',
             'ally_id'           => 'nullable|string',

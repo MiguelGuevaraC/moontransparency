@@ -7,8 +7,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @OA\Schema(
  *     schema="DonationRequest",
  *     type="object",
- *     required={"project_id", "activity_id", "date_donation", "ally_id", "details", "contribution_type", "amount"},
- *     @OA\Property(property="project_id", type="integer", example="101"),
+ *     required={"proyect_id", "activity_id", "date_donation", "ally_id", "details", "contribution_type", "amount"},
+ *     @OA\Property(property="proyect_id", type="integer", example="101"),
  *     @OA\Property(property="activity_id", type="integer", example="2001"),
  *     @OA\Property(property="date_donation", type="string", format="date", example="2025-01-01"),
  *     @OA\Property(property="ally_id", type="integer", example="3001"),
@@ -26,7 +26,7 @@ class DonationResource extends JsonResource
  *     title="Donation",
  *     description="Modelo de Donation",
  *     @OA\Property(property="id", type="integer", example="1"),
- *     @OA\Property(property="project_id", type="integer", example="101"),
+ *     @OA\Property(property="proyect_id", type="integer", example="101"),
  *     @OA\Property(property="activity_id", type="integer", example="2001"),
  *     @OA\Property(property="date_donation", type="string", format="date", example="2025-01-01"),
  *     @OA\Property(property="ally_id", type="integer", example="3001"),
@@ -45,7 +45,7 @@ class DonationResource extends JsonResource
     {
         return [
             'id'                => $this->id ?? null,
-            'project_id'        => $this->project_id ?? null,
+            'proyect_id'        => $this->proyect_id ?? null,
             'activity_id'       => $this->activity_id ?? null,
             'date_donation'     => $this->date_donation ?? null,
             'ally_id'           => $this->ally_id ?? null,

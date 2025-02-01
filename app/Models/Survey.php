@@ -9,7 +9,7 @@ class Survey extends Model
     use SoftDeletes;
     protected $fillable = [
         'id',
-        'project_id',
+        'proyect_id',
         'survey_name',
         'description',
         'created_at',
@@ -23,7 +23,7 @@ class Survey extends Model
         'deleted_at',
     ];
     const filters = [
-        'project_id' => '=',
+        'proyect_id' => '=',
         'survey_name' => 'like',
         'description' => 'like',
     ];

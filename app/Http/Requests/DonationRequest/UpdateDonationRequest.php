@@ -25,7 +25,7 @@ class UpdateDonationRequest extends UpdateRequest
     public function rules()
     {
         return [
-            'project_id' => 'nullable|integer|exists:projects,id,deleted_at,NULL', // El campo es opcional para actualizar, pero debe existir y no estar eliminado
+            'proyect_id' => 'nullable|integer|exists:proyects,id,deleted_at,NULL', // El campo es opcional para actualizar, pero debe existir y no estar eliminado
             'activity_id' => 'nullable|integer|exists:activities,id,deleted_at,NULL', // El campo es opcional para actualizar, pero debe existir y no estar eliminado
             'date_donation' => 'nullable|date', // El campo es opcional para actualizar, debe ser una fecha válida
             'ally_id' => 'nullable|integer|exists:allies,id,deleted_at,NULL', // El campo es opcional para actualizar, pero debe existir y no estar eliminado
@@ -44,7 +44,7 @@ class UpdateDonationRequest extends UpdateRequest
     public function messages()
     {
         return [
-            'project_id.exists' => 'El ID del proyecto no existe o está eliminado.',
+            'proyect_id.exists' => 'El ID del proyecto no existe o está eliminado.',
             'activity_id.exists' => 'El ID de la actividad no existe o está eliminado.',
             'date_donation.date' => 'La fecha de la donación debe ser una fecha válida.',
             'ally_id.exists' => 'El ID del aliado no existe o está eliminado.',

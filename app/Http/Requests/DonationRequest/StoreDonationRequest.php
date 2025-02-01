@@ -25,7 +25,7 @@ class StoreDonationRequest extends StoreRequest
     public function rules()
     {
         return [
-            'project_id' => 'required|integer|exists:projects,id,deleted_at,NULL', // Asegura que el proyecto exista y no esté eliminado
+            'proyect_id' => 'required|integer|exists:proyects,id,deleted_at,NULL', // Asegura que el proyecto exista y no esté eliminado
             'activity_id' => 'required|integer|exists:activities,id,deleted_at,NULL', // Asegura que la actividad exista y no esté eliminada
             'date_donation' => 'required|date', // Asegura que la fecha esté en formato válido
             'ally_id' => 'required|integer|exists:allies,id,deleted_at,NULL', // Asegura que el aliado exista y no esté eliminado
@@ -44,7 +44,7 @@ class StoreDonationRequest extends StoreRequest
     public function messages()
     {
         return [
-            'project_id.required' => 'El ID del proyecto es obligatorio.',
+            'proyect_id.required' => 'El ID del proyecto es obligatorio.',
             'activity_id.required' => 'El ID de la actividad es obligatorio.',
             'date_donation.required' => 'La fecha de la donación es obligatoria.',
             'ally_id.required' => 'El ID del aliado es obligatorio.',

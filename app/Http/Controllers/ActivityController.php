@@ -27,7 +27,7 @@ class ActivityController extends Controller
  *     @OA\Parameter(name="name", in="query", description="Filtrar por nombre de Activity", required=false, @OA\Schema(type="string")),
  *     @OA\Parameter(name="start_date", in="query", description="Filtrar por fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
  *     @OA\Parameter(name="end_date", in="query", description="Filtrar por fecha de fin", required=false, @OA\Schema(type="string", format="date")),
- *     @OA\Parameter(name="project_id", in="query", description="Filtrar por ID del proyecto", required=false, @OA\Schema(type="integer")),
+ *     @OA\Parameter(name="proyect_id", in="query", description="Filtrar por ID del proyecto", required=false, @OA\Schema(type="integer")),
  *     @OA\Parameter(name="objective", in="query", description="Filtrar por objetivo de la actividad", required=false, @OA\Schema(type="string")),
  *     @OA\Parameter(name="total_amount", in="query", description="Filtrar por monto total de la actividad", required=false, @OA\Schema(type="number", format="float")),
  *     @OA\Parameter(name="collected_amount", in="query", description="Filtrar por monto recolectado", required=false, @OA\Schema(type="number", format="float")),
@@ -64,15 +64,15 @@ class ActivityController extends Controller
     public function show($id)
     {
 
-        $rol = $this->activityService->getActivityById($id);
+        $activity = $this->activityService->getActivityById($id);
 
-        if (! $rol) {
+        if (! $activity) {
             return response()->json([
                 'error' => 'Actividad No Encontrada',
             ], 404);
         }
 
-        return new ActivityResource($rol);
+        return new ActivityResource($activity);
     }
 
 /**
@@ -105,8 +105,8 @@ class ActivityController extends Controller
 
     public function store(StoreActivityRequest $request)
     {
-        $rol = $this->activityService->createActivity($request->validated());
-        return new ActivityResource($rol);
+        $activity = $this->activityService->createActivity($request->validated());
+        return new ActivityResource($activity);
     }
 
 /**
@@ -162,14 +162,14 @@ class ActivityController extends Controller
 
         $validatedData = $request->validated();
 
-        $rol = $this->activityService->getActivityById($id);
-        if (! $rol) {
+        $activity = $this->activityService->getActivityById($id);
+        if (! $activity) {
             return response()->json([
                 'error' => 'Actividad No Encontrada',
             ], 404);
         }
 
-        $updatedCompany = $this->activityService->updateActivity($rol, $validatedData);
+        $updatedCompany = $this->activityService->updateActivity($activity, $validatedData);
         return new ActivityResource($updatedCompany);
     }
 

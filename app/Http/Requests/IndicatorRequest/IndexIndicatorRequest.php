@@ -23,7 +23,7 @@ class IndexIndicatorRequest extends IndexRequest
     public function rules(): array
     {
         return [
-            'project_id'     => 'nullable|string',
+            'proyect_id'     => 'nullable|string',
             'indicator_name' => 'nullable|string',
             'target_value'   => 'nullable|string',
             'progress_value' => 'nullable|string',

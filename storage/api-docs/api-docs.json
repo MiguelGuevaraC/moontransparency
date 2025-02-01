@@ -44,7 +44,7 @@
                         }
                     },
                     {
-                        "name": "project_id",
+                        "name": "proyect_id",
                         "in": "query",
                         "description": "Filtrar por ID del proyecto",
                         "required": false,
@@ -1315,7 +1315,7 @@
                         }
                     },
                     {
-                        "name": "project_id",
+                        "name": "proyect_id",
                         "in": "query",
                         "description": "Filtrar por ID del proyecto",
                         "required": false,
@@ -1715,7 +1715,7 @@
                         }
                     },
                     {
-                        "name": "project_id",
+                        "name": "proyect_id",
                         "in": "query",
                         "description": "Filtrar por ID del proyecto",
                         "required": false,
@@ -2651,7 +2651,7 @@
                         }
                     },
                     {
-                        "name": "project_id",
+                        "name": "proyect_id",
                         "in": "query",
                         "description": "ID del proyecto",
                         "required": false,
@@ -2971,7 +2971,7 @@
         "schemas": {
             "ActivityRequest": {
                 "required": [
-                    "project_id"
+                    "proyect_id"
                 ],
                 "properties": {
                     "name": {
@@ -2988,7 +2988,7 @@
                         "format": "date",
                         "example": "2025-12-31"
                     },
-                    "project_id": {
+                    "proyect_id": {
                         "type": "integer",
                         "example": "101"
                     },
@@ -3031,7 +3031,7 @@
                         "format": "date",
                         "example": "2025-12-31"
                     },
-                    "project_id": {
+                    "proyect_id": {
                         "type": "integer",
                         "example": "101"
                     },
@@ -3110,7 +3110,7 @@
             },
             "DonationRequest": {
                 "required": [
-                    "project_id",
+                    "proyect_id",
                     "activity_id",
                     "date_donation",
                     "ally_id",
@@ -3119,7 +3119,7 @@
                     "amount"
                 ],
                 "properties": {
-                    "project_id": {
+                    "proyect_id": {
                         "type": "integer",
                         "example": "101"
                     },
@@ -3165,7 +3165,7 @@
                         "type": "integer",
                         "example": "1"
                     },
-                    "project_id": {
+                    "proyect_id": {
                         "type": "integer",
                         "example": "101"
                     },
@@ -3209,14 +3209,14 @@
             },
             "IndicatorRequest": {
                 "required": [
-                    "project_id",
+                    "proyect_id",
                     "indicator_name",
                     "target_value",
                     "progress_value",
                     "unit"
                 ],
                 "properties": {
-                    "project_id": {
+                    "proyect_id": {
                         "type": "integer",
                         "example": "101"
                     },
@@ -3249,7 +3249,7 @@
                         "type": "integer",
                         "example": "1"
                     },
-                    "project_id": {
+                    "proyect_id": {
                         "type": "integer",
                         "example": "101"
                     },
@@ -3542,12 +3542,12 @@
             },
             "SurveyRequest": {
                 "required": [
-                    "project_id",
+                    "proyect_id",
                     "survey_name",
                     "description"
                 ],
                 "properties": {
-                    "project_id": {
+                    "proyect_id": {
                         "type": "integer",
                         "example": "101"
                     },
@@ -3570,7 +3570,7 @@
                         "type": "integer",
                         "example": "1"
                     },
-                    "project_id": {
+                    "proyect_id": {
                         "type": "integer",
                         "example": "101"
                     },

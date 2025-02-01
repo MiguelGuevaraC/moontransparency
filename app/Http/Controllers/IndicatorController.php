@@ -25,7 +25,7 @@ class IndicatorController extends Controller
  *     tags={"Indicator"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="name", in="query", description="Filtrar por nombre de Indicator", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="project_id", in="query", description="Filtrar por ID del proyecto", required=false, @OA\Schema(type="integer")),
+ *     @OA\Parameter(name="proyect_id", in="query", description="Filtrar por ID del proyecto", required=false, @OA\Schema(type="integer")),
  *     @OA\Parameter(name="indicator_name", in="query", description="Filtrar por nombre del indicador", required=false, @OA\Schema(type="string")),
  *     @OA\Parameter(name="target_value", in="query", description="Filtrar por valor objetivo", required=false, @OA\Schema(type="number", format="float")),
  *     @OA\Parameter(name="progress_value", in="query", description="Filtrar por valor de progreso", required=false, @OA\Schema(type="number", format="float")),
