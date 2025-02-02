@@ -31,7 +31,7 @@ class IndexDonationRequest extends IndexRequest
             'details'           => 'nullable|string',
             'contribution_type' => 'nullable|string',
             'amount'            => 'nullable|string',
-            'evidence'          => 'nullable|string',
+
         ];
     }
 }

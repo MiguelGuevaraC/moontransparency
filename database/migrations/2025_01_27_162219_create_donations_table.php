@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('details')->nullable();
             $table->string('contribution_type', 255)->nullable();
             $table->decimal('amount', 15, 2);
-            $table->text('evidence')->nullable();
+            $table->text('images')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

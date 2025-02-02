@@ -25,7 +25,7 @@ class ProyectService
         $data['imagesave'] = isset($data['images']) ? $data['images'] : null;
         $data['images']    = null;
         $proyect           = Proyect::create($data);
-        if ($proyect && isset($data['images'])) {
+        if ($proyect) {
             $this->commonService->store_photo($data, $proyect, name_folder: 'proyects');
         }
         if (isset($data['ods'])) {

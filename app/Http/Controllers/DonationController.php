@@ -32,7 +32,7 @@ class DonationController extends Controller
  *     @OA\Parameter(name="details", in="query", description="Filtrar por detalles de la donation", required=false, @OA\Schema(type="string")),
  *     @OA\Parameter(name="contribution_type", in="query", description="Filtrar por tipo de contribución", required=false, @OA\Schema(type="string")),
  *     @OA\Parameter(name="amount", in="query", description="Filtrar por monto de la donation", required=false, @OA\Schema(type="number", format="float")),
- *     @OA\Parameter(name="evidence", in="query", description="Filtrar por evidencia de la donation", required=false, @OA\Schema(type="string")),
+ *     @OA\Parameter(name="images", in="query", description="Filtrar por evidencia de la donation", required=false, @OA\Schema(type="string")),
  *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
  *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
  *     @OA\Response(response=200, description="Lista de donaciones", @OA\JsonContent(ref="#/components/schemas/Donation")),

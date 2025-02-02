@@ -1380,7 +1380,7 @@
                         }
                     },
                     {
-                        "name": "evidence",
+                        "name": "images",
                         "in": "query",
                         "description": "Filtrar por evidencia de la donation",
                         "required": false,
@@ -3144,15 +3144,18 @@
                         "type": "string",
                         "example": "Energía"
                     },
+                    "images": {
+                        "description": "Imágenes del proyecto",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "binary"
+                        }
+                    },
                     "amount": {
                         "type": "number",
                         "format": "float",
                         "example": "500000"
-                    },
-                    "evidence": {
-                        "description": "Ruta del archivo de evidencia",
-                        "type": "string",
-                        "example": "Ruta/a/imagen.jpg"
                     }
                 },
                 "type": "object"
@@ -3182,6 +3185,10 @@
                         "type": "integer",
                         "example": "3001"
                     },
+                    "images": {
+                        "type": "string",
+                        "example": "Imagen Ruta"
+                    },
                     "details": {
                         "type": "string",
                         "example": "Implementación de energía renovable en zonas rurales."
@@ -3194,10 +3201,6 @@
                         "type": "number",
                         "format": "float",
                         "example": "500000"
-                    },
-                    "evidence": {
-                        "type": "string",
-                        "example": "Ruta/a/imagen.jpg"
                     },
                     "created_at": {
                         "type": "string",
@@ -3436,6 +3439,13 @@
                     "impact_final": {
                         "type": "string",
                         "example": "50"
+                    },
+                    "ods": {
+                        "description": "IDs de los Ods relacionados al proyecto",
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
                     }
                 },
                 "type": "object"

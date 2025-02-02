@@ -25,14 +25,14 @@ class UpdateDonationRequest extends UpdateRequest
     public function rules()
     {
         return [
-            'proyect_id' => 'nullable|integer|exists:proyects,id,deleted_at,NULL', // El campo es opcional para actualizar, pero debe existir y no estar eliminado
-            'activity_id' => 'nullable|integer|exists:activities,id,deleted_at,NULL', // El campo es opcional para actualizar, pero debe existir y no estar eliminado
-            'date_donation' => 'nullable|date', // El campo es opcional para actualizar, debe ser una fecha válida
-            'ally_id' => 'nullable|integer|exists:allies,id,deleted_at,NULL', // El campo es opcional para actualizar, pero debe existir y no estar eliminado
-            'details' => 'nullable|string|max:500', // Detalles de la donación (opcional en la actualización)
-            'contribution_type' => 'nullable|string|max:100', // Tipo de contribución (opcional en la actualización)
-            'amount' => 'nullable|numeric|min:0', // Monto de la donación (opcional en la actualización)
-            'evidence' => 'nullable|string|url|max:255', // Ruta del archivo de evidencia (opcional en la actualización)
+            'proyect_id'        => 'required|integer|exists:proyects,id,deleted_at,NULL',   // El campo es opcional para actualizar, pero debe existir y no estar eliminado
+            'activity_id'       => 'required|integer|exists:activities,id,deleted_at,NULL', // El campo es opcional para actualizar, pero debe existir y no estar eliminado
+            'date_donation'     => 'required|date',                                         // El campo es opcional para actualizar, debe ser una fecha válida
+            'ally_id'           => 'required|integer|exists:allies,id,deleted_at,NULL',     // El campo es opcional para actualizar, pero debe existir y no estar eliminado
+            'details'           => 'nullable|string|max:500',                               // Detalles de la donación (opcional en la actualización)
+            'contribution_type' => 'nullable|string|max:100',                               // Tipo de contribución (opcional en la actualización)
+            'amount'            => 'nullable|numeric|min:0',                                // Monto de la donación (opcional en la actualización)
+            'images.*'          => 'nullable|file|mimes:jpeg,jpg,png,gif,pdf|max:2048',
         ];
     }
 
@@ -44,16 +44,19 @@ class UpdateDonationRequest extends UpdateRequest
     public function messages()
     {
         return [
-            'proyect_id.exists' => 'El ID del proyecto no existe o está eliminado.',
-            'activity_id.exists' => 'El ID de la actividad no existe o está eliminado.',
-            'date_donation.date' => 'La fecha de la donación debe ser una fecha válida.',
-            'ally_id.exists' => 'El ID del aliado no existe o está eliminado.',
-            'details.string' => 'Los detalles deben ser una cadena de texto.',
-            'contribution_type.string' => 'El tipo de contribución debe ser una cadena de texto.',
-            'amount.numeric' => 'El monto de la donación debe ser un valor numérico.',
-            'evidence.url' => 'La evidencia debe ser una URL válida.',
+            'proyect_id.required' => 'El ID del proyecto es obligatorio.',
+            'proyect_id.exists' => 'El ID de proyecto seleccionado no es válido o el proyecto ha sido eliminado.',
+            'activity_id.required' => 'El ID de la actividad es obligatorio.',
+            'date_donation.required' => 'La fecha de la donación es obligatoria.',
+            'ally_id.required' => 'El ID del aliado es obligatorio.',
+            'details.required' => 'Los detalles de la donación son obligatorios.',
+            'contribution_type.required' => 'El tipo de contribución es obligatorio.',
+            'amount.required' => 'El monto de la donación es obligatorio.',
+  
+            'images.*.file' => 'Cada archivo debe ser un archivo válido.',
+            'images.*.mimes' => 'Los archivos deben ser de tipo: jpeg, jpg, png, gif o pdf.',
+            'images.*.max' => 'Cada archivo no debe superar los 2MB.',
         ];
     }
-
 
 }

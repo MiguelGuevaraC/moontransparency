@@ -32,7 +32,7 @@ class StoreDonationRequest extends StoreRequest
             'details' => 'required|string|max:500', // Detalles de la donación
             'contribution_type' => 'required|string|max:100', // Tipo de contribución
             'amount' => 'required|numeric|min:0', // Monto de la donación
-            'evidence' => 'nullable|string|url|max:255', // Ruta del archivo de evidencia (opcional)
+    'images.*' => 'nullable|file|mimes:jpeg,jpg,png,gif,pdf|max:2048',
         ];
     }
 
@@ -52,7 +52,10 @@ class StoreDonationRequest extends StoreRequest
             'details.required' => 'Los detalles de la donación son obligatorios.',
             'contribution_type.required' => 'El tipo de contribución es obligatorio.',
             'amount.required' => 'El monto de la donación es obligatorio.',
-            'evidence.url' => 'La evidencia debe ser una URL válida.',
+  
+            'images.*.file' => 'Cada archivo debe ser un archivo válido.',
+            'images.*.mimes' => 'Los archivos deben ser de tipo: jpeg, jpg, png, gif o pdf.',
+            'images.*.max' => 'Cada archivo no debe superar los 2MB.',
         ];
     }
 

@@ -1,8 +1,6 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -18,7 +16,7 @@ class Donation extends Model
         'details',
         'contribution_type',
         'amount',
-        'evidence',
+        'images',
         'created_at',
     ];
     protected $hidden = [
@@ -29,23 +27,19 @@ class Donation extends Model
     ];
     const filters = [
 
-        'ruc_dni'          => 'like',
-        'name'             => 'like',
-        'start_date'       => 'date',
-        'end_date'         => 'date',
-        'proyect_id'       => '=',
-        'objective'        => 'like',
-        'total_amount'     => '=',
-        'collected_amount' => '=',
-        'status'           => 'like',
+        'proyect_id'        => '=',
+        'activity_id'       => '=',
+        'date_donation'     => 'between',
+        'ally_id'           => '=',
+        'details'           => 'like',
+        'contribution_type' => 'like',
+        'amount'            => '=',
     ];
 
     /**
      * Campos de ordenación disponibles.
      */
     const sorts = [
-
-        'start_date'    => 'desc',
         'id' => 'desc',
 
     ];
