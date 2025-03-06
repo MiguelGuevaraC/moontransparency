@@ -43,4 +43,9 @@ class Donation extends Model
         'id' => 'desc',
 
     ];
+
+    public function imagestable()
+    {
+        return $this->hasMany(Image::class);
+    }
 }

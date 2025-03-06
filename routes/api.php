@@ -24,8 +24,9 @@ Route::group(["middleware" => ["auth:sanctum"]], function () {
     require __DIR__ . '/Api/ProyectApi.php';  //PROYECTS
     require __DIR__ . '/Api/OdsApi.php';  //ODS
     require __DIR__ . '/Api/AllyApi.php';  //ALLIES
-    require __DIR__ . '/Api/ActivityApi.php';  //ALLIES
-    require __DIR__ . '/Api/DonationApi.php';  //ALLIES
-    require __DIR__ . '/Api/IndicatorApi.php';  //ALLIES
-    require __DIR__ . '/Api/SurveyApi.php';  //ALLIES
+    require __DIR__ . '/Api/ActivityApi.php';  //ACTIVITIES
+    require __DIR__ . '/Api/DonationApi.php';  //DONATIONS
+    require __DIR__ . '/Api/IndicatorApi.php';  //INDICATORS
+    require __DIR__ . '/Api/SurveyApi.php';  //SURVEYS
+    require __DIR__ . '/Api/ImagesApi.php';  //IMAGENES
 });

@@ -58,5 +58,10 @@ class Proyect extends Model
         return $this->belongsToMany(Ods::class, 'proyect_ods', 'proyect_id', 'ods_id')
                     ->whereNull('proyect_ods.deleted_at'); // Filtra solo las relaciones no eliminadas
     }
+
+    public function imagestable()
+    {
+        return $this->hasMany(Image::class);
+    }
     
 }

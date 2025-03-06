@@ -51,7 +51,8 @@ class DonationResource extends JsonResource
             'details'           => $this->details ?? null,
             'contribution_type' => $this->contribution_type ?? null,
             'amount'            => $this->amount ?? null,
-            'images'            => $this->images ? explode(',', $this->images) : [], // Asumiendo que las imágenes están almacenadas como una cadena separada por comas
+            'images'            => $this->images ? explode(',', $this->images) :
+            ($this->imagestable ? ImagenResource::collection($this->imagestable) : []),
             'created_at'        => $this->created_at,
         ];
     }

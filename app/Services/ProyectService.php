@@ -40,19 +40,9 @@ class ProyectService
 
     public function updateProyect(Proyect $proyect, array $data): Proyect
     {
-        // Verificar si 'images' existe en $data antes de usarlo
-        if (isset($data['images'])) {
-            $data['imagesave'] = $data['images'];
-            $data['images']    = $this->commonService->update_photo($data, $proyect, 'proyects');
-        } else {
-            // Si 'images' no existe, evitar errores
-            $data['imagesave'] = null;
-            $data['images']    = $proyect->images ?? null;
-        }
-
-        // Actualizar los datos del proyecto
+        $data['imagesave'] = isset($data['images']) ? $data['images'] : null;
+        $this->commonService->update_photo($data, $proyect, 'proyects');
         $proyect->update($data);
-
         if (isset($data['ods'])) {
             $currentOds = $proyect->ods()->pluck('ods.id')->toArray();
             ProyectOds::where('proyect_id', $proyect->id)->whereNotIn('ods_id', $data['ods'])->delete();
@@ -60,7 +50,6 @@ class ProyectService
                 $proyect->ods()->firstOrCreate(['ods.id' => $od]);
             }
         }
-
         return $proyect;
     }
 

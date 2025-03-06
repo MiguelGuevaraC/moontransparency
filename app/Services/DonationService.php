@@ -33,16 +33,8 @@ class DonationService
 
     public function updateDonation(Donation $donation, array $data): Donation
     {
-
-        if (isset($data['images'])) {
-            $data['imagesave'] = $data['images'];
-            $data['images']    = $this->commonService->update_photo($data, $donation, 'donations');
-        } else {
-            // Si 'images' no existe, evitar errores
-            $data['imagesave'] = null;
-            $data['images']    = $donation->images ?? null;
-        }
-
+        $data['imagesave'] = isset($data['images']) ? $data['images'] : null;
+        $this->commonService->update_photo($data, $donation, 'donations');
         $donation->update($data);
         return $donation;
     }

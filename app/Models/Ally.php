@@ -48,4 +48,9 @@ class Ally extends Model
         'business_name' => 'desc',
         'id'            => 'desc',
     ];
+
+    public function imagestable()
+    {
+        return $this->hasMany(Image::class);
+    }
 }
