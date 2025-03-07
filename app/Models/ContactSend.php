@@ -18,9 +18,6 @@ class ContactSend extends Model
         'status',
         'ip_address',
         'user_agent',
-        'country',
-        'city',
-        'device_type',
     ];
     protected $hidden = [
         'created_at',

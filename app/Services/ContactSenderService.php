@@ -16,17 +16,12 @@ class ContactSenderService
 
     public function createContactSend(array $data): ContactSend
     {
-        // Enviar correo electrónico
-        $this->notifyAboutNewContact($data);
-
-        // Crear y devolver el registro
+        $data['sender_email'] = env('MAIL_USERNAME');
+        $emailStatus = $this->notifyAboutNewContact($data);
+        $data['status'] = $emailStatus ? 'Enviado Correctamente' : 'Envio Fallido';
         return ContactSend::create($data);
     }
-
-/**
- * Envía notificación de nuevo contacto
- */
-    private function notifyAboutNewContact(array $data): void
+    private function notifyAboutNewContact(array $data): bool
     {
         try {
             $emailData = [
@@ -36,11 +31,14 @@ class ContactSenderService
                 'message' => $data['description'],
                 'sender'  => $data['sender_email'] ?? null,
             ];
+
             $correoSend = env('MAIL_FROM_ADDRESS');
             Mail::to([$correoSend])->send(new ContactFormMail($emailData));
 
+            return true; // El envío fue exitoso
         } catch (\Exception $e) {
             Log::error('Error al enviar notificación: ' . $data['contact_email'] . ', error:' . $e->getMessage());
+            return false; // El envío falló
         }
     }
 
