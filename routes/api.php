@@ -29,4 +29,5 @@ Route::group(["middleware" => ["auth:sanctum"]], function () {
     require __DIR__ . '/Api/IndicatorApi.php';  //INDICATORS
     require __DIR__ . '/Api/SurveyApi.php';  //SURVEYS
     require __DIR__ . '/Api/ImagesApi.php';  //IMAGENES
+    require __DIR__ . '/Api/ContactSendApi.php';  //CONTACTOS DE ENVIO
 });
