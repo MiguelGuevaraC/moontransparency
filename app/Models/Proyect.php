@@ -63,5 +63,9 @@ class Proyect extends Model
     {
         return $this->hasMany(Image::class);
     }
+    public function activities()
+    {
+        return $this->hasMany(Activity::class);
+    }
     
 }

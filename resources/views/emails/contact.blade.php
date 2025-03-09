@@ -102,9 +102,6 @@
             <p><span class="label">Nombre:</span> {{ $data['name'] }}</p>
             <p><span class="label">Email:</span> {{ $data['email'] }}</p>
             
-            @if(isset($data['sender']) && $data['sender'])
-            <p><span class="label">Email alternativo:</span> {{ $data['sender'] }}</p>
-            @endif
             
             <p class="label">Mensaje del interesado:</p>
             <div class="message">{{ $data['message'] }}</div>

@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AuthenticationController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,13 +20,15 @@ Route::group(["middleware" => ["auth:sanctum"]], function () {
     require __DIR__ . '/Api/UserApi.php';        //USER
     require __DIR__ . '/Api/RolApi.php';         //ROL
     require __DIR__ . '/Api/PermissionApi.php';  //PERMISSIONS
-    require __DIR__ . '/Api/ProyectApi.php';  //PROYECTS
-    require __DIR__ . '/Api/OdsApi.php';  //ODS
-    require __DIR__ . '/Api/AllyApi.php';  //ALLIES
-    require __DIR__ . '/Api/ActivityApi.php';  //ACTIVITIES
-    require __DIR__ . '/Api/DonationApi.php';  //DONATIONS
-    require __DIR__ . '/Api/IndicatorApi.php';  //INDICATORS
-    require __DIR__ . '/Api/SurveyApi.php';  //SURVEYS
-    require __DIR__ . '/Api/ImagesApi.php';  //IMAGENES
-    require __DIR__ . '/Api/ContactSendApi.php';  //CONTACTOS DE ENVIO
+    require __DIR__ . '/Api/ProyectApi.php';     //PROYECTS
+    require __DIR__ . '/Api/OdsApi.php';         //ODS
+    require __DIR__ . '/Api/AllyApi.php';        //ALLIES
+    require __DIR__ . '/Api/ActivityApi.php';    //ACTIVITIES
+    require __DIR__ . '/Api/DonationApi.php';    //DONATIONS
+    require __DIR__ . '/Api/IndicatorApi.php';   //INDICATORS
+    require __DIR__ . '/Api/SurveyApi.php';      //SURVEYS
+    require __DIR__ . '/Api/ImagesApi.php';      //IMAGENES
+    require __DIR__ . '/Api/ContactSendApi.php'; //CONTACTOS DE ENVIO
 });
+
+require __DIR__ . '/Web/ApisWeb.php'; //APIS PARA WEB

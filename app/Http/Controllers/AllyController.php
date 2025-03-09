@@ -5,6 +5,8 @@ use App\Http\Requests\AllyRequest\IndexAllyRequest;
 use App\Http\Requests\AllyRequest\StoreAllyRequest;
 use App\Http\Requests\AllyRequest\UpdateAllyRequest;
 use App\Http\Resources\AllyResource;
+use App\Http\Resources\AllyWebResource\Web;
+use App\Http\Resources\Web\AllyWebResource;
 use App\Models\Ally;
 use App\Services\AllyService;
 use Illuminate\Http\Request;
@@ -55,6 +57,46 @@ class AllyController extends Controller
             Ally::filters,
             Ally::sorts,
             AllyResource::class
+        );
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/moontransparency/public/api/ally-web",
+     *     summary="Obtener información de aliados con filtros y ordenamiento",
+     *     tags={"Ally"},
+     *     security={{"bearerAuth": {}}},
+     *
+     *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="ruc_dni", in="query", description="RUC o DNI del aliado", required=false, @OA\Schema(type="string", maxLength=20)),
+     *     @OA\Parameter(name="first_name", in="query", description="Nombre del aliado", required=false, @OA\Schema(type="string", maxLength=100)),
+     *     @OA\Parameter(name="last_name", in="query", description="Apellido del aliado", required=false, @OA\Schema(type="string", maxLength=100)),
+     *     @OA\Parameter(name="business_name", in="query", description="Nombre comercial del aliado", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="phone", in="query", description="Número de teléfono del aliado", required=false, @OA\Schema(type="string", pattern="^\d{9}$")),
+     *     @OA\Parameter(name="email", in="query", description="Correo electrónico del aliado", required=false, @OA\Schema(type="string", format="email")),
+     *     @OA\Parameter(name="area_of_interest", in="query", description="Área de interés del aliado", required=false, @OA\Schema(type="string", maxLength=255)),
+     *     @OA\Parameter(name="participation_type", in="query", description="Tipo de participación del aliado", required=false, @OA\Schema(type="string", maxLength=255)),
+     *     @OA\Response(response=200, description="Lista de aliados", @OA\JsonContent(
+     *         type="array",
+     *         @OA\Items(ref="#/components/schemas/Ally")
+     *     )),
+     *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(
+     *         type="object",
+     *         @OA\Property(property="error", type="string", description="Mensaje de error")
+     *     ))
+     * )
+     */
+
+    public function list_web(IndexAllyRequest $request)
+    {
+
+        return $this->getFilteredResults(
+            Ally::class,
+            $request,
+            Ally::filters,
+            Ally::sorts,
+            AllyWebResource::class
         );
     }
 /**
