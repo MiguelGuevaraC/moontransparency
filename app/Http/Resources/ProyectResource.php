@@ -23,7 +23,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * )
  */
 
-
 class ProyectResource extends JsonResource
 {
 /**
@@ -63,9 +62,8 @@ class ProyectResource extends JsonResource
             'start_date'        => $this->start_date ?? null,
             'end_date'          => $this->end_date ?? null,
             'location'          => $this->location ?? null,
-            'images' => $this->images ? explode(',', $this->images) : 
-            ($this->imagestable ? ImagenResource::collection($this->imagestable) : []),
-            
+            'images'            => ($this->imagestable ? ImagenResource::collection($this->imagestable) : []),
+
             'description'       => $this->description ?? null,
             'budget_estimated'  => $this->budget_estimated ?? null,
             'nro_beneficiaries' => $this->nro_beneficiaries ?? null,

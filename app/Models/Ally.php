@@ -53,4 +53,9 @@ class Ally extends Model
     {
         return $this->hasMany(Image::class);
     }
+    
+    public function donations()
+    {
+        return $this->hasMany(Donation::class);
+    }
 }

@@ -48,4 +48,5 @@ class Donation extends Model
     {
         return $this->hasMany(Image::class);
     }
+
 }

@@ -1,8 +1,6 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -32,18 +30,18 @@ class Proyect extends Model
         'deleted_at',
     ];
     const filters = [
-        'name' => 'like',
-        'type'=> 'like',
-        'status'=> 'like',
-        'start_date'=> 'betweetn',
-        'end_date'=> 'betweetn',
-        'location'=> 'like',
+        'name'              => 'like',
+        'type'              => 'like',
+        'status'            => 'like',
+        'start_date'        => 'betweetn',
+        'end_date'          => 'betweetn',
+        'location'          => 'like',
 
-        'description'=> 'like',
-        'budget_estimated'=> 'like',
-        'nro_beneficiaries'=> 'like',
-        'impact_initial'=> 'like',
-        'impact_final'=> 'like',
+        'description'       => 'like',
+        'budget_estimated'  => 'like',
+        'nro_beneficiaries' => 'like',
+        'impact_initial'    => 'like',
+        'impact_final'      => 'like',
     ];
 
     /**
@@ -56,7 +54,7 @@ class Proyect extends Model
     public function ods()
     {
         return $this->belongsToMany(Ods::class, 'proyect_ods', 'proyect_id', 'ods_id')
-                    ->whereNull('proyect_ods.deleted_at'); // Filtra solo las relaciones no eliminadas
+            ->whereNull('proyect_ods.deleted_at'); // Filtra solo las relaciones no eliminadas
     }
 
     public function imagestable()
@@ -67,5 +65,18 @@ class Proyect extends Model
     {
         return $this->hasMany(Activity::class);
     }
-    
+
+    public function donations()
+    {
+        return $this->hasMany(Donation::class);
+    }
+
+    public function allies()
+    {
+        return $this->belongsToMany(Ally::class, 'donations', 'proyect_id', 'ally_id')
+            ->whereNull('donations.deleted_at')
+            ->withSum('donations as total_donated', 'amount')
+            ->distinct();   
+    }
+
 }

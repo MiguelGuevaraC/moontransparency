@@ -38,8 +38,7 @@ class AllyResource extends JsonResource
             'business_name'      => $this->business_name ?? null,
             'phone'              => $this->phone ?? null,
             'email'              => $this->email ?? null,
-            'images' => $this->images ? explode(',', $this->images) : 
-            ($this->imagestable ? ImagenResource::collection($this->imagestable) : []),
+            'images'             => $this->imagestable ? ImagenResource::collection($this->imagestable) : [],
             'area_of_interest'   => $this->area_of_interest ?? null,
             'participation_type' => $this->participation_type ?? null,
         ];

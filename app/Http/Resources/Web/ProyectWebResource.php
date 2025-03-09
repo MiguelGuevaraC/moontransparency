@@ -49,8 +49,7 @@ class ProyectWebResource extends JsonResource
             'start_date'        => $this->start_date ?? null,
             'end_date'          => $this->end_date ?? null,
             'location'          => $this->location ?? null,
-            'images'            => $this->images ? explode(',', $this->images) :
-            ($this->imagestable ? ImagenResource::collection($this->imagestable) : []),
+            'images'            => ($this->imagestable ? ImagenResource::collection($this->imagestable) : []),
 
             'description'       => $this->description ?? null,
             'budget_estimated'  => $this->budget_estimated ?? null,
@@ -59,6 +58,8 @@ class ProyectWebResource extends JsonResource
             'impact_final'      => $this->impact_final ?? null,
             'ods'               => $this->ods ? OdsResource::collection($this->ods) : null,
             'activities'        => $this->activities ?? null,
+            'allies'            => $this->allies ? AllyWebResource::collection($this->allies) : null,
+
             'created_at'        => $this->created_at,
         ];
     }
