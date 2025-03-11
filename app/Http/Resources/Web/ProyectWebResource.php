@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Resources\Web;
 
+use App\Http\Resources\AllyResource;
 use App\Http\Resources\ImagenResource;
 use App\Http\Resources\OdsResource;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -63,7 +64,7 @@ class ProyectWebResource extends JsonResource
             'impact_final'      => $this->impact_final ?? null,
             'ods'               => $this->ods ? OdsResource::collection($this->ods) : null,
             'activities'        => $this->activities ?? null,
-            'allies'            => $this->allies ? $this->allies : null,
+            'allies'            => ($this->allies ? AllyResource::collection($this->allies) : []),
 
             'created_at'        => $this->created_at,
         ];
