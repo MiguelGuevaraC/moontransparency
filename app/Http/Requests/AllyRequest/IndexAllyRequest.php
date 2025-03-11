@@ -27,6 +27,9 @@ class IndexAllyRequest extends IndexRequest
             'first_name'         => 'nullable|string',
             'last_name'          => 'nullable|string',
             'business_name'      => 'nullable|string',
+            'description'      => 'nullable|string',
+            'link'      => 'nullable|string',
+
             'phone'              => 'nullable|string',
             'email'              => 'nullable|string',
             'area_of_interest'   => 'nullable|string',

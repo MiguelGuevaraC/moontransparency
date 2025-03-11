@@ -25,7 +25,7 @@ class DonationService
         $donation          = Donation::create($data);
        
         if ($donation) {
-            $this->commonService->store_photo($data, $donation, name_folder: 'donations');
+            // $this->commonService->store_photo($data, $donation, name_folder: 'donations');
         }
  
         return $donation;
@@ -34,7 +34,7 @@ class DonationService
     public function updateDonation(Donation $donation, array $data): Donation
     {
         $data['imagesave'] = isset($data['images']) ? $data['images'] : null;
-        $this->commonService->update_photo($data, $donation, 'donations');
+        // $this->commonService->update_photo($data, $donation, 'donations');
         $donation->update($data);
         return $donation;
     }

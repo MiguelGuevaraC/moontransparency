@@ -27,7 +27,7 @@ class AllyService
         $data['images']    = null;
         $ally = Ally::create($data);
         if ($ally) {
-            $this->commonService->store_photo($data, $ally, name_folder: 'allies');
+            // $this->commonService->store_photo($data, $ally, name_folder: 'allies');
         }
         return $ally;
     }
@@ -37,7 +37,7 @@ class AllyService
     public function updateAlly(Ally $ally, array $data): Ally
     {
         $data['imagesave'] = isset($data['images']) ? $data['images'] : null;
-        $this->commonService->update_photo($data, $ally, 'allies');
+        // $this->commonService->update_photo($data, $ally, 'allies');
         $ally->update($data);
         return $ally;
     }

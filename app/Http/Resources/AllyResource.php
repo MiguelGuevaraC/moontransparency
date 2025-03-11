@@ -13,6 +13,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="first_name", type="string", example="Juan"),
  *     @OA\Property(property="last_name", type="string", example="Pérez"),
  *     @OA\Property(property="business_name", type="string", example="Empresa XYZ"),
+ *     @OA\Property(property="description", type="string", example="Description about ally"),
+ *     @OA\Property(property="link", type="string", example="ally.com"),
  *     @OA\Property(property="phone", type="string", example="987654321"),
  *     @OA\Property(property="email", type="string", example="juan.perez@example.com"),
  *     @OA\Property(property="images", type="string", example="image1.jpg,image2.jpg"),
@@ -36,6 +38,10 @@ class AllyResource extends JsonResource
             'first_name'         => $this->first_name ?? null,
             'last_name'          => $this->last_name ?? null,
             'business_name'      => $this->business_name ?? null,
+
+            'description'        => $this->description ?? null,
+            'link'               => $this->link ?? null,
+
             'phone'              => $this->phone ?? null,
             'email'              => $this->email ?? null,
             'images'             => $this->imagestable ? ImagenResource::collection($this->imagestable) : [],

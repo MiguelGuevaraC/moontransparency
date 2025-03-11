@@ -32,6 +32,8 @@ class UpdateAllyRequest extends UpdateRequest
             'first_name'         => 'nullable|string|max:100',
             'last_name'          => 'nullable|string|max:100',
             'business_name'      => 'nullable|string',
+            'description'        => 'nullable|string',
+            'link'               => 'nullable|string',
             'phone'              => 'nullable|string|regex:/^\d{9}$/',
             'email'              => 'nullable|email',
             'images'             => 'nullable|array',

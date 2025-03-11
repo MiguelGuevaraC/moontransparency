@@ -26,7 +26,7 @@ class ProyectService
         $data['images']    = null;
         $proyect           = Proyect::create($data);
         if ($proyect) {
-            $this->commonService->store_photo($data, $proyect, name_folder: 'proyects');
+            // $this->commonService->store_photo($data, $proyect, name_folder: 'proyects');
         }
         if (isset($data['ods'])) {
             $currentOds = $proyect->ods()->pluck('ods.id')->toArray();
@@ -41,7 +41,7 @@ class ProyectService
     public function updateProyect(Proyect $proyect, array $data): Proyect
     {
         $data['imagesave'] = isset($data['images']) ? $data['images'] : null;
-        $this->commonService->update_photo($data, $proyect, 'proyects');
+        // $this->commonService->update_photo($data, $proyect, 'proyects');
         $proyect->update($data);
         if (isset($data['ods'])) {
             $currentOds = $proyect->ods()->pluck('ods.id')->toArray();

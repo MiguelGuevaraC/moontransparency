@@ -13,6 +13,9 @@ class Ally extends Model
         'first_name',
         'last_name',
         'business_name',
+        'description',
+        'link',
+
         'phone',
         'email',
         'images',
@@ -37,15 +40,14 @@ class Ally extends Model
 
         'area_of_interest'   => 'like',
         'participation_type' => 'like',
+        'description'        => 'like',
+        'link'               => 'like',
     ];
 
     /**
      * Campos de ordenación disponibles.
      */
     const sorts = [
-
-        'first_name'    => 'desc',
-        'business_name' => 'desc',
         'id'            => 'desc',
     ];
 
