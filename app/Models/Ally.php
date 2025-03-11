@@ -53,9 +53,30 @@ class Ally extends Model
     {
         return $this->hasMany(Image::class);
     }
-    
+
     public function donations()
     {
         return $this->hasMany(Donation::class);
     }
+
+    public function total_donated(): string
+    {
+        $total = $this->donations()->sum('amount');
+        return (string) ($total ?: "0");
+    }
+
+    public function proyects()
+    {
+        return $this->belongsToMany(Proyect::class, 'donations', 'ally_id', 'proyect_id')
+            ->whereNull('donations.deleted_at')
+            ->distinct();
+    }
+
+    public function activities()
+    {
+        return $this->belongsToMany(Activity::class, 'donations', 'ally_id', 'activity_id')
+            ->whereNull('donations.deleted_at')
+            ->distinct();
+    }
+
 }

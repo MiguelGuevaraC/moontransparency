@@ -47,4 +47,9 @@ class Activity extends Model
         'id' => 'desc',
 
     ];
+
+    public function proyect()
+    {
+        return $this->belongsTo(Proyect::class);
+    }
 }

@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Resources\Web;
 
+use App\Http\Resources\ActivityResource;
+use App\Http\Resources\DonationResource;
 use App\Http\Resources\ImagenResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,16 +11,20 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     schema="AllyWeb",
  *     title="Ally",
  *     description="Modelo de Ally",
- *     @OA\Property(property="id", type="integer", example="1"),
+ *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="ruc_dni", type="string", example="123456789"),
  *     @OA\Property(property="first_name", type="string", example="Juan"),
  *     @OA\Property(property="last_name", type="string", example="Pérez"),
  *     @OA\Property(property="business_name", type="string", example="Empresa XYZ"),
  *     @OA\Property(property="phone", type="string", example="987654321"),
  *     @OA\Property(property="email", type="string", example="juan.perez@example.com"),
- *     @OA\Property(property="images", type="string", example="image1.jpg,image2.jpg"),
+ *     @OA\Property(property="images", type="array", @OA\Items(type="string", example="image1.jpg")),
  *     @OA\Property(property="area_of_interest", type="string", example="Tecnología"),
  *     @OA\Property(property="participation_type", type="string", example="Expositor"),
+ *     @OA\Property(property="total_donated", type="string", example="1500"),
+ *     @OA\Property(property="projects", type="array", @OA\Items(type="object")),
+ *     @OA\Property(property="donations", type="array", @OA\Items(type="object")),
+ *     @OA\Property(property="activities", type="array", @OA\Items(type="object"))
  * )
  */
 class AllyWebResource extends JsonResource
@@ -42,7 +48,10 @@ class AllyWebResource extends JsonResource
             'images'             => ($this->imagestable ? ImagenResource::collection($this->imagestable) : []),
             'area_of_interest'   => $this->area_of_interest ?? null,
             'participation_type' => $this->participation_type ?? null,
-            'total_donated'      => $this->total_donated ?? null,
+            'total_donated'      => $this->total_donated() ?? null,
+            'proyects'               => $this->proyects ? $this->proyects : null,
+            'donations'               => $this->donations ? DonationResource::collection($this->donations ): null,
+            'activities'               => $this->activities ? ActivityWebResource::collection($this->activities ): null,
         ];
     }
 }

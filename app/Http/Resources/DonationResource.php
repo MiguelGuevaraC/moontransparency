@@ -45,7 +45,9 @@ class DonationResource extends JsonResource
         return [
             'id'                => $this->id ?? null,
             'proyect_id'        => $this->proyect_id ?? null,
+            'proyect_name'        => $this->proyect->name ?? null,
             'activity_id'       => $this->activity_id ?? null,
+            'activity_name'       => $this->activity->name ?? null,
             'date_donation'     => $this->date_donation ?? null,
             'ally_id'           => $this->ally_id ?? null,
             'details'           => $this->details ?? null,

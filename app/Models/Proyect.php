@@ -75,7 +75,6 @@ class Proyect extends Model
     {
         return $this->belongsToMany(Ally::class, 'donations', 'proyect_id', 'ally_id')
             ->whereNull('donations.deleted_at')
-            ->withSum('donations as total_donated', 'amount')
             ->distinct();   
     }
 

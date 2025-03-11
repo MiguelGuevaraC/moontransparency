@@ -48,5 +48,12 @@ class Donation extends Model
     {
         return $this->hasMany(Image::class);
     }
-
+    public function activity()
+    {
+        return $this->belongsTo(Activity::class);
+    }
+    public function proyect()
+    {
+        return $this->belongsTo(Proyect::class);
+    }
 }
