@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('objective')->nullable();                  // Crea el campo 'objective'
             $table->decimal('total_amount', 15, 2)->nullable();     // Crea el campo 'total_amount' con 15 dígitos en total y 2 decimales
             $table->decimal('collected_amount', 15, 2)->nullable(); // Crea el campo 'collected_amount' con el mismo formato
-            $table->string('status', 100)->default('Activo')->nullable();
+            $table->string('status', 100)->default('PENDIENTE')->nullable();
             $table->foreignId('proyect_id')->nullable()->unsigned()->constrained('proyects');
             $table->timestamps(); // Crea los campos 'created_at' y 'updated_at'
             $table->softDeletes();

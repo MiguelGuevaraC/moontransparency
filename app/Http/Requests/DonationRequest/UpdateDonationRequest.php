@@ -55,7 +55,7 @@ class UpdateDonationRequest extends UpdateRequest
   
             'images.*.file' => 'Cada archivo debe ser un archivo válido.',
             'images.*.mimes' => 'Los archivos deben ser de tipo: jpeg, jpg, png, gif o pdf.',
-            'images.*.max' => 'Cada archivo no debe superar los 2MB.',
+            'images.*.max' => 'Cada archivo no debe superar los 2MB.'
         ];
     }
 

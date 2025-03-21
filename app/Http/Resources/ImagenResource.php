@@ -5,7 +5,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @OA\Schema(
- *     schema="Image",
+ *     schema="Imagenes",
  *     type="object",
  *     title="Imagen",
  *     description="Modelo de una imagen",

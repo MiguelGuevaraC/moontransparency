@@ -56,4 +56,19 @@ class Donation extends Model
     {
         return $this->belongsTo(Proyect::class);
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($donation) {
+            $donation->activity->updateTotalRecaudado();
+        });
+        static::updated(function ($donation) {
+            $donation->activity->updateTotalRecaudado();
+        });
+        static::deleted(function ($donation) {
+            $donation->activity->updateTotalRecaudado();
+        });
+    }
 }

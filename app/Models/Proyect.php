@@ -65,6 +65,10 @@ class Proyect extends Model
     {
         return $this->hasMany(Activity::class);
     }
+    public function indicators()
+    {
+        return $this->hasMany(Indicator::class);
+    }
 
     public function donations()
     {

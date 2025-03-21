@@ -70,6 +70,7 @@ class ProyectResource extends JsonResource
             'impact_initial'    => $this->impact_initial ?? null,
             'impact_final'      => $this->impact_final ?? null,
             'ods'               => $this->ods ? OdsResource::collection($this->ods) : null,
+            // 'indicators'               => $this->indicators ? IndicatorResource::collection($this->indicators) : null,
             'created_at'        => $this->created_at,
         ];
     }

@@ -22,7 +22,7 @@ class ImagenesController extends Controller
  * @OA\Get(
  *     path="/api/images-list",
  *     summary="Obtener información de Imágenes con filtros y ordenamiento",
- *     tags={"Imagenes-Controller"},
+ *     tags={"Imagenes"},
  *     security={{"bearerAuth": {}}},
 
  *     @OA\Parameter(name="name_table", in="query", description="Filtrar por nombre de la tabla", required=false, @OA\Schema(type="string")),
@@ -52,7 +52,7 @@ class ImagenesController extends Controller
  * @OA\Get(
  *     path="/api/images/{id}",
  *     summary="Obtener detalles de un Imagenes por ID",
- *     tags={"Imagenes-Controller"},
+ *     tags={"Imagenes"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="id", in="path", description="ID del Imagenes", required=true, @OA\Schema(type="integer", example=1)),
  *     @OA\Response(response=200, description="Imagen encontrado", @OA\JsonContent(ref="#/components/schemas/Imagenes")),
@@ -78,7 +78,7 @@ class ImagenesController extends Controller
  * @OA\Post(
  *     path="/api/images",
  *     summary="Crear Imagenes",
- *     tags={"Imagenes-Controller"},
+ *     tags={"Imagenes"},
  *     security={{"bearerAuth": {}}},
  *     @OA\RequestBody(
  *         required=true,
@@ -107,7 +107,7 @@ class ImagenesController extends Controller
  * @OA\POST(
  *     path="/api/images/{id}",
  *     summary="Actualizar un Imagenes",
- *     tags={"Imagenes-Controller"},
+ *     tags={"Imagenes"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
  *     @OA\RequestBody(
@@ -144,7 +144,7 @@ class ImagenesController extends Controller
  * @OA\Delete(
  *     path="/api/images/{id}",
  *     summary="Eliminar un Imagenes por ID",
- *     tags={"Imagenes-Controller"},
+ *     tags={"Imagenes"},
  *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
  *     @OA\Response(response=200, description="Imagen eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Imagen eliminado exitosamente"))),

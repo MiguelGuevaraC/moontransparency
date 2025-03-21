@@ -32,7 +32,7 @@ class ContactSenderController extends Controller
  *     @OA\Parameter(name="status", in="query", description="Filtrar por estado", required=false, @OA\Schema(type="string", enum={"pending", "read", "answered"})),
  *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
  *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
- *     @OA\Response(response=200, description="Lista de contactos", @OA\JsonContent(ref="#/components/schemas/ContactRequest")),
+ *     @OA\Response(response=200, description="Lista de contactos", @OA\JsonContent(ref="#/components/schemas/ContactSendRequest")),
  *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(type="object", @OA\Property(property="error", type="string")))
  * )
  */

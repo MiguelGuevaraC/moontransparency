@@ -175,6 +175,125 @@
                 ]
             }
         },
+        "/moontransparency/public/api/activity-web": {
+            "get": {
+                "tags": [
+                    "Activity"
+                ],
+                "summary": "Obtener información de Activitys con filtros y ordenamiento",
+                "operationId": "55e41e2d319ae4dd555b3aa8b4a65d13",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filtrar por nombre de Activity",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Filtrar por fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Filtrar por fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "proyect_id",
+                        "in": "query",
+                        "description": "Filtrar por ID del proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "objective",
+                        "in": "query",
+                        "description": "Filtrar por objetivo de la actividad",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "total_amount",
+                        "in": "query",
+                        "description": "Filtrar por monto total de la actividad",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    },
+                    {
+                        "name": "collected_amount",
+                        "in": "query",
+                        "description": "Filtrar por monto recolectado",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filtrar por estado de la actividad",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de Activitys",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Activity"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/activity/{id}": {
             "get": {
                 "tags": [
@@ -606,6 +725,152 @@
                                         "error": {
                                             "type": "string",
                                             "example": "Error de validación"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/ally-web": {
+            "get": {
+                "tags": [
+                    "Ally"
+                ],
+                "summary": "Obtener información de aliados con filtros y ordenamiento",
+                "operationId": "897f3df32c9090921883adad3cb0e807",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "ruc_dni",
+                        "in": "query",
+                        "description": "RUC o DNI del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 20
+                        }
+                    },
+                    {
+                        "name": "first_name",
+                        "in": "query",
+                        "description": "Nombre del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 100
+                        }
+                    },
+                    {
+                        "name": "last_name",
+                        "in": "query",
+                        "description": "Apellido del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 100
+                        }
+                    },
+                    {
+                        "name": "business_name",
+                        "in": "query",
+                        "description": "Nombre comercial del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "phone",
+                        "in": "query",
+                        "description": "Número de teléfono del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^\\d{9}$"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "Correo electrónico del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    },
+                    {
+                        "name": "area_of_interest",
+                        "in": "query",
+                        "description": "Área de interés del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "participation_type",
+                        "in": "query",
+                        "description": "Tipo de participación del aliado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de aliados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Ally"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Mensaje de error",
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -1297,6 +1562,384 @@
                 ]
             }
         },
+        "/moontransparency/public/api/contactsend": {
+            "get": {
+                "tags": [
+                    "ContactSend"
+                ],
+                "summary": "Obtener información de contactos con filtros y ordenamiento",
+                "operationId": "26d263be99c3c85d2aba4871a89e8f57",
+                "parameters": [
+                    {
+                        "name": "name_contact",
+                        "in": "query",
+                        "description": "Filtrar por nombre de contacto",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "subject",
+                        "in": "query",
+                        "description": "Filtrar por asunto",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "description",
+                        "in": "query",
+                        "description": "Filtrar por descripción",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "contact_email",
+                        "in": "query",
+                        "description": "Filtrar por email de contacto",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    },
+                    {
+                        "name": "sender_email",
+                        "in": "query",
+                        "description": "Filtrar por email del remitente",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filtrar por estado",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "read",
+                                "answered"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de contactos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactSendRequest"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "ContactSend"
+                ],
+                "summary": "Crear ContactSend",
+                "operationId": "613c01aaa060b47dec5bc9b55a637d5f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ContactSendRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Contacto de Envío creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactSend"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/contactsend/{id}": {
+            "get": {
+                "tags": [
+                    "ContactSend"
+                ],
+                "summary": "Obtener detalles de un Contacto Envíopor ID",
+                "operationId": "fae79940398b51359ce4f0be4a59c87a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del ContactSend",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Contacto de Envío encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactSend"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Contacto de Envío no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Contacto de Envío no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "ContactSend"
+                ],
+                "summary": "Actualizar un ContactSend",
+                "operationId": "a4c3e42df97793a8e50c31c932abfa1b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ContactSendRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Contacto de Envío actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContactSend"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Contacto de Envío no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Contacto de Envío no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error interno del servidor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "ContactSend"
+                ],
+                "summary": "Eliminar un Contacto Envíopor ID",
+                "operationId": "2e41b5e861a489f86f80d50b54fbf477",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Contacto de Envío eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Contacto de Envío eliminado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Contacto de Envío no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/donation": {
             "get": {
                 "tags": [
@@ -1682,6 +2325,455 @@
                                         "error": {
                                             "type": "string",
                                             "example": "Donación No Encontrada"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moon_transparency/public/api/dashboard": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Resumen del dashboard",
+                "operationId": "a3d380749df1fff587b344f3831ddb01",
+                "responses": {
+                    "200": {
+                        "description": "Resumen del dashboard",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DashboardResumen"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moon_transparency/public/api/dashboard-by-project/{id}": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Resumen del dashboard por proyecto",
+                "operationId": "6f68274b6364e69dc6480a08d6710387",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del proyecto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resumen del proyecto",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DashboardByProject"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Proyecto no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Proyecto no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/images-list": {
+            "get": {
+                "tags": [
+                    "Imagenes"
+                ],
+                "summary": "Obtener información de Imágenes con filtros y ordenamiento",
+                "operationId": "c70198946d89906171a501c310953b36",
+                "parameters": [
+                    {
+                        "name": "name_table",
+                        "in": "query",
+                        "description": "Filtrar por nombre de la tabla",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "proyect_id",
+                        "in": "query",
+                        "description": "Filtrar por ID del proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "task_id",
+                        "in": "query",
+                        "description": "Filtrar por ID de la tarea",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "spring_id",
+                        "in": "query",
+                        "description": "Filtrar por ID del sprint",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "comment_id",
+                        "in": "query",
+                        "description": "Filtrar por ID del comentario",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "user_created_id",
+                        "in": "query",
+                        "description": "Filtrar por ID del usuario creador",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de Imágenes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Imagenes"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/images/{id}": {
+            "get": {
+                "tags": [
+                    "Imagenes"
+                ],
+                "summary": "Obtener detalles de un Imagenes por ID",
+                "operationId": "2cd4d03325158b01619c4bdb8dc5a33c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del Imagenes",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Imagen encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Imagenes"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Imagen no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Imagen no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Imagenes"
+                ],
+                "summary": "Actualizar un Imagenes",
+                "operationId": "47d6c20738a1a92907841a69e9fd56e0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ImagenesRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Imagen actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Imagenes"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Imagen no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Imagen no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error interno del servidor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Imagenes"
+                ],
+                "summary": "Eliminar un Imagenes por ID",
+                "operationId": "340000973e5e57f8edc2a1867f36f49b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Imagen eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Imagen eliminado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Imagen no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/images": {
+            "post": {
+                "tags": [
+                    "Imagenes"
+                ],
+                "summary": "Crear Imagenes",
+                "operationId": "7cbbeb8dc4c5490eadcff78117390a40",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ImagenesRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Imagen creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Imagenes"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error de validación"
                                         }
                                     },
                                     "type": "object"
@@ -2418,6 +3510,161 @@
                 ]
             }
         },
+        "/moontransparency/public/api/proyects-web": {
+            "get": {
+                "tags": [
+                    "Proyect"
+                ],
+                "summary": "Obtener información de proyectos con filtros y ordenamiento",
+                "operationId": "c13d0a9d3dac21ac8fd793841fb60fa2",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filtrar por nombre de proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filtrar por tipo de proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filtrar por estado de proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Filtrar por fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Filtrar por fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "description",
+                        "in": "query",
+                        "description": "Filtrar por descripción",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "budget_estimated",
+                        "in": "query",
+                        "description": "Filtrar por presupuesto estimado",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "nro_beneficiaries",
+                        "in": "query",
+                        "description": "Filtrar por número de beneficiarios",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "impact_initial",
+                        "in": "query",
+                        "description": "Filtrar por impacto inicial",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "impact_final",
+                        "in": "query",
+                        "description": "Filtrar por impacto final",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de proyectos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Proyect"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/proyect/{id}": {
             "get": {
                 "tags": [
@@ -2969,6 +4216,284 @@
     },
     "components": {
         "schemas": {
+            "DashboardResumen": {
+                "properties": {
+                    "headers": {
+                        "properties": {
+                            "sum_beneficiaries": {
+                                "type": "integer",
+                                "example": 10000
+                            },
+                            "sum_budget_estimated": {
+                                "type": "number",
+                                "example": 800000
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "graphics": {
+                        "properties": {
+                            "project_progress": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Proyecto Ejemplo"
+                                        },
+                                        "percent": {
+                                            "type": "integer",
+                                            "example": 50
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "financial_status": {
+                                "properties": {
+                                    "total_budget_amount": {
+                                        "type": "number",
+                                        "example": 605000
+                                    },
+                                    "collected_amount": {
+                                        "type": "number",
+                                        "example": 203500
+                                    },
+                                    "remaining_amount": {
+                                        "type": "number",
+                                        "example": 401500
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "donations_by_type": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "names": {
+                                            "type": "string",
+                                            "example": "Juan Pérez"
+                                        },
+                                        "business_name": {
+                                            "type": "string",
+                                            "example": "Tecnologías Avanzadas S.A."
+                                        },
+                                        "ruc_dni": {
+                                            "type": "string",
+                                            "example": "12345678901"
+                                        },
+                                        "donations": {
+                                            "properties": {
+                                                "DINERO": {
+                                                    "type": "integer",
+                                                    "example": 2000
+                                                },
+                                                "RECURSOS": {
+                                                    "type": "integer",
+                                                    "example": 1000
+                                                },
+                                                "SERVICIOS": {
+                                                    "type": "integer",
+                                                    "example": 0
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "DashboardByProject": {
+                "properties": {
+                    "indicators": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "progress_value": {
+                                    "type": "string",
+                                    "example": "500.00"
+                                },
+                                "target_value": {
+                                    "type": "string",
+                                    "example": "1000.00"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "activities": {
+                        "properties": {
+                            "by_progress": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Plan de Capacitación"
+                                        },
+                                        "total_amount": {
+                                            "type": "string",
+                                            "example": "200000.00"
+                                        },
+                                        "collected_amount": {
+                                            "type": "string",
+                                            "example": "200000.00"
+                                        },
+                                        "progress": {
+                                            "type": "integer",
+                                            "example": 100
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "by_status": {
+                                "properties": {
+                                    "PENDIENTE": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "EN EJECUCION": {
+                                        "type": "integer",
+                                        "example": 0
+                                    },
+                                    "FINALIZADO": {
+                                        "type": "integer",
+                                        "example": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "ContactSendRequest": {
+                "required": [
+                    "name_contact",
+                    "subject",
+                    "description",
+                    "contact_email"
+                ],
+                "properties": {
+                    "name_contact": {
+                        "description": "Nombre de la persona de contacto",
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Juan Pérez"
+                    },
+                    "subject": {
+                        "description": "Asunto del mensaje",
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Consulta sobre servicios"
+                    },
+                    "description": {
+                        "description": "Descripción o contenido del mensaje",
+                        "type": "string",
+                        "example": "Me gustaría obtener más información sobre sus servicios."
+                    },
+                    "contact_email": {
+                        "description": "Correo electrónico de contacto",
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255,
+                        "example": "contacto@empresa.com"
+                    },
+                    "sender_email": {
+                        "description": "Correo electrónico del remitente",
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255,
+                        "example": "juan.perez@gmail.com",
+                        "nullable": true
+                    },
+                    "status": {
+                        "description": "Estado del mensaje",
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "read",
+                            "answered"
+                        ],
+                        "example": "pending",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "ImagenesRequest": {
+                "required": [
+                    "name_table",
+                    "images"
+                ],
+                "properties": {
+                    "name_table": {
+                        "description": "Nombre de la tabla",
+                        "type": "string",
+                        "enum": [
+                            "proyects",
+                            "allies",
+                            "donations",
+                            "surveys"
+                        ],
+                        "example": "allies"
+                    },
+                    "proyect_id": {
+                        "description": "ID del proyecto (requerido si name_table='proyects')",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "ally_id": {
+                        "description": "ID del aliado (requerido si name_table='allies')",
+                        "type": "integer",
+                        "example": 2,
+                        "nullable": true
+                    },
+                    "donation_id": {
+                        "description": "ID de la donación (requerido si name_table='donations')",
+                        "type": "integer",
+                        "example": 3,
+                        "nullable": true
+                    },
+                    "survey_id": {
+                        "description": "ID de la encuesta (requerido si name_table='surveys')",
+                        "type": "integer",
+                        "example": 4,
+                        "nullable": true
+                    },
+                    "images": {
+                        "description": "Lista de imágenes (mínimo 1)",
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "file": {
+                                    "description": "Archivo a subir",
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "name": {
+                                    "description": "Nombre del archivo",
+                                    "type": "string",
+                                    "example": "documento.pdf",
+                                    "nullable": true
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "ActivityRequest": {
                 "required": [
                     "proyect_id"
@@ -3085,6 +4610,14 @@
                         "type": "string",
                         "example": "Empresa XYZ"
                     },
+                    "description": {
+                        "type": "string",
+                        "example": "Description about ally"
+                    },
+                    "link": {
+                        "type": "string",
+                        "example": "ally.com"
+                    },
                     "phone": {
                         "type": "string",
                         "example": "987654321"
@@ -3104,6 +4637,43 @@
                     "participation_type": {
                         "type": "string",
                         "example": "Expositor"
+                    }
+                },
+                "type": "object"
+            },
+            "ContactSend": {
+                "required": [
+                    "name_contact",
+                    "subject",
+                    "description",
+                    "contact_email"
+                ],
+                "properties": {
+                    "name_contact": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "subject": {
+                        "type": "string",
+                        "example": "Consulta sobre productos"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Me gustaría obtener más información sobre sus servicios."
+                    },
+                    "contact_email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "contacto@empresa.com"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "read",
+                            "answered"
+                        ],
+                        "example": "pending"
                     }
                 },
                 "type": "object"
@@ -3206,6 +4776,62 @@
                         "type": "string",
                         "format": "date-time",
                         "example": "2025-01-26T21:44:24"
+                    }
+                },
+                "type": "object"
+            },
+            "Imagenes": {
+                "title": "Imagen",
+                "description": "Modelo de una imagen",
+                "properties": {
+                    "id": {
+                        "description": "ID de la imagen",
+                        "type": "integer"
+                    },
+                    "name_table": {
+                        "description": "Nombre de la tabla a la que pertenece la imagen",
+                        "type": "string"
+                    },
+                    "name_image": {
+                        "description": "Nombre de la imagen",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "route": {
+                        "description": "Ruta de la imagen",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "proyect_id": {
+                        "description": "ID del proyecto asociado",
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "ally_id": {
+                        "description": "ID del aliado asociado",
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "survey_id": {
+                        "description": "ID de la encuesta asociada",
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "donation_id": {
+                        "description": "ID de la donación asociada",
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "user_created_id": {
+                        "description": "ID del usuario que creó la imagen",
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Fecha de creación de la imagen",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -3622,6 +5248,230 @@
                     }
                 },
                 "type": "object"
+            },
+            "ActivityWeb": {
+                "title": "Activity",
+                "description": "Modelo de Activity",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Proyecto de Energía Renovable"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-01-01"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-12-31"
+                    },
+                    "project_id": {
+                        "type": "integer",
+                        "example": 101
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "example": "Energía Verde"
+                    },
+                    "objective": {
+                        "type": "string",
+                        "example": "Implementar fuentes de energía renovable."
+                    },
+                    "total_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 500000
+                    },
+                    "collected_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 200000
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "Activo"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24Z"
+                    }
+                },
+                "type": "object"
+            },
+            "AllyWeb": {
+                "title": "Ally",
+                "description": "Modelo de Ally",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "ruc_dni": {
+                        "type": "string",
+                        "example": "123456789"
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "example": "Juan"
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "example": "Pérez"
+                    },
+                    "business_name": {
+                        "type": "string",
+                        "example": "Empresa XYZ"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Description about ally"
+                    },
+                    "link": {
+                        "type": "string",
+                        "example": "ally.com"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "987654321"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "juan.perez@example.com"
+                    },
+                    "images": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "image1.jpg"
+                        }
+                    },
+                    "area_of_interest": {
+                        "type": "string",
+                        "example": "Tecnología"
+                    },
+                    "participation_type": {
+                        "type": "string",
+                        "example": "Expositor"
+                    },
+                    "total_donated": {
+                        "type": "string",
+                        "example": "1500"
+                    },
+                    "projects": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "donations": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "activities": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "ProyectWeb": {
+                "title": "Proyecto",
+                "description": "Modelo de Proyecto",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Proyecto de Energía Renovable"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "Energía"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "Activo"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-01-01"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-12-31"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example": "Zona rural, Perú"
+                    },
+                    "images": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "imagen1.jpg"
+                        }
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Proyecto para implementar fuentes de energía renovable en comunidades rurales."
+                    },
+                    "budget_estimated": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 500000
+                    },
+                    "nro_beneficiaries": {
+                        "type": "integer",
+                        "example": 5000
+                    },
+                    "impact_initial": {
+                        "type": "string",
+                        "example": "0"
+                    },
+                    "impact_final": {
+                        "type": "string",
+                        "example": "50"
+                    },
+                    "ods": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Ods"
+                        }
+                    },
+                    "activities": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ActivityWeb"
+                        }
+                    },
+                    "allies": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AllyWeb"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24Z"
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -3652,8 +5502,20 @@
             "description": "Authentication"
         },
         {
+            "name": "ContactSend",
+            "description": "ContactSend"
+        },
+        {
             "name": "Donation",
             "description": "Donation"
+        },
+        {
+            "name": "Dashboard",
+            "description": "Dashboard"
+        },
+        {
+            "name": "Imagenes",
+            "description": "Imagenes"
         },
         {
             "name": "Indicator",

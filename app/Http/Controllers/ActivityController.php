@@ -38,7 +38,6 @@ class ActivityController extends Controller
  * )
  */
 
-
     public function index(IndexActivityRequest $request)
     {
 
@@ -52,36 +51,35 @@ class ActivityController extends Controller
     }
 
     /**
- * @OA\Get(
- *     path="/moontransparency/public/api/activity-web",
- *     summary="Obtener información de Activitys con filtros y ordenamiento",
- *     tags={"Activity"},
- *     security={{"bearerAuth": {}}},
- *     @OA\Parameter(name="name", in="query", description="Filtrar por nombre de Activity", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="start_date", in="query", description="Filtrar por fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
- *     @OA\Parameter(name="end_date", in="query", description="Filtrar por fecha de fin", required=false, @OA\Schema(type="string", format="date")),
- *     @OA\Parameter(name="proyect_id", in="query", description="Filtrar por ID del proyecto", required=false, @OA\Schema(type="integer")),
- *     @OA\Parameter(name="objective", in="query", description="Filtrar por objetivo de la actividad", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="total_amount", in="query", description="Filtrar por monto total de la actividad", required=false, @OA\Schema(type="number", format="float")),
- *     @OA\Parameter(name="collected_amount", in="query", description="Filtrar por monto recolectado", required=false, @OA\Schema(type="number", format="float")),
- *     @OA\Parameter(name="status", in="query", description="Filtrar por estado de la actividad", required=false, @OA\Schema(type="string")),
- *     @OA\Response(response=200, description="Lista de Activitys", @OA\JsonContent(ref="#/components/schemas/Activity")),
- *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(type="object", @OA\Property(property="error", type="string")))
- * )
- */
+     * @OA\Get(
+     *     path="/moontransparency/public/api/activity-web",
+     *     summary="Obtener información de Activitys con filtros y ordenamiento",
+     *     tags={"Activity"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(name="name", in="query", description="Filtrar por nombre de Activity", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="start_date", in="query", description="Filtrar por fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="end_date", in="query", description="Filtrar por fecha de fin", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="proyect_id", in="query", description="Filtrar por ID del proyecto", required=false, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="objective", in="query", description="Filtrar por objetivo de la actividad", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="total_amount", in="query", description="Filtrar por monto total de la actividad", required=false, @OA\Schema(type="number", format="float")),
+     *     @OA\Parameter(name="collected_amount", in="query", description="Filtrar por monto recolectado", required=false, @OA\Schema(type="number", format="float")),
+     *     @OA\Parameter(name="status", in="query", description="Filtrar por estado de la actividad", required=false, @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Lista de Activitys", @OA\JsonContent(ref="#/components/schemas/Activity")),
+     *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(type="object", @OA\Property(property="error", type="string")))
+     * )
+     */
 
+    public function list_web(IndexActivityRequest $request)
+    {
 
- public function list_web(IndexActivityRequest $request)
- {
-
-     return $this->getFilteredResults(
-         Activity::class,
-         $request,
-         Activity::filters,
-         Activity::sorts,
-         ActivityWebResource::class
-     );
- }
+        return $this->getFilteredResults(
+            Activity::class,
+            $request,
+            Activity::filters,
+            Activity::sorts,
+            ActivityWebResource::class
+        );
+    }
 /**
  * @OA\Get(
  *     path="/moontransparency/public/api/activity/{id}",
@@ -113,7 +111,7 @@ class ActivityController extends Controller
  *     path="/moontransparency/public/api/activity",
  *     summary="Crear Activity",
  *     tags={"Activity"},
- *     security={{"bearerAuth": {}}},  
+ *     security={{"bearerAuth": {}}},
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\MediaType(
@@ -138,7 +136,9 @@ class ActivityController extends Controller
 
     public function store(StoreActivityRequest $request)
     {
-        $activity = $this->activityService->createActivity($request->validated());
+        $data                     = $request->validated();
+        $data['collected_amount'] = "0";
+        $activity                 = $this->activityService->createActivity($data);
         return new ActivityResource($activity);
     }
 
@@ -147,7 +147,7 @@ class ActivityController extends Controller
  *     path="/moontransparency/public/api/activity/{id}",
  *     summary="Actualizar un Activity",
  *     tags={"Activity"},
- *     security={{"bearerAuth": {}}},  
+ *     security={{"bearerAuth": {}}},
  *     @OA\Parameter(
  *         name="id",
  *         in="path",
