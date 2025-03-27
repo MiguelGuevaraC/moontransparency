@@ -33,9 +33,11 @@ class IndicatorResource extends JsonResource
  */
 public function toArray($request)
 {
+
     return [
         'id'               => $this->id ?? null,
         'proyect_id'       => $this->proyect_id ?? null,
+        'project'       => $this->project ?? null,
         'indicator_name'   => $this->indicator_name ?? null,
         'target_value'     => $this->target_value ?? null,
         'progress_value'   => $this->progress_value ?? null,

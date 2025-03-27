@@ -38,4 +38,8 @@ class Indicator extends Model
         'id' => 'desc',
 
     ];
+    public function project()
+    {
+        return $this->belongsTo(Proyect::class, 'proyect_id');
+    }
 }
