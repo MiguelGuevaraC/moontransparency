@@ -105,6 +105,7 @@ class GraficosApiController extends Controller
     {
         return response()->json([
             "headers"  => [
+                'total_projects'    => $this->graficoService->total_projects(),
                 'sum_beneficiaries'    => $this->graficoService->sum_beneficiaries(),
                 'sum_budget_estimated' => $this->graficoService->sum_budget_estimated(),
             ],

@@ -14,7 +14,12 @@ class GraficoService
     /**
      * 📈 Calcula el avance del proyecto.
      */
-
+    public function total_projects()
+    {
+        return DB::table('proyects')
+            ->whereNull('deleted_at')
+            ->count('nro_beneficiaries');
+    }
     public function sum_beneficiaries()
     {
         return DB::table('proyects')
