@@ -33,7 +33,9 @@ public function toArray($request)
         'id'               => $this->id ?? null,
         'proyect_id'       => $this->proyect_id ?? null,
         'survey_name'      => $this->survey_name ?? null,
+        'survey_type'      => $this->survey_type ?? null,
         'description'      => $this->description ?? null,
+       'survey_questions' => SurveyQuestionResource::collection($this->survey_questions ?? []),
         'created_at'       => $this->created_at,
     ];
 }

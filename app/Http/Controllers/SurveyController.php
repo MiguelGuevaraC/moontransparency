@@ -154,6 +154,11 @@ class SurveyController extends Controller
                 'error' => 'Encuesta No Encontrada.',
             ], 404);
         }
+        if ($survey->survey_questions()->exists()) {
+            return response()->json([
+                'error' => 'Esta encuesta tene preguntas relacionadas.',
+            ], 422);
+        }
         $survey = $this->surveyService->destroyById($id);
 
         return response()->json([

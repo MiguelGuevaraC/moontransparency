@@ -1,18 +1,18 @@
 <?php
+
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Survey extends Model
+class SurveyQuestionOption extends Model
 {
     use SoftDeletes;
     protected $fillable = [
         'id',
-        'proyect_id',
-        'survey_name',
         'description',
-        'survey_type',
+        'survey_question_id',
         'created_at',
         'updated_at',
         'deleted_at',
@@ -24,20 +24,16 @@ class Survey extends Model
         'deleted_at',
     ];
     const filters = [
-        'proyect_id' => '=',
-        'survey_name' => 'like',
-        'description' => 'like',
+        'survey_question_id'=> '=',
+        'description'=> 'like',
     ];
 
-    /**
-     * Campos de ordenación disponibles.
-     */
     const sorts = [
         'id'   => 'desc',
     ];
 
-    public function survey_questions()
+    public function surveyQuestion()
     {
-        return $this->hasMany(SurveyQuestion::class);
+        return $this->belongsTo(SurveyQuestion::class,'survey_question_id');
     }
 }
