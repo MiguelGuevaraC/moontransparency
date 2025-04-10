@@ -71,7 +71,9 @@ class ActivityController extends Controller
 
     public function list_web(IndexActivityRequest $request)
     {
-
+        if ($request->header('UUID') !== env('APP_UUID')) {
+            return response()->json(['status' => 'unauthorized'], 401);
+        }
         return $this->getFilteredResults(
             Activity::class,
             $request,

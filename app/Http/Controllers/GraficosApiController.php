@@ -2,6 +2,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\GraficoService;
+use Illuminate\Http\Request;
+
 /**
  * @OA\Schema(
  *     schema="DashboardResumen",
@@ -71,6 +73,7 @@ class GraficosApiController extends Controller
     // 📈 Gráfico 1: Avance del Proyecto
     public function avanceProyecto()
     {
+        
         $data = $this->graficoService->calculateProgress();
         return response()->json(['data' => $data]);
     }
@@ -101,8 +104,11 @@ class GraficosApiController extends Controller
      */
 
 
-    public function dashboard_resumen()
+    public function dashboard_resumen(Request $request)
     {
+        if ($request->header('UUID') !== env('APP_UUID')) {
+            return response()->json(['status' => 'unauthorized'], 401);
+        }
         return response()->json([
             "headers"  => [
                 'total_projects'    => $this->graficoService->total_projects(),

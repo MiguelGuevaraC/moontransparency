@@ -90,7 +90,9 @@ class AllyController extends Controller
 
     public function list_web(IndexAllyRequest $request)
     {
-
+        if ($request->header('UUID') !== env('APP_UUID')) {
+            return response()->json(['status' => 'unauthorized'], 401);
+        }
         return $this->getFilteredResults(
             Ally::class,
             $request,

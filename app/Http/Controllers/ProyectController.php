@@ -54,41 +54,42 @@ class ProyectController extends Controller
         );
     }
 
-
     /**
- * @OA\Get(
- *     path="/moontransparency/public/api/proyects-web",
- *     summary="Obtener información de proyectos con filtros y ordenamiento",
- *     tags={"Proyect"},
- *     security={{"bearerAuth": {}}},
- *     @OA\Parameter(name="name", in="query", description="Filtrar por nombre de proyecto", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="type", in="query", description="Filtrar por tipo de proyecto", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="status", in="query", description="Filtrar por estado de proyecto", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="start_date", in="query", description="Filtrar por fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
- *     @OA\Parameter(name="end_date", in="query", description="Filtrar por fecha de fin", required=false, @OA\Schema(type="string", format="date")),
- *     @OA\Parameter(name="description", in="query", description="Filtrar por descripción", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="budget_estimated", in="query", description="Filtrar por presupuesto estimado", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="nro_beneficiaries", in="query", description="Filtrar por número de beneficiarios", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="impact_initial", in="query", description="Filtrar por impacto inicial", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="impact_final", in="query", description="Filtrar por impacto final", required=false, @OA\Schema(type="string")),
- *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
- *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
- *     @OA\Response(response=200, description="Lista de proyectos", @OA\JsonContent(ref="#/components/schemas/Proyect")),
- *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(type="object", @OA\Property(property="error", type="string")))
- * )
- */
+     * @OA\Get(
+     *     path="/moontransparency/public/api/proyects-web",
+     *     summary="Obtener información de proyectos con filtros y ordenamiento",
+     *     tags={"Proyect"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(name="name", in="query", description="Filtrar por nombre de proyecto", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="type", in="query", description="Filtrar por tipo de proyecto", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="status", in="query", description="Filtrar por estado de proyecto", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="start_date", in="query", description="Filtrar por fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="end_date", in="query", description="Filtrar por fecha de fin", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="description", in="query", description="Filtrar por descripción", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="budget_estimated", in="query", description="Filtrar por presupuesto estimado", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="nro_beneficiaries", in="query", description="Filtrar por número de beneficiarios", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="impact_initial", in="query", description="Filtrar por impacto inicial", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="impact_final", in="query", description="Filtrar por impacto final", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Response(response=200, description="Lista de proyectos", @OA\JsonContent(ref="#/components/schemas/Proyect")),
+     *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(type="object", @OA\Property(property="error", type="string")))
+     * )
+     */
 
- public function list_web(IndexProyectRequest $request)
- {
-
-     return $this->getFilteredResults(
-         Proyect::class,
-         $request,
-         Proyect::filters,
-         Proyect::sorts,
-         ProyectWebResource::class
-     );
- }
+    public function list_web(IndexProyectRequest $request)
+    {
+        if ($request->header('UUID') !== env('APP_UUID')) {
+            return response()->json(['status' => 'unauthorized'], 401);
+        }
+        return $this->getFilteredResults(
+            Proyect::class,
+            $request,
+            Proyect::filters,
+            Proyect::sorts,
+            ProyectWebResource::class
+        );
+    }
 /**
  * @OA\Get(
  *     path="/moontransparency/public/api/proyect/{id}",

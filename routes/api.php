@@ -32,6 +32,7 @@ Route::group(["middleware" => ["auth:sanctum"]], function () {
 
     require __DIR__ . '/Api/SurveyQuestionApi.php'; //SURVEY QUESTION
     require __DIR__ . '/Api/SurveyQuestionOptionApi.php'; //SURVEY QUESTION OPTION
+    require __DIR__ . '/Api/RespondentApi.php'; //RESPONDENT
 });
 
 require __DIR__ . '/Web/ApisWeb.php'; //APIS PARA WEB
