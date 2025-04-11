@@ -4,11 +4,11 @@ namespace App\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 
-class SurveyedResponseResource extends JsonResource
+class SurveyedResponseOptionsResource extends JsonResource
 {
 /**
  * @OA\Schema(
- *     schema="SurveyedResponse",
+ *     schema="SurveyedResponseOptions",
  *     title="SurveyedResponse",
  *     description="Modelo de respuesta de un encuestado",
  *     @OA\Property(property="id", type="integer", example=1),
@@ -25,15 +25,12 @@ public function toArray($request)
 {
     return [
         'id'               => $this->id ?? null,
-        'response_text'=> $this->response_text ?? null,
-        'survey_question_id'=> $this->survey_question_id ?? null,
-        'survey_question_text'=> $this->survey_question->question_text ?? null,
-        'survey_question_type'=> $this->survey_question->question_type ?? null,
-        'surveyed_id'=> $this->surveyed_id ?? null,
-        'respondent_id'=> $this->respondent_id ?? null,
-        'survey_questions_options'=> $this?->survey_question?->survey_questions_options?? null,
-        'surveyed_responses_options'=>   $this->surveyed_responses_options ? SurveyedResponseOptionsResource::collection($this->surveyed_responses_options) : null,
-      
+
+        'surveyed_response_id'=> $this->id ?? null,
+        'survey_question_options_id'=> $this->id ?? null,
+        'survey_question_options'=> $this->survey_question_options ?? null,
+        'surveyed_id'=> $this->id ?? null,
+        'respondent_id'=> $this->id ?? null,
 
         'created_at'       => $this->created_at,
     ];

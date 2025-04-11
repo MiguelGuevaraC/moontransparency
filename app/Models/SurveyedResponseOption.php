@@ -28,7 +28,7 @@ class SurveyedResponseOption extends Model
     ];
     const filters = [
         'surveyed_response_id'=> '=',
-        'survey_question'=> '=',
+        'survey_question_options_id'=> '=',
         'surveyed_id'=> '=',
         'respondent_id'=> '=',
     ];
@@ -39,4 +39,8 @@ class SurveyedResponseOption extends Model
     const sorts = [
         'id' => 'desc',
     ];
+
+    public function survey_question_options(){
+        return $this->belongsTo(SurveyQuestionOption::class,'survey_question_options_id');
+    }
 }
