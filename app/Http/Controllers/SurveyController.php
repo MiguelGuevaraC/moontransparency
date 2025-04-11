@@ -71,6 +71,19 @@ class SurveyController extends Controller
         return new SurveyResource($survey);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/moontransparency/public/api/survey-web/{id}",
+     *     summary="Mostrar encuesta activa (show_web)",
+     *     tags={"Survey"},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="UUID", in="header", required=true, @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/Survey")),
+     *     @OA\Response(response=401, description="No autorizado", @OA\JsonContent(@OA\Property(property="status", type="string", example="unauthorized"))),
+     *     @OA\Response(response=404, description="Encuesta no activa o no encontrada", @OA\JsonContent(@OA\Property(property="error", type="string", example="Esta Encuesta no se encuentra Activa")))
+     * )
+     */
+
     public function show_web(Request $request, $id)
     {
         if ($request->header('UUID') !== env('APP_UUID')) {
