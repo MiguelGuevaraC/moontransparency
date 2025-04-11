@@ -1,8 +1,6 @@
 <?php
 namespace App\Services;
 
-use App\Models\Permission;
-use App\Models\Permission_Survey;
 use App\Models\Survey;
 
 class SurveyService
@@ -21,13 +19,17 @@ class SurveyService
 
     public function createSurvey(array $data): Survey
     {
+        if (! isset($data['status'])) {
+            $data['status'] = 'ACTIVA';
+        }
+
         $proyect = Survey::create($data);
         return $proyect;
     }
-    
+
     public function updateSurvey(Survey $proyect, array $data): Survey
     {
-      $proyect->update($data);
+        $proyect->update($data);
         return $proyect;
     }
 

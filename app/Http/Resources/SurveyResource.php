@@ -24,6 +24,7 @@ class SurveyResource extends JsonResource
  *     @OA\Property(property="proyect_id", type="integer", example="101"),
  *     @OA\Property(property="survey_name", type="string", example="Encuesta de Energía Renovable"),
  *     @OA\Property(property="description", type="string", example="Encuesta para evaluar el uso de energía renovable en zonas rurales."),
+ *     @OA\Property(property="status", type="string", example="ACTIVA."),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-01-26T21:44:24"),
  * )
  */
@@ -35,6 +36,7 @@ public function toArray($request)
         'survey_name'      => $this->survey_name ?? null,
         'survey_type'      => $this->survey_type ?? null,
         'description'      => $this->description ?? null,
+        'status'      => $this->status ?? null,
        'survey_questions' => SurveyQuestionResource::collection($this->survey_questions ?? []),
         'created_at'       => $this->created_at,
     ];

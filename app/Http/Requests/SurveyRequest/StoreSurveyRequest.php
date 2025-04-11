@@ -28,6 +28,8 @@ class StoreSurveyRequest extends StoreRequest
             'proyect_id'  => 'required|integer|exists:proyects,id,deleted_at,NULL', // El proyecto debe existir y no estar eliminado
             'survey_name' => 'required|string|max:255',                             // Nombre de la encuesta (requerido)
             'description' => 'required|string|max:1000',                            // Descripción de la encuesta (requerida, máximo 1000 caracteres)
+            'status'      => 'nullable|string|in:ACTIVA,INACTIVA',
+            'survey_type' => 'required|string|max:255',
         ];
     }
 

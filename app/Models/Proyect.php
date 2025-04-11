@@ -75,11 +75,20 @@ class Proyect extends Model
         return $this->hasMany(Donation::class);
     }
 
+    public function surveys()
+    {
+        return $this->hasMany(Survey::class);
+    }
+    public function surveys_activas()
+    {
+        return $this->hasMany(Survey::class)->where('status', 'ACTIVA');
+    }
+
     public function allies()
     {
         return $this->belongsToMany(Ally::class, 'donations', 'proyect_id', 'ally_id')
             ->whereNull('donations.deleted_at')
-            ->distinct();   
+            ->distinct();
     }
 
 }

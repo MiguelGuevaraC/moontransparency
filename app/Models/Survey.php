@@ -11,8 +11,10 @@ class Survey extends Model
         'id',
         'proyect_id',
         'survey_name',
-        'description',
         'survey_type',
+        'description',
+        'status',
+
         'created_at',
         'updated_at',
         'deleted_at',
@@ -27,6 +29,7 @@ class Survey extends Model
         'proyect_id' => '=',
         'survey_name' => 'like',
         'description' => 'like',
+        'status' => '=',
     ];
 
     /**

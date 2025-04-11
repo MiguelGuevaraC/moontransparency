@@ -71,6 +71,28 @@ class SurveyController extends Controller
         return new SurveyResource($survey);
     }
 
+    public function show_web(Request $request, $id)
+    {
+        if ($request->header('UUID') !== env('APP_UUID')) {
+            return response()->json(['status' => 'unauthorized'], 401);
+        }
+        $survey = $this->surveyService->getSurveyById($id);
+
+        if (! $survey) {
+            return response()->json([
+                'error' => 'Encuesta No Encontrada',
+            ], 404);
+        }
+
+        if ($survey->status != 'ACTIVA') {
+            return response()->json([
+                'error' => 'Esta Encuesta no se encuentra Activa',
+            ], 404);
+        }
+
+        return new SurveyResource($survey);
+    }
+
 /**
  * @OA\Post(
  *     path="/moontransparency/public/api/survey",

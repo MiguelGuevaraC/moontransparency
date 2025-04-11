@@ -48,25 +48,26 @@ class ProyectWebResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'                => $this->id ?? null,
-            'name'              => $this->name ?? null,
-            'type'              => $this->type ?? null,
-            'status'            => $this->status ?? null,
-            'start_date'        => $this->start_date ?? null,
-            'end_date'          => $this->end_date ?? null,
-            'location'          => $this->location ?? null,
-            'images'            => ($this->imagestable ? ImagenResource::collection($this->imagestable) : []),
+            'id'                 => $this->id ?? null,
+            'name'               => $this->name ?? null,
+            'type'               => $this->type ?? null,
+            'status'             => $this->status ?? null,
+            'start_date'         => $this->start_date ?? null,
+            'end_date'           => $this->end_date ?? null,
+            'location'           => $this->location ?? null,
+            'images'             => ($this->imagestable ? ImagenResource::collection($this->imagestable) : []),
 
-            'description'       => $this->description ?? null,
-            'budget_estimated'  => $this->budget_estimated ?? null,
-            'nro_beneficiaries' => $this->nro_beneficiaries ?? null,
-            'impact_initial'    => $this->impact_initial ?? null,
-            'impact_final'      => $this->impact_final ?? null,
-            'ods'               => $this->ods ? OdsResource::collection($this->ods) : null,
-            'activities'        => $this->activities ?? null,
-            'allies'            => ($this->allies ? AllyResource::collection($this->allies) : []),
+            'description'        => $this->description ?? null,
+            'budget_estimated'   => $this->budget_estimated ?? null,
+            'nro_beneficiaries'  => $this->nro_beneficiaries ?? null,
+            'impact_initial'     => $this->impact_initial ?? null,
+            'impact_final'       => $this->impact_final ?? null,
+            'ods'                => $this->ods ? OdsResource::collection($this->ods) : null,
+            'activities'         => $this->activities ?? null,
+            'allies'             => ($this->allies ? AllyResource::collection($this->allies) : []),
 
-            'created_at'        => $this->created_at,
+            'surveys_activas_id' => ($this->surveys_activas()->pluck('id') ?? []),
+            'created_at'         => $this->created_at,
         ];
     }
 
