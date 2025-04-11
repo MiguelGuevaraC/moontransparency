@@ -45,6 +45,7 @@ class RespondentResource extends JsonResource
             'phone'           => $this->phone ?? null,
             'email'           => $this->email ?? null,
             'genero'          => $this->genero ?? null,
+            'surveyed_responses'          => $this->surveyed_responses ? SurveyedResponseResource::collection($this->surveyed_responses) : null,
             'created_at'      => $this->created_at ?? null,
         ];
     }

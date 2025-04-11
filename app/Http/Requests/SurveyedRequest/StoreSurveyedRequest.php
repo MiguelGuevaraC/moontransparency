@@ -2,6 +2,9 @@
 namespace App\Http\Requests\SurveyedRequest;
 
 use App\Http\Requests\StoreRequest;
+use App\Models\Respondent;
+use App\Models\Survey;
+use App\Models\Surveyed;
 use App\Models\SurveyQuestion;
 use App\Models\User;
 use Illuminate\Validation\Rule;
@@ -64,6 +67,29 @@ class StoreSurveyedRequest extends StoreRequest
     
                 if ($question->question_type === 'OPCIONES' && empty($response['survey_question_option_id'])) {
                     $validator->errors()->add("responses.$index.survey_question_option_id", "Debe seleccionar al menos una opción para preguntas de tipo OPCIONES.");
+                }
+            }
+
+            $numberDocument = $this->input('number_document');
+            $surveyId = $this->input('survey_id');
+    
+            // Buscar la persona por número de documento
+            $person = Respondent::where('number_document', $numberDocument)->first();
+    
+            if ($person) {
+                // Verificar si ya existe un registro de encuesta en el mismo proyecto
+                $survey = Survey::find($surveyId);
+    
+                if ($survey && $survey->proyect_id) {
+                    $exists = Surveyed::where('respondent_id', $person->id)
+                        ->whereHas('survey', function ($q) use ($survey) {
+                            $q->where('proyect_id', $survey->proyect_id);
+                        })
+                        ->exists();
+    
+                    if ($exists) {
+                        $validator->errors()->add('number_document', 'Esta persona ya ha sido encuestada en este proyecto.');
+                    }
                 }
             }
         });

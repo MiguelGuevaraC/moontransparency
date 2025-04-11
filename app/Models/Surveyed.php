@@ -39,4 +39,12 @@ class Surveyed extends Model
     {
         return $this->hasMany(SurveyedResponse::class);
     }
+    public function survey()
+    {
+        return $this->belongsTo(Survey::class,'survey_id');
+    }
+    public function respondent()
+    {
+        return $this->belongsTo(Respondent::class,'respondent_id');
+    }
 }

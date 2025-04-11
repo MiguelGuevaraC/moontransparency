@@ -1,11 +1,8 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 
 class Respondent extends Model
 {
@@ -31,22 +28,29 @@ class Respondent extends Model
     ];
     const filters = [
         'number_document' => 'like',
-        'names' => 'like',
-        'date_of_birth' => 'date',
+        'names'           => 'like',
+        'date_of_birth'   => 'date',
 
-        'phone' => 'like',
-        'email' => 'like',
-        'genero' => 'like',
+        'phone'           => 'like',
+        'email'           => 'like',
+        'genero'          => 'like',
     ];
 
-    const filters_search= ['number_document' => '='];
+    const filters_search = ['number_document' => '='];
 
     /**
      * Campos de ordenación disponibles.
      */
     const sorts = [
-        'id'   => 'desc',
-        'names'   => 'desc',
+        'id'    => 'desc',
+        'names' => 'desc',
     ];
+    public function surveyed_responses()
+    {
+        return $this->hasMany(SurveyedResponse::class);
+    }
 
+
+    
+    
 }

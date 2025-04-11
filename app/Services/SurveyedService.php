@@ -34,6 +34,7 @@ class SurveyedService
                 'genero'        => isset($data['genero']) ? $data['genero'] : null,
             ]
         );
+        
 
         // 2. Crear registro en Surveyed
         $surveyed = Surveyed::create([
