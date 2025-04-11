@@ -23,9 +23,13 @@ class IndexSurveyedRequest extends IndexRequest
     public function rules(): array
     {
         return [
-  
-            'respondent_id'=> 'nullable|string',
-        'survey_id'=> 'nullable|string',
+
+            'respondent_id'      => 'nullable|string',
+            'survey_id'          => 'nullable|string',
+
+            'survey.proyect_id'  => 'nullable|string',
+            'created_at'         => 'nullable|string',
+            'survey.survey_type' => 'nullable|string',
         ];
     }
 }

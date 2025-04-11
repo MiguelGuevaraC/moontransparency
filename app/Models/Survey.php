@@ -30,6 +30,7 @@ class Survey extends Model
         'survey_name' => 'like',
         'description' => 'like',
         'status' => '=',
+        'survey_type' => '=',
     ];
 
     /**

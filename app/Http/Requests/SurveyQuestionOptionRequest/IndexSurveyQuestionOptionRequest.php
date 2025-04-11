@@ -24,6 +24,7 @@ class IndexSurveyQuestionOptionRequest extends IndexRequest
     {
         return [
             'survey_question_id' => 'nullable|string',
+            'survey_question.question_text' => 'nullable|string',
             'description'        => 'nullable|string',
         ];
     }
