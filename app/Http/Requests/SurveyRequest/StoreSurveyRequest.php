@@ -41,6 +41,7 @@ class StoreSurveyRequest extends StoreRequest
     public function messages()
     {
         return [
+            'status.in'  => 'Solo aceptan valores como ACTIVA,INACTIVA.',
             'proyect_id.required'  => 'El ID del proyecto es obligatorio.',
             'survey_name.required' => 'El nombre de la encuesta es obligatorio.',
             'description.required' => 'La descripción de la encuesta es obligatoria.',

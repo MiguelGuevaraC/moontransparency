@@ -25,6 +25,7 @@ class UpdateSurveyRequest extends UpdateRequest
     public function rules()
     {
         return [
+            'status.in'  => 'Solo aceptan valores como ACTIVA,INACTIVA.',
             'proyect_id'  => 'nullable|integer|exists:proyects,id,deleted_at,NULL', // El proyecto debe existir y no estar eliminado
             'survey_name' => 'nullable|string|max:255',                             // El nombre de la encuesta es opcional en la actualización
             'description' => 'nullable|string|max:1000',                            // La descripción es opcional en la actualización
