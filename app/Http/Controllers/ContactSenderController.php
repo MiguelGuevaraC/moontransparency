@@ -93,11 +93,14 @@ class ContactSenderController extends Controller
  */
     public function store(StoreContactSenderRequest $request)
     {
-        $data = $request->validated();
-        $data['ip_address']  = $request->ip();
-        $data['user_agent']  = $request->header('User-Agent');
-        $data['status'] = 'Generada';
-        $contactsender = $this->contactsenderService->createContactSend($data);
+        if ($request->header('UUID') !== env('APP_UUID')) {
+            return response()->json(['status' => 'unauthorized'], 401);
+        }
+        $data               = $request->validated();
+        $data['ip_address'] = $request->ip();
+        $data['user_agent'] = $request->header('User-Agent');
+        $data['status']     = 'Generada';
+        $contactsender      = $this->contactsenderService->createContactSend($data);
         return new ContactSendResource($contactsender);
     }
 

@@ -144,8 +144,11 @@ class GraficosApiController extends Controller
 
 
 
-    public function dashboard_by_project($id)
+    public function dashboard_by_project(Request $request,$id)
     {
+        if ($request->header('UUID') !== env('APP_UUID')) {
+            return response()->json(['status' => 'unauthorized'], 401);
+        }
         return response()->json([
             'indicators' => $this->graficoService->indicators_by_proyect($id),
             'activities' => [

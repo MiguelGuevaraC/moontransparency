@@ -13,16 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('respondents', function (Blueprint $table) {
+        Schema::create('surveyed_responses', function (Blueprint $table) {
             $table->id();
-            $table->string('number_document', 20);
-            $table->text('names')->nullable();
-            $table->string('date_of_birth')->nullable();
-
-            $table->string('phone', 15)->nullable();
-            $table->string('email')->nullable();
-            $table->string('genero', 100)->nullable();
-
+            $table->text('response_text')->nullable();
+            $table->foreignId('survey_question_id')->nullable()->unsigned()->constrained('survey_questions');
+            $table->foreignId('surveyed_id')->nullable()->unsigned()->constrained('surveyeds');
+            $table->foreignId('respondent_id')->nullable()->unsigned()->constrained('respondents');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -35,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('respondents');
+        Schema::dropIfExists('surveyed_responses');
     }
 };

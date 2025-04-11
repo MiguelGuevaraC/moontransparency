@@ -162,7 +162,7 @@ class SurveyController extends Controller
         $survey = $this->surveyService->destroyById($id);
 
         return response()->json([
-            'message' => 'Survey eliminado exitosamente',
+            'message' => 'Esta Encuesta es eliminada exitosamente',
         ], 200);
     }
 

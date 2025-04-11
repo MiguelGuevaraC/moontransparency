@@ -13,16 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('respondents', function (Blueprint $table) {
+        Schema::create('surveyeds', function (Blueprint $table) {
             $table->id();
-            $table->string('number_document', 20);
-            $table->text('names')->nullable();
-            $table->string('date_of_birth')->nullable();
 
-            $table->string('phone', 15)->nullable();
-            $table->string('email')->nullable();
-            $table->string('genero', 100)->nullable();
-
+            $table->foreignId('survey_id')->nullable()->unsigned()->constrained('surveys');
+            $table->foreignId('respondent_id')->nullable()->unsigned()->constrained('respondents');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -35,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('respondents');
+        Schema::dropIfExists('surveyeds');
     }
 };

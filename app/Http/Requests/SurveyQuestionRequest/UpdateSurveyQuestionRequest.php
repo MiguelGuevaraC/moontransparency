@@ -26,8 +26,8 @@ class UpdateSurveyQuestionRequest extends UpdateRequest
     {
         return [
             'survey_id'     => 'required|integer|exists:surveys,id,deleted_at,NULL',
-            'question_type' => 'required|string|max:255',
-            'question_text' => 'required|string|max:1000',
+            'question_type' => 'required|string|max:255|in:LIBRE,OPCIONES',
+            'question_text' => 'required|string|max:255',
         ];
     }
 
@@ -46,6 +46,7 @@ class UpdateSurveyQuestionRequest extends UpdateRequest
             'question_type.required' => 'El tipo de pregunta es obligatorio.',
             'question_type.string'   => 'El tipo de pregunta debe ser una cadena de texto.',
             'question_type.max'      => 'El tipo de pregunta no debe exceder los 255 caracteres.',
+            'question_type.in'      => 'El tipo de pregunta solo acepta LIBRE, OPCIONES.',
 
             'question_text.required' => 'El texto de la pregunta es obligatorio.',
             'question_text.string'   => 'El texto de la pregunta debe ser una cadena de texto.',
