@@ -29,7 +29,7 @@ class StoreSurveyRequest extends StoreRequest
             'survey_name' => 'required|string|max:255',                             // Nombre de la encuesta (requerido)
             'description' => 'required|string|max:1000',                            // Descripción de la encuesta (requerida, máximo 1000 caracteres)
             'status'      => 'nullable|string|in:ACTIVA,INACTIVA',
-            'survey_type' => 'required|string|max:255',
+            'survey_type' => 'required|string|max:255|in:PRE,POST',
         ];
     }
 
@@ -41,13 +41,15 @@ class StoreSurveyRequest extends StoreRequest
     public function messages()
     {
         return [
-            'status.in'  => 'Solo aceptan valores como ACTIVA,INACTIVA.',
+            'status.in'            => 'Solo aceptan valores como ACTIVA,INACTIVA.',
             'proyect_id.required'  => 'El ID del proyecto es obligatorio.',
             'survey_name.required' => 'El nombre de la encuesta es obligatorio.',
             'description.required' => 'La descripción de la encuesta es obligatoria.',
             'proyect_id.exists'    => 'El ID del proyecto no existe o está eliminado.',
             'survey_name.max'      => 'El nombre de la encuesta no debe exceder los 255 caracteres.',
             'description.max'      => 'La descripción de la encuesta no debe exceder los 1000 caracteres.',
+            'survey_type.required' => 'Tipo de Encuesta es obligatorio',
+            'survey_type.in'       => 'Tipo de Encuesta solo acepta POST,PRE',
         ];
     }
 
