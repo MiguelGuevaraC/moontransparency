@@ -90,7 +90,7 @@ class GraficoService
 
     public function indicators_by_proyect($id)
     {
-        return Indicator::where('proyect_id', $id)->select('progress_value', 'target_value')->get();
+        return Indicator::where('proyect_id', $id)->select('indicator_name','progress_value', 'target_value')->get();
     }
 
     public function activities_progress($id)

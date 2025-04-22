@@ -2,6 +2,8 @@
 namespace App\Http\Requests\DonationRequest;
 
 use App\Http\Requests\UpdateRequest;
+use App\Models\Activity;
+use App\Models\Donation;
 use App\Models\User;
 use Illuminate\Validation\Rule;
 
@@ -26,7 +28,30 @@ class UpdateDonationRequest extends UpdateRequest
     {
         return [
             'proyect_id'        => 'required|integer|exists:proyects,id,deleted_at,NULL',   // El campo es opcional para actualizar, pero debe existir y no estar eliminado
-            'activity_id'       => 'required|integer|exists:activities,id,deleted_at,NULL', // El campo es opcional para actualizar, pero debe existir y no estar eliminado
+           'activity_id'       => [
+                'required',
+                'exists:activities,id,deleted_at,NULL',
+                function ($attribute, $value, $fail) {
+                    $activity = Activity::find($value);
+                    if (! $activity) {
+                        return;
+                    }
+                    $donationId = $this->route('id'); // O usa el nombre del parámetro en la ruta
+                    $currentDonation = Donation::find($donationId);
+                    $currentAmount = $currentDonation?->amount ?? 0;
+                
+                    $monto_maximo = $activity->total_amount - ($activity->collected_amount - $currentAmount);
+
+                    if ($monto_maximo == 0) {
+                        $fail("Esta actividad ya alcanzó el monto total recaudado");
+
+                    } else {
+                        if (request('amount') > $monto_maximo) {
+                            $fail("El monto a donar supera el límite disponible de {$monto_maximo}.");
+                        }
+                    }
+                },
+            ],
             'date_donation'     => 'required|date',                                         // El campo es opcional para actualizar, debe ser una fecha válida
             'ally_id'           => 'required|integer|exists:allies,id,deleted_at,NULL',     // El campo es opcional para actualizar, pero debe existir y no estar eliminado
             'details'           => 'nullable|string|max:500',                               // Detalles de la donación (opcional en la actualización)

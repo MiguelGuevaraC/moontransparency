@@ -45,9 +45,11 @@ class ActivityResource extends JsonResource
             'start_date'       => $this->start_date ?? null,
             'end_date'         => $this->end_date ?? null,
             'proyect_id'       => $this->proyect_id ?? null,
+            'proyect_name'             => $this->proyect->name ?? null,
             'objective'        => $this->objective ?? null,
             'total_amount'     => $this->total_amount ?? null,
             'collected_amount' => $this->collected_amount ?? null,
+            
             'status'           => $this->status ?? null,
             'created_at'       => $this->created_at,
         ];

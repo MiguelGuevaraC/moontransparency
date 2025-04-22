@@ -28,7 +28,17 @@ class StoreIndicatorRequest extends StoreRequest
             'proyect_id' => 'required|integer|exists:proyects,id,deleted_at,NULL', // El proyecto debe existir y no estar eliminado
             'indicator_name' => 'required|string|max:255', // Nombre del indicador (requerido)
             'target_value' => 'required|numeric|min:0', // Valor objetivo (requerido, debe ser un número mayor o igual a 0)
-            'progress_value' => 'required|numeric|min:0', // Valor de progreso (requerido, debe ser un número mayor o igual a 0)
+            'progress_value' => [
+                'required',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    $target = $this->input('target_value');
+                    if (is_numeric($target) && $value > $target) {
+                        $fail('El valor de progreso no puede ser mayor al valor objetivo.');
+                    }
+                }
+            ],
             'unit' => 'required|string|max:50', // Unidad de medida (requerida, debe ser una cadena de texto)
         ];
     }

@@ -15,6 +15,7 @@ class Ally extends Model
         'business_name',
         'description',
         'link',
+        'date_start',
 
         'phone',
         'email',
@@ -42,13 +43,14 @@ class Ally extends Model
         'participation_type' => 'like',
         'description'        => 'like',
         'link'               => 'like',
+        'date_start'         => 'date',
     ];
 
     /**
      * Campos de ordenación disponibles.
      */
     const sorts = [
-        'id'            => 'desc',
+        'id' => 'desc',
     ];
 
     public function imagestable()

@@ -20,6 +20,7 @@ class Activity extends Model
         'status',
         'created_at',
     ];
+
     protected $hidden = [
 
         'created_at',
@@ -28,7 +29,6 @@ class Activity extends Model
     ];
     const filters = [
 
-        'ruc_dni'          => 'like',
         'name'             => 'like',
         'start_date'       => 'date',
         'end_date'         => 'date',

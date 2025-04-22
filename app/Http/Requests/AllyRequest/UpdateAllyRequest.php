@@ -40,6 +40,7 @@ class UpdateAllyRequest extends UpdateRequest
             'images.*'           => 'file|mimes:jpeg,png,jpg,gif|max:2048',
             'area_of_interest'   => 'required|string|max:255',
             'participation_type' => 'required|string|max:255',
+            'date_start' => 'nullable|date',
         ];
     }
 

@@ -28,7 +28,17 @@ class UpdateIndicatorRequest extends UpdateRequest
             'proyect_id' => 'nullable|integer|exists:proyects,id,deleted_at,NULL', // El proyecto debe existir y no estar eliminado
             'indicator_name' => 'nullable|string|max:255', // El nombre del indicador es opcional en la actualización
             'target_value' => 'nullable|numeric|min:0', // El valor objetivo es opcional pero debe ser un número mayor o igual a 0
-            'progress_value' => 'nullable|numeric|min:0', // El valor de progreso es opcional pero debe ser un número mayor o igual a 0
+            'progress_value' => [
+                'required',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    $target = $this->input('target_value');
+                    if (is_numeric($target) && $value > $target) {
+                        $fail('El valor de progreso no puede ser mayor al valor objetivo.');
+                    }
+                }
+            ],
             'unit' => 'nullable|string|max:50', // La unidad de medida es opcional en la actualización
         ];
     }
