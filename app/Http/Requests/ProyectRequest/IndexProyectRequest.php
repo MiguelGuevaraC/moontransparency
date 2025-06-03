@@ -34,6 +34,9 @@ class IndexProyectRequest extends IndexRequest
             'impact_initial'    => 'nullable|string',
             'impact_final'      => 'nullable|string',
 
+            'location'    => 'nullable|string',
+            'location2'      => 'nullable|string',
+
         ];
     }
 

@@ -15,6 +15,7 @@ class Proyect extends Model
         'start_date',
         'end_date',
         'location',
+        'location2',
         'images',
         'description',
         'budget_estimated',
@@ -36,6 +37,7 @@ class Proyect extends Model
         'start_date'        => 'betweetn',
         'end_date'          => 'betweetn',
         'location'          => 'like',
+        'location2'          => 'like',
 
         'description'       => 'like',
         'budget_estimated'  => 'like',

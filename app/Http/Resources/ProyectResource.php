@@ -62,6 +62,7 @@ class ProyectResource extends JsonResource
             'start_date'        => $this->start_date ?? null,
             'end_date'          => $this->end_date ?? null,
             'location'          => $this->location ?? null,
+            'location2'          => $this->location2 ?? null,
             'images'            => ($this->imagestable ? ImagenResource::collection($this->imagestable) : []),
 
             'description'       => $this->description ?? null,
