@@ -12,6 +12,8 @@ class SurveyQuestion extends Model
         'question_text',
         'question_type',
         'type_field',
+        'order',
+        'is_required',
         'survey_id',
         'created_at',
         'updated_at',
@@ -29,6 +31,8 @@ class SurveyQuestion extends Model
         'question_type' => 'like',
         'survey_id'     => '=',
         'type_field'    => '=',
+        'order'         => '=',
+        'is_required'   => '=',
     ];
 
     const sorts = [

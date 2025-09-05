@@ -41,6 +41,7 @@ class SurveyedResponseResource extends JsonResource
             
             'respondent_id' => $this->respondent_id ?? null,
             'file_path' => $url ?? null,
+            
 
             'survey_questions_options' => $this?->survey_question?->survey_questions_options ?? null,
             'surveyed_responses_options' => $this->surveyed_responses_options ? SurveyedResponseOptionsResource::collection($this->surveyed_responses_options) : null,
