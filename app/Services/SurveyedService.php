@@ -7,7 +7,6 @@ use App\Models\SurveyedResponse;
 use App\Models\SurveyedResponseOption;
 use App\Models\SurveyQuestion;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Str;
 
 class SurveyedService
 {
@@ -22,7 +21,6 @@ class SurveyedService
     {
         return Surveyed::find($id);
     }
-
 
     public function createSurveyed(array $data)
     {
@@ -42,63 +40,9 @@ class SurveyedService
         $surveyed = Surveyed::create([
             'respondent_id' => $person->id,
             'survey_id' => $data['survey_id'] ?? null,
-            // 'file_path' se completará luego si hay archivo
         ]);
 
-        // --- 2.1 Guardar el archivo (si viene) en la entidad Surveyed ---
-        // Buscamos archivos pasados desde el Request (los mandamos en $validated['_files'] desde el controlador)
-        $files = $data['_files'] ?? [];
-
-        // 3 formas posibles de subir el archivo:
-        //  - archivo general: $files['file']
-        //  - archivo por respuesta: $files['responses'][<index>]['file']
-        //  - archivo top-level en $data['file'] (si lo incluyes manualmente)
-        $uploadedFile = null;
-
-        // 1) Si tienes un campo global 'file'
-        if (isset($files['file']) && $files['file'] instanceof UploadedFile) {
-            $uploadedFile = $files['file'];
-        }
-
-        // 2) Buscar archivos dentro de responses (tomamos el primer archivo encontrado)
-        if (!$uploadedFile && isset($files['responses']) && is_array($files['responses'])) {
-            foreach ($files['responses'] as $idx => $respFiles) {
-                if (isset($respFiles['file']) && $respFiles['file'] instanceof UploadedFile) {
-                    $uploadedFile = $respFiles['file'];
-                    break;
-                }
-                // Soporta también respuestas que vienen como arrays numerados: e.g. $files['responses'][0]['file']
-            }
-        }
-
-        // 3) Fallback: si el cliente dejó un UploadedFile dentro de $data['responses'][i]['file']
-        if (!$uploadedFile && isset($data['responses']) && is_array($data['responses'])) {
-            foreach ($data['responses'] as $idx => $resp) {
-                if (isset($resp['file']) && $resp['file'] instanceof UploadedFile) {
-                    $uploadedFile = $resp['file'];
-                    break;
-                }
-            }
-        }
-
-        // Si encontramos archivo, lo guardamos bajo storage/app/public/survey_files/{surveyed_id}/
-        if ($uploadedFile instanceof UploadedFile) {
-            // carpeta por surveyed id
-            $folder = 'survey_files/' . $surveyed->id;
-
-            // nombre seguro único
-            $filename = Str::slug(pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME))
-                . '-' . time() . '.' . $uploadedFile->getClientOriginalExtension();
-
-            // store en disk 'public' -> storage/app/public/{folder}/{filename}
-            $path = $uploadedFile->storeAs($folder, $filename, 'public');
-
-            // actualizar surveyed con la ruta relativa
-            $surveyed->file_path = $path; // ej: 'survey_files/12/documento.pdf'
-            $surveyed->save();
-        }
-
-        // 4. Registrar respuestas si existen (igual que antes, pero *sin* guardar el archivo en surveyed_responses)
+        // 3. Registrar respuestas si existen
         if (isset($data['responses']) && is_array($data['responses'])) {
             foreach ($data['responses'] as $index => $response) {
                 if (!isset($response['survey_question_id'])) {
@@ -117,7 +61,7 @@ class SurveyedService
                     'survey_id' => $data['survey_id'] ?? null,
                     'survey_question_id' => $question->id,
                     'response_text' => null,
-                    // NOTA: NO guardamos file_path aquí porque el archivo va en la tabla surveyed
+                    'file_path' => null,
                 ];
 
                 // Si es tipo LIBRE -> texto
@@ -125,7 +69,27 @@ class SurveyedService
                     $answerData['response_text'] = $response['response_text'];
                 }
 
-                // Crear la respuesta
+                // Si es tipo FILE -> guardar archivo
+                if ($question->question_type === 'FILE') {
+                    // Si $response proviene de $request->validated(), puede contener UploadedFile
+                    $uploadedFile = null;
+
+                    if (isset($response['file']) && $response['file'] instanceof UploadedFile) {
+                        $uploadedFile = $response['file'];
+                    } else {
+                        // fallback: si pasas $request->all() a servicio, usa Request::file
+                        // pero aquí asumimos que $response['file'] viene como UploadedFile
+                    }
+
+                    if ($uploadedFile instanceof UploadedFile) {
+                        // Guardar en disk public bajo carpeta por encuesta/encuestado
+                        $subfolder = 'survey_files/';
+                        $path = $uploadedFile->store($subfolder, 'public'); // storage/app/public/{path}
+                        $answerData['file_path'] = $path;
+                    }
+                }
+
+                // Crear la respuesta y luego las opciones si aplica
                 $answer = SurveyedResponse::create($answerData);
 
                 // Si es tipo OPCIONES, asociar las opciones seleccionadas
@@ -135,6 +99,7 @@ class SurveyedService
                     is_array($response['survey_question_option_id']) &&
                     count($response['survey_question_option_id']) > 0
                 ) {
+
                     foreach ($response['survey_question_option_id'] as $optionId) {
                         SurveyedResponseOption::create([
                             'surveyed_response_id' => $answer->id,
@@ -149,7 +114,6 @@ class SurveyedService
 
         return $surveyed;
     }
-
 
 
     public function updateSurveyed(Surveyed $proyect, array $data): Surveyed

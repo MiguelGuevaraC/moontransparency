@@ -13,7 +13,7 @@ class Surveyed extends Model
         'id',
         'respondent_id',
         'survey_id',
-        'file_path',
+   
         'created_at',
         'updated_at',
         'deleted_at',

@@ -31,6 +31,7 @@ public function toArray($request)
         'survey_question_type'=> $this->survey_question->question_type ?? null,
         'surveyed_id'=> $this->surveyed_id ?? null,
         'respondent_id'=> $this->respondent_id ?? null,
+        'file_path'=> $this->file_path ?? null,
         'survey_questions_options'=> $this?->survey_question?->survey_questions_options?? null,
         'surveyed_responses_options'=>   $this->surveyed_responses_options ? SurveyedResponseOptionsResource::collection($this->surveyed_responses_options) : null,
       

@@ -10,16 +10,21 @@ return new class extends Migration {
      *
      * @return void
      */
-     public function up()
+    public function up()
     {
-        Schema::table('surveyeds', function (Blueprint $table) {
-            $table->string('file_path')->nullable()->after('survey_id');
+        Schema::table('surveyed_responses', function (Blueprint $table) {
+            $table->string('file_path')->nullable()->after('response_text');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
     public function down()
     {
-        Schema::table('surveyeds', function (Blueprint $table) {
+        Schema::table('surveyed_responses', function (Blueprint $table) {
             $table->dropColumn('file_path');
         });
     }

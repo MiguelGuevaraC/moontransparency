@@ -63,15 +63,18 @@ class SurveyedController extends Controller
      *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
      * )
      */
-    public function store(StoreSurveyedRequest $request)
-    {
+public function store(StoreSurveyedRequest $request)
+{
+    // validado para los campos textuales
+    $validated = $request->validated();
 
-        $validated = $request->validated();
-        $validated['_files'] = $request->allFiles();
-        $surveyed = $this->surveyService->createSurveyed($validated);
+    // agregamos todos los archivos (mantienen la misma estructura anidada que envía el cliente)
+    $validated['_files'] = $request->allFiles();
 
-        return new SurveyedResource($surveyed);
-    }
+    $surveyed = $this->surveyService->createSurveyed($validated);
+
+    return new SurveyedResource($surveyed);
+}
 
 
 

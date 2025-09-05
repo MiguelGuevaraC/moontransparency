@@ -36,7 +36,7 @@ public function toArray($request)
         'proyect_name'=> $this?->survey?->proyect?->name ?? null,
         'survey_id'=> $this->survey_id ?? null,
         'survey'=> $this->survey ?? null,
-        'file_path'=> $this->file_path ?? null,
+        
         'surveyed_responses'=> $this->surveyed_responses ? SurveyedResponseResource::collection($this->surveyed_responses) : null,
         'created_at'       => $this->created_at,
     ];
