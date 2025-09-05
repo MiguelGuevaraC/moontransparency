@@ -65,7 +65,7 @@ class SurveyedService
                 ];
 
                 // Si es tipo LIBRE -> texto
-                if ($question->question_type === 'LIBRE' && isset($response['response_text'])) {
+                if (isset($response['response_text'])) {
                     $answerData['response_text'] = $response['response_text'];
                 }
 
