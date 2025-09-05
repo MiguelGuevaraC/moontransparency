@@ -33,6 +33,7 @@ class Survey extends Model
         'status' => '=',
         'survey_type' => '=',
         'post_survey_id' => '=',
+        'created_at' => 'between',
 
     ];
 

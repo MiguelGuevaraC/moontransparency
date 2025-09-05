@@ -2,60 +2,39 @@
 namespace App\Http\Requests\SurveyQuestionOptionRequest;
 
 use App\Http\Requests\StoreRequest;
-use App\Models\User;
-use Illuminate\Validation\Rule;
 
 class StoreSurveyQuestionOptionRequest extends StoreRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
     public function authorize()
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
     public function rules()
     {
         return [
-            'survey_question_id' => 'required|integer|exists:survey_questions,id,deleted_at,NULL',
-            'description'        => 'required|string|max:255',
+            'survey_question_id'        => 'required|integer|exists:survey_questions,id,deleted_at,NULL',
+            'options'                   => 'required|array|min:1',
+            'options.*.description'     => 'required|string|max:255',
+            // si quieres otros campos por opción:
+            // 'options.*.code'          => 'nullable|string|max:50',
+            'replace_existing'          => 'sometimes|boolean', // opcional: borrar opciones previas
         ];
     }
 
-    /**
-     * Obtener los mensajes personalizados de validación.
-     *
-     * @return array
-     */
     public function messages()
     {
         return [
-            'survey_id.required'     => 'El campo encuesta es obligatorio.',
-            'survey_id.integer'      => 'El campo encuesta debe ser un número entero.',
-            'survey_id.exists'       => 'La encuesta seleccionada no existe o ha sido eliminada.',
+            'survey_question_id.required'    => 'El campo encuesta/pregunta es obligatorio.',
+            'survey_question_id.integer'     => 'El campo encuesta/pregunta debe ser un número entero.',
+            'survey_question_id.exists'      => 'La pregunta seleccionada no existe o ha sido eliminada.',
 
-            'question_type.required' => 'El tipo de pregunta es obligatorio.',
-            'question_type.string'   => 'El tipo de pregunta debe ser una cadena de texto.',
-            'question_type.max'      => 'El tipo de pregunta no debe exceder los 255 caracteres.',
-
-            'question_text.required' => 'El texto de la pregunta es obligatorio.',
-            'question_text.string'   => 'El texto de la pregunta debe ser una cadena de texto.',
-            'question_text.max'      => 'El texto de la pregunta no debe exceder los 1000 caracteres.',
+            'options.required'               => 'Debe enviar al menos una opción.',
+            'options.array'                  => 'El campo options debe ser un arreglo.',
+            'options.*.description.required' => 'Cada opción debe tener una descripción.',
+            'options.*.description.string'   => 'La descripción de la opción debe ser una cadena.',
+            'options.*.description.max'      => 'La descripción no debe exceder los 255 caracteres.',
+            'replace_existing.boolean'       => 'replace_existing debe ser booleano (true|false).',
         ];
     }
-
-    /**
-     * Get custom attributes for validator errors.
-     *
-     * @return array
-     */
-
 }
