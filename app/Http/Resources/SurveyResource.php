@@ -9,14 +9,6 @@ class SurveyResource extends JsonResource
 {
     public function toArray($request)
     {
-        // Ubicación (model puede castear a array; fallback decode)
-        $ubicacion = null;
-        if (! empty($this->data_ubicacion)) {
-            $ubicacion = is_array($this->data_ubicacion)
-                ? $this->data_ubicacion
-                : (json_decode($this->data_ubicacion, true) ?: null);
-        }
-
         // --- Resolver POST (si soy PRE)
         $postSurveyObj = null;
         if ($this->survey_type === 'PRE') {
@@ -107,8 +99,7 @@ class SurveyResource extends JsonResource
             'description'       => $this->description,
             'status'            => $this->status,
 
-            'is_consentimiento' => (bool) $this->is_consentimiento,
-            'data_ubicacion'    => $ubicacion,
+ 
 
             // estado y links
             'is_complete'       => $isComplete,

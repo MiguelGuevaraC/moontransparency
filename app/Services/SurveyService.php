@@ -19,6 +19,7 @@ class SurveyService
     }
 
 
+
     public function createSurvey(array $data): Survey
     {
         // Default status
@@ -26,10 +27,15 @@ class SurveyService
             $data['status'] = 'ACTIVA';
         }
 
-        // Si data_ubicacion viene como array, convertir a JSON string (evita Array->string errors)
-        if (isset($data['data_ubicacion']) && is_array($data['data_ubicacion'])) {
-            $data['data_ubicacion'] = json_encode($data['data_ubicacion'], JSON_UNESCAPED_UNICODE);
-        }
+        // --- Eliminar campos que no deben almacenarse aquí ---
+        unset(
+            $data['data_ubicacion'],
+            $data['is_consentimiento'],
+            $data['departamento_id'],
+            $data['provincia_id'],
+            $data['distrito_id'],
+            $data['comunidad']
+        );
 
         return DB::transaction(function () use ($data) {
 
@@ -144,14 +150,17 @@ class SurveyService
         });
     }
 
-
-
     public function updateSurvey(Survey $proyect, array $data): Survey
     {
-        // Si data_ubicacion viene como array, convertir a JSON string
-        if (isset($data['data_ubicacion']) && is_array($data['data_ubicacion'])) {
-            $data['data_ubicacion'] = json_encode($data['data_ubicacion'], JSON_UNESCAPED_UNICODE);
-        }
+        // --- Eliminar campos que no deben almacenarse aquí ---
+        unset(
+            $data['data_ubicacion'],
+            $data['is_consentimiento'],
+            $data['departamento_id'],
+            $data['provincia_id'],
+            $data['distrito_id'],
+            $data['comunidad']
+        );
 
         return DB::transaction(function () use ($proyect, $data) {
             $surveyId = $proyect->id;
@@ -264,13 +273,8 @@ class SurveyService
                     $data['post_survey_id'] = $post->id;
                 }
 
-                // Si no pasó post_survey_id en $data pero la encuesta actual tenía una relación y el cliente
-                // explícitamente quiere quitarla (post_survey_id => null), permitimos actualizar a null.
-                // Actualizamos la PRE con los datos
+                // Actualizamos la PRE con los datos (se permite quitar post_survey_id si viene explícito)
                 $proyect->update($data);
-
-                // Si se le asignó post_survey_id en este update (o ya existía), no se necesita tocar otras filas.
-                // Si antes había una PRE diferente apuntando a la misma POST (improbable porque lo validamos), ya lo habríamos detectado.
 
                 $proyect->refresh();
                 return $proyect;
@@ -279,6 +283,7 @@ class SurveyService
             throw new \Exception('survey_type inválido. Debe ser PRE o POST.');
         });
     }
+
 
 
     public function destroyById($id)

@@ -24,6 +24,7 @@ class IndexSurveyRequest extends IndexRequest
     {
         return [
 
+            'post_survey_id'  => 'nullable|string',
             'proyect_id'  => 'nullable|string',
             'survey_name' => 'nullable|string',
             'description' => 'nullable|string',

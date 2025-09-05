@@ -15,8 +15,6 @@ class Survey extends Model
         'description',
         'status',
         'post_survey_id',
-        'is_consentimiento',
-        'data_ubicacion',
 
         'created_at',
         'updated_at',
@@ -35,15 +33,14 @@ class Survey extends Model
         'status' => '=',
         'survey_type' => '=',
         'post_survey_id' => '=',
-        'is_consentimiento' => '=',
-        'data_ubicacion' => 'like',
+
     ];
 
     /**
      * Campos de ordenación disponibles.
      */
     const sorts = [
-        'id'   => 'desc',
+        'id' => 'desc',
     ];
 
     public function survey_questions()
@@ -52,19 +49,19 @@ class Survey extends Model
     }
     public function proyect()
     {
-        return $this->belongsTo(Proyect::class,'proyect_id');
+        return $this->belongsTo(Proyect::class, 'proyect_id');
     }
 
     // Una PRE puede tener una POST
-public function postSurvey()
-{
-    return $this->belongsTo(Survey::class, 'post_survey_id');
-}
+    public function postSurvey()
+    {
+        return $this->belongsTo(Survey::class, 'post_survey_id');
+    }
 
-// Una POST pertenece a una PRE
-public function preSurvey()
-{
-    return $this->hasOne(Survey::class, 'post_survey_id');
-}
+    // Una POST pertenece a una PRE
+    public function preSurvey()
+    {
+        return $this->hasOne(Survey::class, 'post_survey_id');
+    }
 
 }
