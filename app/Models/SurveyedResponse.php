@@ -13,6 +13,7 @@ class SurveyedResponse extends Model
         'survey_question_id',
         'surveyed_id',
         'respondent_id',
+        'file_path',
 
         'created_at',
         'updated_at',

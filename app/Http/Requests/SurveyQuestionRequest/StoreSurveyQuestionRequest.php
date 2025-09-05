@@ -26,7 +26,7 @@ class StoreSurveyQuestionRequest extends StoreRequest
     {
         return [
             'survey_id'     => 'required|integer|exists:surveys,id,deleted_at,NULL',
-            'question_type' => 'required|string|max:255|in:LIBRE,OPCIONES,UBICACION',
+            'question_type' => 'required|string|max:255|in:LIBRE,OPCIONES,UBICACION,FILE',
             'type_field'    => 'required|string|max:255',
             'question_text' => 'required|string|max:255',
         ];
@@ -47,7 +47,7 @@ class StoreSurveyQuestionRequest extends StoreRequest
             'question_type.required' => 'El tipo de pregunta es obligatorio.',
             'question_type.string'   => 'El tipo de pregunta debe ser una cadena de texto.',
             'question_type.max'      => 'El tipo de pregunta no debe exceder los 255 caracteres.',
-            'question_type.in'      => 'El tipo de pregunta solo acepta LIBRE, OPCIONES Y UBICACION.',
+            'question_type.in'      => 'El tipo de pregunta solo acepta LIBRE, OPCIONES, FILE Y UBICACION.',
 
             'question_text.required' => 'El texto de la pregunta es obligatorio.',
             'question_text.string'   => 'El texto de la pregunta debe ser una cadena de texto.',
