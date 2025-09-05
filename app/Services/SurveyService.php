@@ -15,7 +15,10 @@ class SurveyService
 
     public function getSurveyById(int $id): ?Survey
     {
-        return Survey::find($id);
+        $survey = Survey::with([
+            'survey_questions','survey_questions.survey_questions_options',
+        ])->findOrFail($id);
+        return $survey;
     }
 
 

@@ -3,84 +3,63 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Models\Survey;
+use App\Http\Resources\SurveyQuestionResource;
 
 class SurveyResource extends JsonResource
 {
     public function toArray($request)
     {
-        // --- Resolver POST (si soy PRE)
+        // --- POST cuando soy PRE (usando ?->)
         $postSurveyObj = null;
         if ($this->survey_type === 'PRE') {
-            // si la relación está cargada, usarla
-            if ($this->relationLoaded('postSurvey') && $this->postSurvey) {
-                $p = $this->postSurvey;
-            } elseif (! empty($this->post_survey_id)) {
-                // si no está cargada, traer la POST por id (una sola query puntual)
-                $p = Survey::where('id', $this->post_survey_id)->whereNull('deleted_at')->first();
-            } else {
-                $p = null;
-            }
+            // Intentamos tomar la relación si existe (null-safe). Si no, usamos post_survey_id mínimo.
+            $p = $this->postSurvey?->only(['id', 'survey_name', 'survey_type']) ?? null;
 
             if ($p) {
+                $postSurveyObj = $p;
+            } elseif (!empty($this->post_survey_id)) {
                 $postSurveyObj = [
-                    'id' => $p->id,
-                    'survey_name' => $p->survey_name,
-                    'survey_type' => $p->survey_type,
+                    'id' => (int) $this->post_survey_id,
+                    'survey_name' => null,
+                    'survey_type' => null,
                 ];
             }
         }
 
-        // --- Resolver PRE (si soy POST)
+        // --- PRE cuando soy POST (usando ?->)
         $preSurveyObj = null;
         if ($this->survey_type === 'POST') {
-            if ($this->relationLoaded('preSurvey') && $this->preSurvey) {
-                $q = $this->preSurvey;
-            } else {
-                // buscar la PRE que tiene post_survey_id = this->id
-                $q = Survey::where('post_survey_id', $this->id)->whereNull('deleted_at')->first();
-            }
-
+            $q = $this->preSurvey?->only(['id', 'survey_name', 'survey_type']) ?? null;
             if ($q) {
-                $preSurveyObj = [
-                    'id' => $q->id,
-                    'survey_name' => $q->survey_name,
-                    'survey_type' => $q->survey_type,
-                ];
+                $preSurveyObj = $q;
             }
         }
 
-        // Siempre devolver ambos lados si existen (null cuando no)
-        // Si la relación no aplica para el tipo actual, tratamos de resolver igualmente:
-        // - Si no es PRE but there is a post_survey_id (rare), still show it.
-        if ($postSurveyObj === null && $this->post_survey_id && $this->survey_type !== 'PRE') {
-            $p2 = Survey::where('id', $this->post_survey_id)->whereNull('deleted_at')->first();
-            if ($p2) {
-                $postSurveyObj = [
-                    'id' => $p2->id,
-                    'survey_name' => $p2->survey_name,
-                    'survey_type' => $p2->survey_type,
-                ];
-            }
+        // --- Casos generales (mostrar enlace mínimo si existe id)
+        if ($postSurveyObj === null && !empty($this->post_survey_id)) {
+            $postSurveyObj = [
+                'id' => (int) $this->post_survey_id,
+                'survey_name' => null,
+                'survey_type' => null,
+            ];
         }
 
         if ($preSurveyObj === null && $this->survey_type !== 'POST') {
-            $pre = Survey::where('post_survey_id', $this->id)->whereNull('deleted_at')->first();
+            // No hacemos consultas extra: si la relación existe la tomamos con ?->, si no, dejamos null.
+            $pre = $this->preSurvey?->only(['id', 'survey_name', 'survey_type']) ?? null;
             if ($pre) {
-                $preSurveyObj = [
-                    'id' => $pre->id,
-                    'survey_name' => $pre->survey_name,
-                    'survey_type' => $pre->survey_type,
-                ];
+                $preSurveyObj = $pre;
             }
         }
 
-        // is_complete: para PRE -> tiene POST, para POST -> tiene PRE
-        $isComplete = false;
+        // is_complete:
         if ($this->survey_type === 'PRE') {
-            $isComplete = (bool) $postSurveyObj;
+            $isComplete = (bool) ($postSurveyObj);
         } elseif ($this->survey_type === 'POST') {
-            $isComplete = (bool) $preSurveyObj;
+            // Si la relación preSurvey está presente el null-safe devolverá el id; si no, será null
+            $isComplete = (bool) $this->preSurvey?->id;
+        } else {
+            $isComplete = false;
         }
 
         // survey_link: si soy POST muestro PRE; si soy PRE muestro POST
@@ -99,23 +78,21 @@ class SurveyResource extends JsonResource
             'description'       => $this->description,
             'status'            => $this->status,
 
- 
-
             // estado y links
             'is_complete'       => $isComplete,
-            'survey_link'       => $surveyLink,     // {id, survey_name, survey_type} o null
+            'survey_link'       => $surveyLink,     // {id, survey_name|null, survey_type|null} o null
 
-            // relaciones cargadas
-            'survey_questions'  => \App\Http\Resources\SurveyQuestionResource::collection($this->whenLoaded('survey_questions')),
-            'proyect'           => $this->whenLoaded('proyect', function () {
-                                     return [
-                                         'id' => $this->proyect->id,
-                                         'name' => $this->proyect->name ?? null,
-                                     ];
-                                 }),
+            // relaciones (se accede con ?-> / fallback vacío si no hay nada)
+            'survey_questions'  => $this->survey_questions ? SurveyQuestionResource::collection($this->survey_questions) : null,
 
-            'created_at'        => $this->created_at ? $this->created_at->toIso8601String() : null,
-            'updated_at'        => $this->updated_at ? $this->updated_at->toIso8601String() : null,
+            // proyect usando null-safe
+            'proyect'           => $this->proyect ? [
+                                        'id' => $this->proyect?->id,
+                                        'name' => $this->proyect?->name ?? null,
+                                    ] : null,
+
+            'created_at'        => $this->created_at?->toIso8601String(),
+            'updated_at'        => $this->updated_at?->toIso8601String(),
         ];
     }
 }
