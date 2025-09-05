@@ -2,7 +2,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-
+use Illuminate\Support\Facades\Storage;
 
 class SurveyedResponseResource extends JsonResource
 {
@@ -23,6 +23,20 @@ class SurveyedResponseResource extends JsonResource
 
 public function toArray($request)
 {
+     $filePath = $this->file_path ?? null;
+
+        // generar URL pública desde disk 'public' si existe path
+        $fileUrl = null;
+        if ($filePath) {
+            try {
+                // Storage::disk('public')->url() asume que ejecutaste php artisan storage:link
+                $fileUrl = Storage::disk('public')->url($filePath);
+            } catch (\Throwable $e) {
+                $fileUrl = null;
+            }
+        }
+
+
     return [
         'id'               => $this->id ?? null,
         'response_text'=> $this->response_text ?? null,
@@ -31,7 +45,7 @@ public function toArray($request)
         'survey_question_type'=> $this->survey_question->question_type ?? null,
         'surveyed_id'=> $this->surveyed_id ?? null,
         'respondent_id'=> $this->respondent_id ?? null,
-        'file_path'=> $this->file_path ?? null,
+        'file_path'=> $fileUrl  ?? null,
         'survey_questions_options'=> $this?->survey_question?->survey_questions_options?? null,
         'surveyed_responses_options'=>   $this->surveyed_responses_options ? SurveyedResponseOptionsResource::collection($this->surveyed_responses_options) : null,
       
