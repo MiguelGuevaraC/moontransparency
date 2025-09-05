@@ -63,9 +63,6 @@ class StoreSurveyedRequest extends StoreRequest
                     continue; // ya será rechazado por el exists
                 }
 
-                if ($question->question_type === 'LIBRE' && empty($response['response_text'])) {
-                    $validator->errors()->add("responses.$index.response_text", "La respuesta en texto es obligatoria para preguntas de tipo LIBRE.");
-                }
 
                 if ($question->question_type === 'OPCIONES' && empty($response['survey_question_option_id'])) {
                     $validator->errors()->add("responses.$index.survey_question_option_id", "Debe seleccionar al menos una opción para preguntas de tipo OPCIONES.");
