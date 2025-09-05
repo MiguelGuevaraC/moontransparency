@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\UbigeoController;
 use App\Http\Controllers\AuthenticationController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,3 +38,10 @@ Route::group(["middleware" => ["auth:sanctum"]], function () {
 
 require __DIR__ . '/Web/ApisWeb.php'; //APIS PARA WEB
 require __DIR__ . '/Web/GraficosApi.php'; //GRAFICOS
+
+
+//    UBIGEO
+Route::get('departments', [UbigeoController::class, 'indexDepartments'])->name('indexDepartments');
+Route::get('provinces/{departmentId}', [UbigeoController::class, 'indexProvinces'])->name('indexProvinces');
+Route::get('districts/{provinceId}', [UbigeoController::class, 'indexDistricts'])->name('indexDistricts');
+Route::get('ubigeos', [UbigeoController::class, 'ubigeos'])->name('ubigeos');

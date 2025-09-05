@@ -2,61 +2,214 @@
 namespace App\Http\Requests\SurveyRequest;
 
 use App\Http\Requests\StoreRequest;
-use App\Models\User;
 use Illuminate\Validation\Rule;
+use App\Models\Survey;
+use Illuminate\Support\Facades\DB;
 
 class StoreSurveyRequest extends StoreRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
     public function authorize()
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
+    protected function prepareForValidation()
+    {
+        $loc = $this->input('data_ubicacion');
+
+        if (is_array($loc)) {
+            $normalized = $loc;
+
+            $map = [
+                'departamento_id' => 'department_id',
+                'provincia_id' => 'province_id',
+                'distrito_id' => 'district_id',
+                'comunidad' => 'community',
+            ];
+
+            foreach ($map as $es => $en) {
+                if (array_key_exists($es, $loc) && !array_key_exists($en, $loc)) {
+                    $normalized[$en] = $loc[$es];
+                }
+            }
+
+            $this->merge(['data_ubicacion' => $normalized]);
+        }
+    }
+
     public function rules()
     {
         return [
-            'proyect_id'  => 'required|integer|exists:proyects,id,deleted_at,NULL', // El proyecto debe existir y no estar eliminado
-            'survey_name' => 'required|string|max:255',                             // Nombre de la encuesta (requerido)
-            'description' => 'required|string|max:1000',                            // Descripción de la encuesta (requerida, máximo 1000 caracteres)
-            'status'      => 'nullable|string|in:ACTIVA,INACTIVA',
-            'survey_type' => 'required|string|max:255|in:PRE,POST',
+            'proyect_id' => 'required|integer|exists:proyects,id,deleted_at,NULL',
+            'survey_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('surveys', 'survey_name')->where(function ($q) {
+                    return $q->where('proyect_id', $this->input('proyect_id'))->whereNull('deleted_at');
+                }),
+            ],
+            'description' => 'required|string|max:1000',
+            'status' => 'nullable|string|in:ACTIVA,INACTIVA',
+            'survey_type' => 'required|string|in:PRE,POST',
+            'is_consentimiento' => 'nullable|boolean',
+
+            'data_ubicacion' => 'nullable|array',
+            'data_ubicacion.department_id' => 'required_with:data_ubicacion|integer|exists:departments,id',
+            'data_ubicacion.province_id' => 'required_with:data_ubicacion|integer|exists:provinces,id',
+            'data_ubicacion.district_id' => 'required_with:data_ubicacion|integer|exists:districts,id',
+            'data_ubicacion.community' => 'required_with:data_ubicacion|string|max:255',
+
+            'post_survey_id' => 'nullable|integer',
+            'post_survey_name' => 'nullable|string|max:255',
+            'pre_survey_id' => 'nullable|integer',
+            'pre_survey_name' => 'nullable|string|max:255',
         ];
     }
 
-    /**
-     * Obtener los mensajes personalizados de validación.
-     *
-     * @return array
-     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($v) {
+            $type = $this->input('survey_type');
+            $projectId = $this->input('proyect_id');
+
+            // --- VALIDACIÓN JERÁRQUICA department -> province -> district ---
+            $loc = $this->input('data_ubicacion', null);
+            if (!is_null($loc) && is_array($loc)) {
+                $deptId = $loc['department_id'] ?? null;
+                $provId = $loc['province_id'] ?? null;
+                $distId = $loc['district_id'] ?? null;
+
+                // Si alguna de las claves no está presente, reglas 'required_with' ya manejaron eso.
+                // Verificamos coherencia si vienen los tres (o al menos la dependencia necesaria)
+                if ($deptId && $provId) {
+                    $provExists = DB::table('provinces')
+                        ->where('id', $provId)
+                        ->where('department_id', $deptId)
+                        ->exists();
+
+                    if (!$provExists) {
+                        $v->errors()->add('data_ubicacion.province_id', 'La provincia no pertenece al departamento indicado.');
+                        return;
+                    }
+                }
+
+                if ($provId && $distId) {
+                    $distExists = DB::table('districts')
+                        ->where('id', $distId)
+                        ->where('province_id', $provId)
+                        ->exists();
+
+                    if (!$distExists) {
+                        $v->errors()->add('data_ubicacion.district_id', 'El distrito no pertenece a la provincia indicada.');
+                        return;
+                    }
+                }
+            }
+
+            // --- lógica PRE / POST (igual que antes) ---
+            if ($type === 'PRE') {
+                $postId = $this->input('post_survey_id');
+                $postName = $this->input('post_survey_name');
+
+                if (is_null($postId) && is_null($postName)) {
+                    return; // permitido crear PRE sin POST ligada
+                }
+
+                $post = null;
+                if ($postId) {
+                    $post = Survey::where('id', $postId)->where('survey_type', 'POST')->whereNull('deleted_at')->first();
+                } else {
+                    $q = Survey::where('survey_name', $postName)->where('survey_type', 'POST')->whereNull('deleted_at');
+                    if ($this->filled('proyect_id'))
+                        $q->where('proyect_id', $projectId);
+                    $post = $q->first();
+                }
+
+                if (!$post) {
+                    $v->errors()->add('post_survey_id', 'La encuesta POST indicada no existe o no es de tipo POST.');
+                    return;
+                }
+
+                $linkedPre = Survey::where('post_survey_id', $post->id)->whereNull('deleted_at')->first();
+                if ($linkedPre) {
+                    $v->errors()->add(
+                        'post_survey_id',
+                        "La encuesta POST '{$post->survey_name}' ya está asociada a la PRE '{$linkedPre->survey_name}'."
+                    );
+                }
+
+                return;
+            }
+
+            if ($type === 'POST') {
+                $preId = $this->input('pre_survey_id');
+                $preName = $this->input('pre_survey_name');
+
+                if (is_null($preId) && is_null($preName)) {
+                    $v->errors()->add('pre_survey_id', 'Al crear una encuesta de tipo POST debes indicar la encuesta PRE asociada.');
+                    return;
+                }
+
+                $pre = null;
+                if ($preId) {
+                    $pre = Survey::where('id', $preId)->where('survey_type', 'PRE')->whereNull('deleted_at')->first();
+                } else {
+                    $q = Survey::where('survey_name', $preName)->where('survey_type', 'PRE')->whereNull('deleted_at');
+                    if ($this->filled('proyect_id'))
+                        $q->where('proyect_id', $projectId);
+                    $pre = $q->first();
+                }
+
+                if (!$pre) {
+                    $v->errors()->add('pre_survey_id', 'La encuesta PRE indicada no existe o no es de tipo PRE.');
+                    return;
+                }
+
+                if (!is_null($pre->post_survey_id)) {
+                    $linkedPost = Survey::withTrashed()->find($pre->post_survey_id);
+                    $v->errors()->add(
+                        'pre_survey_id',
+                        "La encuesta PRE '{$pre->survey_name}' ya está asociada a la POST '" . ($linkedPost ? $linkedPost->survey_name : $pre->post_survey_id) . "'."
+                    );
+                }
+
+                return;
+            }
+        });
+    }
+
     public function messages()
     {
         return [
-            'status.in'            => 'Solo aceptan valores como ACTIVA,INACTIVA.',
-            'proyect_id.required'  => 'El ID del proyecto es obligatorio.',
-            'survey_name.required' => 'El nombre de la encuesta es obligatorio.',
-            'description.required' => 'La descripción de la encuesta es obligatoria.',
-            'proyect_id.exists'    => 'El ID del proyecto no existe o está eliminado.',
-            'survey_name.max'      => 'El nombre de la encuesta no debe exceder los 255 caracteres.',
-            'description.max'      => 'La descripción de la encuesta no debe exceder los 1000 caracteres.',
-            'survey_type.required' => 'Tipo de Encuesta es obligatorio',
-            'survey_type.in'       => 'Tipo de Encuesta solo acepta POST,PRE',
+            // generales
+            'survey_type.in' => 'Tipo de encuesta solo puede ser PRE o POST.',
+            'data_ubicacion.array' => 'data_ubicacion debe ser un objeto con los campos: departamento, provincia, distrito y comunidad.',
+
+            // departamento
+            'data_ubicacion.department_id.required_with' => 'El campo "departamento" es obligatorio cuando se incluye data_ubicacion.',
+            'data_ubicacion.department_id.integer' => 'El campo "departamento" debe ser un identificador numérico.',
+            'data_ubicacion.department_id.exists' => 'El departamento indicado no existe.',
+
+            // provincia
+            'data_ubicacion.province_id.required_with' => 'El campo "provincia" es obligatorio cuando se incluye data_ubicacion.',
+            'data_ubicacion.province_id.integer' => 'El campo "provincia" debe ser un identificador numérico.',
+            'data_ubicacion.province_id.exists' => 'La provincia indicada no existe.',
+
+            // distrito
+            'data_ubicacion.district_id.required_with' => 'El campo "distrito" es obligatorio cuando se incluye data_ubicacion.',
+            'data_ubicacion.district_id.integer' => 'El campo "distrito" debe ser un identificador numérico.',
+            'data_ubicacion.district_id.exists' => 'El distrito indicado no existe.',
+
+            // comunidad
+            'data_ubicacion.community.required_with' => 'El campo "comunidad" es obligatorio cuando se incluye data_ubicacion.',
+            'data_ubicacion.community.string' => 'El campo "comunidad" debe ser texto.',
+            'data_ubicacion.community.max' => 'La comunidad no debe exceder los 255 caracteres.',
+
+            // otros
+            'is_consentimiento.boolean' => 'is_consentimiento debe ser booleano (true/false).',
+            'survey_name.unique' => 'Ya existe una encuesta con ese nombre en el proyecto.',
         ];
     }
-
-    /**
-     * Get custom attributes for validator errors.
-     *
-     * @return array
-     */
 
 }

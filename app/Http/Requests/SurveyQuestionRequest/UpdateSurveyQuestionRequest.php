@@ -27,6 +27,7 @@ class UpdateSurveyQuestionRequest extends UpdateRequest
         return [
             'survey_id'     => 'required|integer|exists:surveys,id,deleted_at,NULL',
             'question_type' => 'required|string|max:255|in:LIBRE,OPCIONES',
+            'type_field'    => 'required|string|max:255',
             'question_text' => 'required|string|max:255',
         ];
     }
