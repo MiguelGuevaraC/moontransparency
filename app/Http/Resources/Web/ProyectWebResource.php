@@ -67,7 +67,7 @@ class ProyectWebResource extends JsonResource
             'activities'         => $this->activities ?? null,
             'allies'             => ($this->allies ? AllyResource::collection($this->allies) : []),
 
-            'surveys_activas_id' =>  $this->surveys_activas()->select('id', 'survey_name')->get(),
+            'surveys_activas_id' =>  $this->surveys_activas()->select('id', 'survey_name', 'survey_type')->get(),
             'created_at'         => $this->created_at,
         ];
     }

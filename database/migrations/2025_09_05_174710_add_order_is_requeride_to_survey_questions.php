@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('survey_questions', function (Blueprint $table) {
-             $table->integer('order')->nullable()->after('id');
+             $table->decimal('order')->nullable()->after('id');
              $table->boolean('is_required')->default(false)->after('order');
         });
     }

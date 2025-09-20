@@ -31,4 +31,14 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'search_identity' => [
+        'dni' => [
+            'url' => env('URL_SEARCH_DNI', 'https://default-dni.com'),
+            'token' => env('TOKEN_SEARCH_DNI', 'default_token_dni'),
+        ],
+        'ruc' => [
+            'url' => env('URL_SEARCH_RUC', 'https://default-ruc.com'),
+            'token' => env('TOKEN_SEARCH_RUC', 'default_token_ruc'),
+        ],
+    ],
 ];
