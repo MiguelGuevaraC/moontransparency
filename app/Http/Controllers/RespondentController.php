@@ -20,6 +20,19 @@ class RespondentController extends Controller
         $this->respondentService = $respondentService;
     }
 
+
+     public function index(IndexRespondentRequest $request)
+    {
+
+        return $this->getFilteredResults(
+            Respondent::class,
+            $request,
+            Respondent::filters,
+            Respondent::sorts,
+            RespondentResource::class
+        );
+    }
+
     /**
      * @OA\Get(
      *     path="/moontransparency/public/api/survey",
