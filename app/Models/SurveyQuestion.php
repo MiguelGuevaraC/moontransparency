@@ -26,13 +26,13 @@ class SurveyQuestion extends Model
         'deleted_at',
     ];
     const filters = [
-        'survey_name'   => 'like',
+        'survey_name' => 'like',
         'question_text' => 'like',
         'question_type' => 'like',
-        'survey_id'     => '=',
-        'type_field'    => '=',
-        'order'         => '=',
-        'is_required'   => '=',
+        'survey_id' => '=',
+        'type_field' => '=',
+        'order' => '=',
+        'is_required' => '=',
     ];
 
     const sorts = [
@@ -47,4 +47,20 @@ class SurveyQuestion extends Model
     {
         return $this->hasMany(SurveyQuestionOption::class);
     }
+    public function ods()
+    {
+        return $this->belongsToMany(
+            Ods::class,                 // Modelo destino
+            'survey_question_ods',      // Tabla pivote
+            'survey_question_id',       // FK en la pivote hacia SurveyQuestion
+            'ods_id'                    // FK en la pivote hacia Ods
+        );
+    }
+
+    public function surveyed_responses()
+    {
+        return $this->hasMany(SurveyedResponse::class, 'survey_question_id');
+    }
+
+
 }

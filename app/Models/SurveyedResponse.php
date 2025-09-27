@@ -26,10 +26,10 @@ class SurveyedResponse extends Model
         'deleted_at',
     ];
     const filters = [
-        'response_text'   => 'like',
+        'response_text' => 'like',
         'survey_question_id' => '=',
-        'surveyed_id'     => '=',
-        'respondent_id'  => '=',
+        'surveyed_id' => '=',
+        'respondent_id' => '=',
     ];
 
     /**
@@ -45,6 +45,7 @@ class SurveyedResponse extends Model
     }
     public function survey_question()
     {
-        return $this->belongsTo(SurveyQuestion::class,'survey_question_id');
+        return $this->belongsTo(SurveyQuestion::class, 'survey_question_id');
     }
+
 }
