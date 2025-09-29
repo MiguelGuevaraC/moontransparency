@@ -121,6 +121,11 @@ class SurveyQuestionOdsService
                     'id' => $question->id,
                     'text' => $question->question_text,
                     'type' => $question->question_type,
+                    'ods' => $question->ods->map(fn($ods) => [
+                        'id' => $ods->id,
+                        'name' => $ods->name,
+                        'code' => $ods->code ?? null, // si tu modelo tiene campo código
+                    ])->values(),
                     'chart' => $this->buildChartData(
                         $question->question_type,
                         $question->surveyed_responses,
@@ -185,25 +190,7 @@ class SurveyQuestionOdsService
                         'value' => $responses->whereNotNull('file_path')->count(),
                     ]
                 ];
-            case 'CORTO':
-            case 'LIBRE':
-            case 'UBICACION':
-            case 'LARGO':
-                $counts = $responses->groupBy('response_text')
-                    ->map->count()
-                    ->sortDesc();
 
-                $labels = $counts->keys()->take(4)->map(fn($t) => $t ?: '(vacío)');
-                $values = $counts->take(4)->values();
-
-                if ($counts->count() > 4) {
-                    $labels = $labels->concat(['Otros']);
-                    $values = $values->concat([$counts->slice(4)->sum()]);
-                }
-
-                return $labels->map(
-                    fn($label, $i) => ['label' => $label, 'value' => $values[$i]]
-                )->values()->toArray();
 
             case 'FECHA':
                 return $responses
@@ -227,8 +214,43 @@ class SurveyQuestionOdsService
                     )->values()->toArray()
                     : [];
 
+            case 'CORTO':
+            case 'LIBRE':
+            case 'UBICACION':
+            case 'LARGO':
+                $counts = $responses->groupBy('response_text')
+                    ->map->count()
+                    ->sortDesc();
+
+                $labels = $counts->keys()->take(4)->map(fn($t) => $t ?: '(vacío)');
+                $values = $counts->take(4)->values();
+
+                if ($counts->count() > 4) {
+                    $labels = $labels->concat(['Otros']);
+                    $values = $values->concat([$counts->slice(4)->sum()]);
+                }
+
+                return $labels->map(
+                    fn($label, $i) => ['label' => $label, 'value' => $values[$i]]
+                )->values()->toArray();
+
             default:
-                return null; // UBICACIÓN y FILE → no se grafican
+                $counts = $responses->groupBy('response_text')
+                    ->map->count()
+                    ->sortDesc();
+
+                $labels = $counts->keys()->take(4)->map(fn($t) => $t ?: '(vacío)');
+                $values = $counts->take(4)->values();
+
+                if ($counts->count() > 4) {
+                    $labels = $labels->concat(['Otros']);
+                    $values = $values->concat([$counts->slice(4)->sum()]);
+                }
+
+                return $labels->map(
+                    fn($label, $i) => ['label' => $label, 'value' => $values[$i]]
+                )->values()->toArray();
+
         }
     }
 
