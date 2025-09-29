@@ -33,6 +33,7 @@ class SurveyQuestionOptionResource extends JsonResource
             'survey_question_id'            => $this->survey_question_id ?? null,
             'survey_question_question_text' => $this->surveyQuestion->question_text ?? null,
             'survey_name'                   => $this->surveyQuestion->survey?->survey_name ?? null,
+            'survey_id'                     => $this->surveyQuestion->survey?->id ?? null,
             'description'                   => $this->description ?? null,
             'created_at'                    => $this->created_at ?? null,
         ];

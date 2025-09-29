@@ -27,6 +27,7 @@ class SurveyQuestionOption extends Model
         'survey_question_id'=> '=',
         'survey_question.question_text'=> 'like',
         'survey.survey_name'=> 'like',
+        'survey_question.survey_id'=> '=',
         'description'=> 'like',
     ];
 

@@ -93,16 +93,14 @@ class SurveyQuestionOdsService
      */
     public function getSurveyChartsByOds(int $surveyId, array $odsIds): array
     {
-
         try {
-            // Buscar encuesta
+            // 1. Buscar encuesta con relaciones necesarias
             $survey = Survey::with([
                 'survey_questions.ods',
-                'survey_questions.survey_questions_options', //  Faltaba esto
+                'survey_questions.survey_questions_options',
                 'survey_questions.surveyed_responses.surveyed_responses_options'
             ])->find($surveyId);
 
-            // Caso 1: No existe encuesta
             if (!$survey) {
                 return [
                     'error' => "La encuesta con ID {$surveyId} no existe",
@@ -110,38 +108,41 @@ class SurveyQuestionOdsService
                 ];
             }
 
+            // 2. Si no hay ODS → usar todas las preguntas
+            $questionsCollection = empty($odsIds)
+                ? $survey->survey_questions
+                : $survey->survey_questions->filter(
+                    fn($q) => $q->ods->pluck('id')->intersect($odsIds)->isNotEmpty()
+                );
 
+            // 3. Construcción del payload de preguntas
+            $questions = $questionsCollection->map(function ($question) {
+                return [
+                    'id' => $question->id,
+                    'text' => $question->question_text,
+                    'type' => $question->question_type,
+                    'chart' => $this->buildChartData(
+                        $question->question_type,
+                        $question->surveyed_responses,
+                        $question
+                    ),
+                ];
+            })->values();
 
-            // Filtrar preguntas que estén vinculadas a los ODS solicitados
-            $questions = $survey->survey_questions
-                ->filter(fn($q) => $q->ods->pluck('id')->intersect($odsIds)->isNotEmpty())
-                ->map(function ($question) {
-                    return [
-                        'id' => $question->id,
-                        'text' => $question->question_text,
-                        'type' => $question->question_type,
-                        'chart' => $this->buildChartData(
-                            $question->question_type,
-                            $question->surveyed_responses,
-                            $question // 👈 pasa también la pregunta
-                        ),
-                    ];
-                })
-                ->values();
-            // Caso 2: Encuesta existe pero sin preguntas ligadas a esos ODS
+            // 4. Si no hay preguntas (según filtro u ODS vacío)
             if ($questions->isEmpty()) {
                 return [
                     'survey_id' => $survey->id,
                     'survey_name' => $survey->survey_name,
                     'nro_questions' => 0,
                     'questions' => [],
-                    'message' => 'Encuesta encontrada pero sin preguntas vinculadas a este ODS',
+                    'message' => empty($odsIds)
+                        ? 'Encuesta encontrada pero no tiene preguntas registradas'
+                        : 'Encuesta encontrada pero sin preguntas vinculadas a este ODS',
                 ];
             }
-            // 3) Para la pregunta problemática (ej id 50), inspecciona opciones/respuestas:
-            $question = $survey->survey_questions->firstWhere('id', 50);
 
-            // Caso exitoso
+            // 5. Caso exitoso
             return [
                 'survey_id' => $survey->id,
                 'survey_name' => $survey->survey_name,
@@ -162,66 +163,74 @@ class SurveyQuestionOdsService
         }
     }
 
-   /**
- * Construye los datos para gráficos según el tipo de pregunta
- */
-private function buildChartData(string $type, $responses, $question = null): ?array
-{
-    switch (strtoupper($type)) {
-        case 'NUMERICO':
-            return collect([
-                'Promedio' => (float) $responses->avg('response_text'),
-                'Mínimo'   => (float) $responses->min('response_text'),
-                'Máximo'   => (float) $responses->max('response_text'),
-            ])->map(fn($v, $k) => ['label' => $k, 'value' => $v])
-              ->values()
-              ->toArray();
 
-        case 'CORTO':
-        case 'LIBRE':
-        case 'LARGO':
-            $counts = $responses->groupBy('response_text')
-                ->map->count()
-                ->sortDesc();
-
-            $labels = $counts->keys()->take(4)->map(fn($t) => $t ?: '(vacío)');
-            $values = $counts->take(4)->values();
-
-            if ($counts->count() > 4) {
-                $labels = $labels->concat(['Otros']);
-                $values = $values->concat([$counts->slice(4)->sum()]);
-            }
-
-            return $labels->map(
-                fn($label, $i) => ['label' => $label, 'value' => $values[$i]]
-            )->values()->toArray();
-
-        case 'FECHA':
-            return $responses
-                ->groupBy(fn($r) => \Carbon\Carbon::parse($r->response_text)->format('Y-m'))
-                ->map(fn($g, $date) => ['label' => $date, 'value' => $g->count()])
-                ->values()
-                ->toArray();
-
-        case 'OPCIONES':
-        case 'CHECK':
-            $counts = $responses->flatMap->surveyed_responses_options
-                ->groupBy('survey_question_options_id')
-                ->map->count();
-
-            return $question
-                ? $question->survey_questions_options->map(
-                    fn($opt) => [
-                        'label' => $opt->description,
-                        'value' => $counts->get($opt->id, 0),
+    /**
+     * Construye los datos para gráficos según el tipo de pregunta
+     */
+    private function buildChartData(string $type, $responses, $question = null): ?array
+    {
+        switch (strtoupper($type)) {
+            case 'NUMERICO':
+                return collect([
+                    'Promedio' => (float) $responses->avg('response_text'),
+                    'Mínimo' => (float) $responses->min('response_text'),
+                    'Máximo' => (float) $responses->max('response_text'),
+                ])->map(fn($v, $k) => ['label' => $k, 'value' => $v])
+                    ->values()
+                    ->toArray();
+            case 'FILE':
+                return [
+                    [
+                        'label' => 'Archivos subidos',
+                        'value' => $responses->whereNotNull('file_path')->count(),
                     ]
-                )->values()->toArray()
-                : [];
+                ];
+            case 'CORTO':
+            case 'LIBRE':
+            case 'UBICACION':
+            case 'LARGO':
+                $counts = $responses->groupBy('response_text')
+                    ->map->count()
+                    ->sortDesc();
 
-        default:
-            return null; // UBICACIÓN y FILE → no se grafican
+                $labels = $counts->keys()->take(4)->map(fn($t) => $t ?: '(vacío)');
+                $values = $counts->take(4)->values();
+
+                if ($counts->count() > 4) {
+                    $labels = $labels->concat(['Otros']);
+                    $values = $values->concat([$counts->slice(4)->sum()]);
+                }
+
+                return $labels->map(
+                    fn($label, $i) => ['label' => $label, 'value' => $values[$i]]
+                )->values()->toArray();
+
+            case 'FECHA':
+                return $responses
+                    ->groupBy(fn($r) => \Carbon\Carbon::parse($r->response_text)->format('Y-m'))
+                    ->map(fn($g, $date) => ['label' => $date, 'value' => $g->count()])
+                    ->values()
+                    ->toArray();
+
+            case 'OPCIONES':
+            case 'CHECK':
+                $counts = $responses->flatMap->surveyed_responses_options
+                    ->groupBy('survey_question_options_id')
+                    ->map->count();
+
+                return $question
+                    ? $question->survey_questions_options->map(
+                        fn($opt) => [
+                            'label' => $opt->description,
+                            'value' => $counts->get($opt->id, 0),
+                        ]
+                    )->values()->toArray()
+                    : [];
+
+            default:
+                return null; // UBICACIÓN y FILE → no se grafican
+        }
     }
-}
 
 
 }
