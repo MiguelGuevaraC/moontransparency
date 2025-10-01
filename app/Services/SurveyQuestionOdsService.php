@@ -186,7 +186,7 @@ class SurveyQuestionOdsService
             case 'FILE':
                 return [
                     [
-                        'label' => 'Archivos subidos',
+                        'label' => 'Cantidad Archivos Subidos',
                         'value' => $responses->whereNotNull('file_path')->count(),
                     ]
                 ];
