@@ -54,8 +54,12 @@ class SurveyQuestion extends Model
             'survey_question_ods',      // Tabla pivote
             'survey_question_id',       // FK en la pivote hacia SurveyQuestion
             'ods_id'                    // FK en la pivote hacia Ods
-        );
+        )
+            ->withPivot('id')
+            ->wherePivotNull('deleted_at'); // Excluye registros eliminados lógicamente
     }
+
+
 
     public function surveyed_responses()
     {
