@@ -44,6 +44,10 @@ class UpdateSurveyQuestionRequest extends UpdateRequest
 
             // Opcional: bandera si es obligatoria
             'is_required'   => 'nullable|boolean',
+
+            
+            'eje' => 'nullable|string|max:255',
+            'justification' => 'nullable|string',
         ];
     }
 
@@ -72,6 +76,14 @@ class UpdateSurveyQuestionRequest extends UpdateRequest
             'order.min'              => 'El campo orden no puede ser negativo.',
 
             'is_required.boolean'    => 'El campo is_required debe ser verdadero o falso (true/false).',
+           'eje.required' => 'El campo Eje es obligatorio.',
+            'eje.string' => 'El campo Eje debe ser una cadena de texto.',
+            'eje.max' => 'El campo Eje no debe exceder los 255 caracteres.',
+
+            'justification.required' => 'La justificación es obligatoria.',
+            'justification.string' => 'La justificación debe ser una cadena de texto.',
+
+        
         ];
     }
 

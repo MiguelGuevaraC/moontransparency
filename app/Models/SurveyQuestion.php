@@ -13,6 +13,8 @@ class SurveyQuestion extends Model
         'question_type',
         'type_field',
         'order',
+        'eje',
+        'justification',
         'is_required',
         'survey_id',
         'created_at',
@@ -20,7 +22,6 @@ class SurveyQuestion extends Model
         'deleted_at',
     ];
     protected $hidden = [
-
         'created_at',
         'updated_at',
         'deleted_at',
@@ -33,6 +34,8 @@ class SurveyQuestion extends Model
         'type_field' => '=',
         'order' => '=',
         'is_required' => '=',
+        'eje' => '=',
+        'justification' => 'like',
     ];
 
     const sorts = [

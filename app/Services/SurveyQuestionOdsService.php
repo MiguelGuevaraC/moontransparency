@@ -92,82 +92,124 @@ class SurveyQuestionOdsService
     /**
      * Devuelve preguntas de una encuesta relacionadas a ciertos ODS con data lista para gráficos
      */
-    public function getSurveyChartsByOds(int $surveyId, array $odsIds): array
-    {
-        try {
-            // 1. Buscar encuesta con relaciones necesarias
-            $survey = Survey::with([
-                'survey_questions.ods',
-                'survey_questions.survey_questions_options',
-                'survey_questions.surveyed_responses.surveyed_responses_options'
-            ])->find($surveyId);
+  public function getSurveyCharts(
+    int $surveyId,
+    array $odsIds = [],
+    bool $groupByEje = false
+): array {
+    try {
+        // 1️⃣ Buscar encuesta
+        $survey = Survey::with([
+            'survey_questions.ods',
+            'survey_questions.survey_questions_options',
+            'survey_questions.surveyed_responses.surveyed_responses_options'
+        ])->find($surveyId);
 
-            if (!$survey) {
-                return [
-                    'error' => "La encuesta con ID {$surveyId} no existe",
-                    'data' => ['survey_id' => $surveyId, 'ods_ids' => $odsIds],
-                ];
-            }
+        if (!$survey) {
+            return [
+                'error' => "La encuesta con ID {$surveyId} no existe",
+                'data' => ['survey_id' => $surveyId],
+            ];
+        }
 
-            // 2. Si no hay ODS → usar todas las preguntas
-            $questionsCollection = empty($odsIds)
-                ? $survey->survey_questions
-                : $survey->survey_questions->filter(
-                    fn($q) => $q->ods->pluck('id')->intersect($odsIds)->isNotEmpty()
-                );
+        // 2️⃣ Filtrar preguntas por ODS (si se envían)
+        $questionsCollection = empty($odsIds)
+            ? $survey->survey_questions
+            : $survey->survey_questions->filter(
+                fn($q) => $q->ods->pluck('id')->intersect($odsIds)->isNotEmpty()
+            );
 
-            // 3. Construcción del payload de preguntas
-            $questions = $questionsCollection->map(function ($question) {
-                return [
-                    'id' => $question->id,
-                    'text' => $question->question_text,
-                    'type' => $question->question_type,
-                    'ods' => $question->ods->map(fn($ods) => [
-                        'id' => $ods->id,
-                        'name' => $ods->name,
-                        'code' => $ods->code ?? null, // si tu modelo tiene campo código
-                    ])->values(),
-                    'chart' => $this->buildChartData(
-                        $question->question_type,
-                        $question->surveyed_responses,
-                        $question
-                    ),
-                ];
-            })->values();
-
-            // 4. Si no hay preguntas (según filtro u ODS vacío)
-            if ($questions->isEmpty()) {
-                return [
-                    'survey_id' => $survey->id,
-                    'survey_name' => $survey->survey_name,
-                    'nro_questions' => 0,
-                    'questions' => [],
-                    'message' => empty($odsIds)
-                        ? 'Encuesta encontrada pero no tiene preguntas registradas'
-                        : 'Encuesta encontrada pero sin preguntas vinculadas a este ODS',
-                ];
-            }
-
-            // 5. Caso exitoso
+        // 3️⃣ Si no hay preguntas
+        if ($questionsCollection->isEmpty()) {
             return [
                 'survey_id' => $survey->id,
                 'survey_name' => $survey->survey_name,
-                'nro_questions' => $questions->count(),
-                'questions' => $questions,
-            ];
-        } catch (Exception $e) {
-            Log::error("charts_by_ods_error - Error controlado", [
-                'identifier' => now()->format('Ymd-His') . '-' . uniqid(),
-                'error' => $e->getMessage(),
-                'data' => ['survey_id' => $surveyId, 'ods_ids' => $odsIds],
-            ]);
-
-            return [
-                'error' => $e->getMessage(),
-                'data' => ['survey_id' => $surveyId, 'ods_ids' => $odsIds],
+                'nro_questions' => 0,
+                'questions' => [],
+                'message' => empty($odsIds)
+                    ? 'Encuesta encontrada pero no tiene preguntas registradas'
+                    : 'Encuesta encontrada pero sin preguntas vinculadas a este ODS',
             ];
         }
+
+        // 4️⃣ Si se agrupa por EJE
+        if ($groupByEje) {
+            $grouped = $questionsCollection
+                ->groupBy(fn($q) => $q->eje ?? 'SIN EJE')
+                ->map(function ($group, $key) {
+                    return [
+                        'eje' => $key,
+                        'questions' => $group->map(function ($q) {
+                            return [
+                                'id' => $q->id,
+                                'text' => $q->question_text,
+                                'type' => $q->question_type,
+                                'eje' => $q->eje,
+                                'ods' => $q->ods->map(fn($ods) => [
+                                    'id' => $ods->id,
+                                    'name' => $ods->name,
+                                    'code' => $ods->code ?? null,
+                                ])->values(),
+                                'chart' => $this->buildChartData(
+                                    $q->question_type,
+                                    $q->surveyed_responses,
+                                    $q
+                                ),
+                            ];
+                        })->values(),
+                    ];
+                })->values();
+
+            return [
+                'survey_id' => $survey->id,
+                'survey_name' => $survey->survey_name,
+                'nro_questions' => $survey->survey_questions->count(), // total global
+                'questions' => $grouped,
+                'message' => null,
+            ];
+        }
+
+        // 5️⃣ Si es por ODS (plano, sin agrupar)
+        $questions = $questionsCollection->map(function ($q) {
+            return [
+                'id' => $q->id,
+                'text' => $q->question_text,
+                'type' => $q->question_type,
+                'eje' => $q->eje,
+                'ods' => $q->ods->map(fn($ods) => [
+                    'id' => $ods->id,
+                    'name' => $ods->name,
+                    'code' => $ods->code ?? null,
+                ])->values(),
+                'chart' => $this->buildChartData(
+                    $q->question_type,
+                    $q->surveyed_responses,
+                    $q
+                ),
+            ];
+        })->values();
+
+        return [
+            'survey_id' => $survey->id,
+            'survey_name' => $survey->survey_name,
+            'nro_questions' => $questions->count(),
+            'questions' => $questions,
+            'message' => null,
+        ];
+    } catch (Exception $e) {
+        Log::error("charts_error", [
+            'identifier' => now()->format('Ymd-His') . '-' . uniqid(),
+            'error' => $e->getMessage(),
+            'data' => ['survey_id' => $surveyId, 'ods_ids' => $odsIds, 'groupByEje' => $groupByEje],
+        ]);
+
+        return [
+            'error' => $e->getMessage(),
+            'data' => ['survey_id' => $surveyId],
+        ];
     }
+}
+
 
 
     /**

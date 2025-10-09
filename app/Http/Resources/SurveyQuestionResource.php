@@ -37,6 +37,10 @@ class SurveyQuestionResource extends JsonResource
             'question_text' => $this->question_text ?? null,
             'question_type' => $this->question_type ?? null,
             'type_field'    => $this->type_field ?? null,
+
+            'eje'    => $this->eje ?? null,
+            'justification'    => $this->justification ?? null,
+
             'survey_name' => $this?->survey?->survey_name ?? null,
             'order'         => $this->order ?? null,
             'ods'         => $this->ods ?? null,

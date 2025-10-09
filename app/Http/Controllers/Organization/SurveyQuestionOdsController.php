@@ -89,16 +89,22 @@ class SurveyQuestionOdsController extends Controller
         return $item;
     }
 
-    public function chartsByOds(Request $request, $surveyId)
-    {
-        $odsIds = $request->input('ods_ids', []);
+   public function chartsByOds(Request $request, $surveyId)
+{
+    $odsIds = $request->input('ods_ids', []);
+    $groupByEje = $request->boolean('group_by_eje', false); // bandera opcional
 
-        return $this->handleService(
-            fn() => $this->service->getSurveyChartsByOds($surveyId, $odsIds),
-            ['survey_id' => $surveyId, 'ods_ids' => $odsIds],
-            "'{$this->object_name}' obtenido exitosamente",
-            200,
-            "charts_by_ods_error"
-        );
-    }
+    return $this->handleService(
+        fn() => $this->service->getSurveyCharts($surveyId, $odsIds, $groupByEje),
+        [
+            'survey_id' => $surveyId,
+            'ods_ids' => $odsIds,
+            'group_by_eje' => $groupByEje,
+        ],
+        "'{$this->object_name}' obtenido exitosamente",
+        200,
+        "charts_by_ods_error"
+    );
+}
+
 }
