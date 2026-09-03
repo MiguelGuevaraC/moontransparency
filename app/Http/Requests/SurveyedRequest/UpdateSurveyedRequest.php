@@ -10,7 +10,7 @@ use App\Models\User;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-class StoreSurveyedRequest extends StoreRequest
+class UpdateSurveyedRequest extends StoreRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -65,14 +65,14 @@ class StoreSurveyedRequest extends StoreRequest
 
 
                 if ($question->question_type === 'OPCIONES' && empty($response['survey_question_option_id'])) {
-                    $validator->errors()->add("responses.$index.survey_question_option_id", "Debe seleccionar al menos una opción para preguntas de tipo OPCIONES.");
+                    $validator->errors()->add("responses.$index.survey_question_option_id", "Debe seleccionar al menos una opción para preguntas de tipo OPCIONES.$index");
                 }
 
                 if ($question->question_type === 'FILE') {
                     // con multipart/form-data el archivo aparece en $this->file()
                     $fileExists = $this->hasFile("responses.$index.file") || isset($response['file']);
                     if (!$fileExists) {
-                        $validator->errors()->add("responses.$index.file", "Debe adjuntar un archivo para preguntas de tipo FILE.");
+                        //$validator->errors()->add("responses.$index.file", "Debe adjuntar un archivo para preguntas de tipo FILE.");
                     }
                 }
             }
@@ -89,14 +89,13 @@ class StoreSurveyedRequest extends StoreRequest
 
                 if ($survey && $survey->proyect_id) {
                     $exists = Surveyed::where('respondent_id', $person->id)
-                        /*->whereHas('survey', function ($q) use ($survey) {
+                        ->whereHas('survey', function ($q) use ($survey) {
                             $q->where('proyect_id', $survey->proyect_id);
-                        })*/
-                        ->where('survey_id',$survey->id)
+                        })
                         ->exists();
 
-                    if ($exists) {
-                        $validator->errors()->add('number_document', 'Esta persona ya ha sido encuestada en este proyecto.');
+                    if (!$exists) {
+                        //quitado para actualizar $validator->errors()->add('number_document', 'Esta persona no ha sido encuestada en este proyecto.');
                     }
                 }
             }

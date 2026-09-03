@@ -41,7 +41,7 @@ class Survey extends Model
      * Campos de ordenación disponibles.
      */
     const sorts = [
-        'id' => 'desc',
+        'survey_type' => 'desc',
     ];
 
     public function survey_questions()

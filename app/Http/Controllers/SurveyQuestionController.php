@@ -38,7 +38,7 @@ class SurveyQuestionController extends Controller
     public function index(IndexSurveyQuestionRequest $request)
     {
         // base query
-        $query = SurveyQuestion::query();
+        $query = SurveyQuestion::query()->orderby('order','asc');
 
         // aplicar filtro antes de pasar al getFilteredResults
         if ($request->filled('is_has_options')) {

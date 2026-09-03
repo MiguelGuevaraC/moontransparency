@@ -30,6 +30,7 @@ class IndexSurveyedRequest extends IndexRequest
             'survey.proyect_id'  => 'nullable|string',
             'created_at'         => 'nullable|string',
             'survey.survey_type' => 'nullable|string',
+            'surveyed_responses.response_text' => 'nullable|string',
         ];
     }
 }

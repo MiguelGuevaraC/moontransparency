@@ -10,8 +10,11 @@ Route::group(["middleware" => ["auth:sanctum"]], function () {
     Route::post('survey', [SurveyController::class, 'store']);
     
     Route::get('surveyed', [SurveyedController::class, 'index']);
+    Route::get('surveyedAll', [SurveyedController::class, 'indexAll']);
+    Route::get('surveyedExcel', [SurveyedController::class, 'indexAllExcel']);
+    Route::post('surveyed/import-excel', [SurveyedController::class, 'importExcel']);
     Route::get('survey/{id}', [SurveyController::class, 'show']);
     Route::put('survey/{id}', [SurveyController::class, 'update']);
-    Route::delete('survey/{id}', [SurveyController::class, 'destroy']);
+    Route::delete('survey/{id}', [SurveyController::class, 'destroy']);    
 
 });

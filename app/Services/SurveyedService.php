@@ -37,10 +37,12 @@ class SurveyedService
         );
 
         // 2. Crear registro en Surveyed
-        $surveyed = Surveyed::create([
-            'respondent_id' => $person->id,
-            'survey_id' => $data['survey_id'] ?? null,
-        ]);
+        $surveyed = Surveyed::updateOrCreate(
+            ['respondent_id' => $person->id,
+            'survey_id' => $data['survey_id'] ?? null],
+            ['respondent_id' => $person->id,
+            'survey_id' => $data['survey_id'] ?? null]
+            );
 
         // 3. Registrar respuestas si existen
         if (isset($data['responses']) && is_array($data['responses'])) {
@@ -69,6 +71,15 @@ class SurveyedService
                     $answerData['response_text'] = $response['response_text'];
                 }
 
+                // Valido path antiguo
+                $answerOld = SurveyedResponse::where('respondent_id','=',$person->id)
+                                            ->where('surveyed_id','=',$surveyed->id)
+                                            ->where('survey_question_id','=',$question->id)
+                                            ->first();
+                if(!is_null($answerOld)){
+                    $answerData['file_path'] = $answerOld->file_path;
+                }
+
                 // Si es tipo FILE -> guardar archivo
                 if ($question->question_type === 'FILE') {
                     // Si $response proviene de $request->validated(), puede contener UploadedFile
@@ -88,9 +99,12 @@ class SurveyedService
                         $answerData['file_path'] = $path;
                     }
                 }
-
                 // Crear la respuesta y luego las opciones si aplica
-                $answer = SurveyedResponse::create($answerData);
+                $answer = SurveyedResponse::updateOrCreate(
+                    ['respondent_id' => $person->id,
+                    'surveyed_id' => $surveyed->id,
+                    'survey_question_id' => $question->id],
+                    $answerData);
 
                 // Si es tipo OPCIONES, asociar las opciones seleccionadas
                 if (
@@ -99,14 +113,23 @@ class SurveyedService
                     is_array($response['survey_question_option_id']) &&
                     count($response['survey_question_option_id']) > 0
                 ) {
-
+                    $dataAntigua = SurveyedResponseOption::where('surveyed_response_id','=',$answer->id)
+                                    ->where('respondent_id','=',$person->id)
+                                    ->where('surveyed_id','=',$surveyed->id)
+                                    ->get();
+                    if(count($dataAntigua)>0){
+                        foreach ($dataAntigua as $key => $value) {
+                            $value->delete();
+                        }
+                    }
                     foreach ($response['survey_question_option_id'] as $optionId) {
-                        SurveyedResponseOption::create([
-                            'surveyed_response_id' => $answer->id,
+                        SurveyedResponseOption::create(
+                            ['surveyed_response_id' => $answer->id,
                             'survey_question_options_id' => $optionId,
                             'respondent_id' => $person->id,
                             'surveyed_id' => $surveyed->id,
-                        ]);
+                            ]
+                        );
                     }
                 }
             }
@@ -116,11 +139,11 @@ class SurveyedService
     }
 
 
-    public function updateSurveyed(Surveyed $proyect, array $data): Surveyed
+    /*public function updateSurveyed(Surveyed $proyect, array $data): Surveyed
     {
         $proyect->update($data);
         return $proyect;
-    }
+    }*/
 
     public function destroyById($id)
     {

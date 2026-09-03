@@ -16,5 +16,6 @@ Route::get('activity-web', [ActivityController::class, 'list_web']);
 
 Route::get('survey-show/{id}', [SurveyController::class, 'show_web']);
 Route::post('response-survey', [SurveyedController::class, 'store']);
+Route::post('response-survey/{id}', [SurveyedController::class, 'update']);
 
 Route::get('respondent-search', [RespondentController::class, 'index_search']);

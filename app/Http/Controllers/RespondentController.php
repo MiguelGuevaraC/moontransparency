@@ -95,6 +95,7 @@ class RespondentController extends Controller
                         "id"=>null,
                     "number_document"=>$externalData['dni'],
                     "names"=>$externalData['nombres'] .' '.$externalData['apepat'] .' '.$externalData['apemat'],
+                    "date_of_birth"=>$externalData['fecnac'],
                     ]
                 ]
             ], 200);

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\SurveyQuestionOds;
 use App\Models\Survey;
+use App\Models\SurveyedResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Exception;
@@ -95,7 +96,8 @@ class SurveyQuestionOdsService
   public function getSurveyCharts(
     int $surveyId,
     array $odsIds = [],
-    bool $groupByEje = false
+    bool $groupByEje = false,
+    array $location = []
 ): array {
     try {
         // 1️⃣ Buscar encuesta
@@ -168,9 +170,12 @@ class SurveyQuestionOdsService
                 'message' => null,
             ];
         }
+        $validSurveyedIds = SurveyedResponse::whereIn('response_text', $location)
+            ->pluck('surveyed_id')
+            ->unique();
 
         // 5️⃣ Si es por ODS (plano, sin agrupar)
-        $questions = $questionsCollection->map(function ($q) {
+        $questions = $questionsCollection->map(function ($q) use($location, $validSurveyedIds) {
             return [
                 'id' => $q->id,
                 'text' => $q->question_text,
@@ -183,7 +188,7 @@ class SurveyQuestionOdsService
                 ])->values(),
                 'chart' => $this->buildChartData(
                     $q->question_type,
-                    $q->surveyed_responses,
+                    empty($location)?$q->surveyed_responses:$q->surveyed_responses->whereIn('surveyed_id', $validSurveyedIds),
                     $q
                 ),
             ];
