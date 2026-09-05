@@ -11,12 +11,14 @@ class Surveyed extends Model
     use SoftDeletes;
 
     public const STATUS_DRAFT = 'BORRADOR';
+    public const STATUS_FINALIZED = 'FINALIZADA';
 
     protected $fillable = [
         'id',
         'respondent_id',
         'survey_id',
         'status',
+        'completed_at',
    
         'created_at',
         'updated_at',
@@ -35,6 +37,9 @@ class Surveyed extends Model
         'created_at'=> 'between',
         'survey.survey_type'=> '=',
         'status'=> '=',
+    ];
+    protected $casts = [
+        'completed_at' => 'datetime',
     ];
 
     /**

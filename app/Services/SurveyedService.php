@@ -10,6 +10,7 @@ use App\Models\SurveyQuestionOption;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class SurveyedService
 {
@@ -65,19 +66,13 @@ class SurveyedService
                 return null;
             }
 
-            if ((int) $surveyed->survey_id !== (int) $data['survey_id']) {
-                throw ValidationException::withMessages([
-                    'survey_id' => 'La encuesta enviada no corresponde al registro que se intenta actualizar.',
-                ]);
+            if ($surveyed->status === Surveyed::STATUS_FINALIZED) {
+                throw new ConflictHttpException(
+                    'La encuesta está finalizada y no puede modificarse como un borrador.'
+                );
             }
 
-            $person = Respondent::find($surveyed->respondent_id);
-
-            if (!$person || $person->number_document !== $data['number_document']) {
-                throw ValidationException::withMessages([
-                    'number_document' => 'El encuestado enviado no corresponde al registro que se intenta actualizar.',
-                ]);
-            }
+            $person = $this->validateSurveyedIdentity($surveyed, $data);
 
             $person->fill($this->respondentData($data));
             $person->save();
@@ -88,6 +83,55 @@ class SurveyedService
 
             return $this->getSurveyedById($surveyed->id);
         });
+    }
+
+    public function finalizeSurveyedById(int $id, array $data): ?Surveyed
+    {
+        return DB::transaction(function () use ($id, $data) {
+            $surveyed = Surveyed::lockForUpdate()->find($id);
+
+            if (!$surveyed) {
+                return null;
+            }
+
+            if ($surveyed->status === Surveyed::STATUS_FINALIZED) {
+                return $this->getSurveyedById($surveyed->id);
+            }
+
+            $person = $this->validateSurveyedIdentity($surveyed, $data);
+
+            $person->fill($this->respondentData($data));
+            $person->save();
+
+            $this->saveResponses($surveyed, $person, $data['responses'] ?? []);
+            $this->validateRequiredResponses($surveyed);
+
+            $surveyed->update([
+                'status' => Surveyed::STATUS_FINALIZED,
+                'completed_at' => now(),
+            ]);
+
+            return $this->getSurveyedById($surveyed->id);
+        });
+    }
+
+    private function validateSurveyedIdentity(Surveyed $surveyed, array $data): Respondent
+    {
+        if ((int) $surveyed->survey_id !== (int) $data['survey_id']) {
+            throw ValidationException::withMessages([
+                'survey_id' => 'La encuesta enviada no corresponde al registro que se intenta actualizar.',
+            ]);
+        }
+
+        $person = Respondent::find($surveyed->respondent_id);
+
+        if (!$person || $person->number_document !== $data['number_document']) {
+            throw ValidationException::withMessages([
+                'number_document' => 'El encuestado enviado no corresponde al registro que se intenta actualizar.',
+            ]);
+        }
+
+        return $person;
     }
 
     private function respondentData(array $data): array
@@ -165,6 +209,49 @@ class SurveyedService
                     $index
                 );
             }
+        }
+    }
+
+    private function validateRequiredResponses(Surveyed $surveyed): void
+    {
+        $requiredQuestions = SurveyQuestion::where('survey_id', $surveyed->survey_id)
+            ->where('is_required', true)
+            ->get();
+
+        if ($requiredQuestions->isEmpty()) {
+            return;
+        }
+
+        $answers = SurveyedResponse::where('surveyed_id', $surveyed->id)
+            ->whereIn('survey_question_id', $requiredQuestions->pluck('id'))
+            ->with('surveyed_responses_options')
+            ->get()
+            ->keyBy('survey_question_id');
+
+        $errors = [];
+
+        foreach ($requiredQuestions as $question) {
+            $answer = $answers->get($question->id);
+            $questionType = strtoupper((string) $question->question_type);
+
+            if ($questionType === 'OPCIONES') {
+                $isAnswered = $answer && $answer->surveyed_responses_options->isNotEmpty();
+            } elseif ($questionType === 'FILE') {
+                $isAnswered = $answer && filled($answer->file_path);
+            } else {
+                $isAnswered = $answer && filled($answer->response_text);
+            }
+
+            if (!$isAnswered) {
+                $errors['responses.'.$question->id] = sprintf(
+                    'La pregunta obligatoria %s no tiene una respuesta válida.',
+                    $question->id
+                );
+            }
+        }
+
+        if ($errors) {
+            throw ValidationException::withMessages($errors);
         }
     }
 
