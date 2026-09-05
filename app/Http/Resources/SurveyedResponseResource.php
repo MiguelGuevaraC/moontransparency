@@ -65,6 +65,8 @@ class SurveyedResponseResource extends JsonResource
             'survey_question_order' => $this->survey_question->order ?? null,
             'survey_question_type_field' => $this->survey_question->type_field ?? null,
             'surveyed_id' => $this->surveyed_id ?? null,
+            'surveyed_measurement_id' => $this->surveyed_measurement_id ?? null,
+            'day_number' => $this->measurement?->day_number,
             'respondent_id' => $this->respondent_id ?? null,
             'file_path' => $url ?? null,
             'survey_questions_options' => $this?->survey_question?->survey_questions_options ?? null,

@@ -33,6 +33,7 @@ public function toArray($request)
         ? $this->surveyed_responses
             ->sortBy(function ($response) {
                 return [
+                    (int) ($response->measurement?->day_number ?? 0),
                     (float) ($response->survey_question?->order ?? PHP_INT_MAX),
                     (int) $response->id,
                 ];
@@ -51,6 +52,7 @@ public function toArray($request)
         'survey'=> $this->survey ?? null,
         'respondent'=> $this->respondent ? new RespondentResource($this->respondent) : null,
         'surveyed_responses'=> SurveyedResponseResource::collection($orderedResponses),
+        'measurements'=> SurveyedMeasurementResource::collection($this->measurements),
         'created_at'       => $this->created_at,
     ];
 }

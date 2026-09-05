@@ -35,6 +35,7 @@ class StoreSurveyedRequest extends StoreRequest
             'genero' => 'nullable|string|max:255',
 
             'survey_id' => 'required|integer|exists:surveys,id',
+            'day_number' => 'nullable|integer|between:1,7',
             'responses' => 'sometimes|array',
             'responses.*.survey_question_id' => 'required|integer|exists:survey_questions,id',
             'responses.*.survey_question_option_id' => 'nullable|array',
@@ -99,6 +100,9 @@ class StoreSurveyedRequest extends StoreRequest
             'survey_id.required' => 'El campo survey_id es obligatorio.',
             'survey_id.integer' => 'El campo survey_id debe ser un número entero.',
             'survey_id.exists' => 'El survey_id no existe en la base de datos.',
+
+            'day_number.integer' => 'El día de medición debe ser un número entero.',
+            'day_number.between' => 'El día de medición debe estar entre 1 y 7.',
 
             'responses.array' => 'Las respuestas deben enviarse como un arreglo.',
 

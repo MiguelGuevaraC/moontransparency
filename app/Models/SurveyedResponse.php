@@ -12,6 +12,7 @@ class SurveyedResponse extends Model
         'response_text',
         'survey_question_id',
         'surveyed_id',
+        'surveyed_measurement_id',
         'respondent_id',
         'file_path',
 
@@ -29,6 +30,7 @@ class SurveyedResponse extends Model
         'response_text' => 'like',
         'survey_question_id' => '=',
         'surveyed_id' => '=',
+        'surveyed_measurement_id' => '=',
         'respondent_id' => '=',
     ];
 
@@ -46,6 +48,11 @@ class SurveyedResponse extends Model
     public function survey_question()
     {
         return $this->belongsTo(SurveyQuestion::class, 'survey_question_id');
+    }
+
+    public function measurement()
+    {
+        return $this->belongsTo(SurveyedMeasurement::class, 'surveyed_measurement_id');
     }
 
 }

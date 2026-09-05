@@ -53,6 +53,10 @@ class Surveyed extends Model
     {
         return $this->hasMany(SurveyedResponse::class);
     }
+    public function measurements()
+    {
+        return $this->hasMany(SurveyedMeasurement::class)->orderBy('day_number');
+    }
     public function survey()
     {
         return $this->belongsTo(Survey::class,'survey_id');
