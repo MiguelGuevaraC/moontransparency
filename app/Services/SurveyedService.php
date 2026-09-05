@@ -28,6 +28,7 @@ class SurveyedService
         return Surveyed::with([
             'respondent',
             'survey.proyect',
+            'survey.survey_questions.survey_questions_options',
             'surveyed_responses.survey_question.survey_questions_options',
             'surveyed_responses.surveyed_responses_options.survey_question_options',
             'surveyed_responses.measurement',

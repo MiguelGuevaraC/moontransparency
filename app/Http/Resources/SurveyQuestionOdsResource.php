@@ -7,7 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * @OA\Schema(
  *     schema="SurveyQuestionOdsResource",
- *     @OA\Property(property="survey_question_id", type="integer")
+ *     @OA\Property(property="survey_question_id", type="integer"),
  *     @OA\Property(property="ods_id", type="integer")
  * )
  */

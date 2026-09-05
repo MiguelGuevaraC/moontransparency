@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SurveyedRequest\IndexSurveyedRequest;
 use App\Http\Requests\SurveyedRequest\StoreSurveyedRequest;
 use App\Http\Requests\SurveyedRequest\UpdateSurveyedRequest;
+use App\Http\Resources\CalculatorParticipationResource;
 use App\Http\Resources\SurveyedResource;
 use App\Models\Surveyed;
 use App\Services\SurveyedService;
@@ -24,9 +25,9 @@ class SurveyedController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/moontransparency/public/api/survey",
-     *     summary="Obtener información de Surveys con filtros y ordenamiento",
-     *     tags={"Survey"},
+     *     path="/moontransparency/public/api/surveyed",
+     *     summary="Obtener el historial de participaciones con filtros y ordenamiento",
+     *     tags={"Surveyed"},
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
      *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
@@ -381,7 +382,7 @@ class SurveyedController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/moontransparency/public/api/surveyed",
+     *     path="/moontransparency/public/api/response-survey",
      *     summary="Crear Surveyed",
      *     tags={"Surveyed"},
      *     security={{"bearerAuth": {}}},
@@ -423,8 +424,40 @@ class SurveyedController extends Controller
     }
 
     /**
-     * @OA\Put(
-     *     path="/moontransparency/public/api/surveyed",
+     * @OA\Get(
+     *     path="/moontransparency/public/api/surveyed/{id}/calculator",
+     *     summary="Obtener datos consolidados de una participación para la calculadora de CO2",
+     *     tags={"Surveyed"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", minimum=1)),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Participación consolidada en un contrato estable de siete días",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="data", ref="#/components/schemas/CalculatorParticipation")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="No autenticado"),
+     *     @OA\Response(response=404, description="Participación no encontrada")
+     * )
+     */
+    public function calculator($id)
+    {
+        $surveyed = $this->surveyService->getSurveyedById((int) $id);
+
+        if (!$surveyed) {
+            return response()->json([
+                'message' => 'Respuesta de encuesta no encontrada.',
+            ], 404);
+        }
+
+        return new CalculatorParticipationResource($surveyed);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/moontransparency/public/api/response-survey/{id}",
      *     summary="Actualizar Surveyed",
      *     tags={"Surveyed"},
      *     security={{"bearerAuth": {}}},
