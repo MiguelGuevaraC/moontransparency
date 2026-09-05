@@ -19,6 +19,8 @@ class Surveyed extends Model
         'survey_id',
         'status',
         'completed_at',
+        'created_by',
+        'updated_by',
    
         'created_at',
         'updated_at',
@@ -65,5 +67,13 @@ class Surveyed extends Model
     public function respondent()
     {
         return $this->belongsTo(Respondent::class,'respondent_id');
+    }
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 }

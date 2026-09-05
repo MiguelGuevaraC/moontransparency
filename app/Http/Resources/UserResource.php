@@ -20,11 +20,20 @@ class UserResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'       => $this->id,
-            'name'     => $this->name ?? null,
-            'username' => $this->username ?? null,
-            'rol_id'   => $this->rol_id ?? null,
-            'rol'      => $this->rol ? new RolResource($this->rol) : null,
+            'id' => $this->id,
+            'type_document' => $this->type_document,
+            'number_document' => $this->number_document,
+            'names' => $this->names,
+            'name' => $this->names,
+            'username' => $this->username,
+            'address' => $this->address,
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'status' => $this->status,
+            'rol_id' => $this->rol_id,
+            'rol' => $this->whenLoaded('rol', fn () => $this->rol ? new RolResource($this->rol) : null),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
 
     }

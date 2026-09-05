@@ -22,7 +22,7 @@ class IndexUserRequest extends IndexRequest
      */
     public function rules(): array
     {
-        return [
+        return array_merge(parent::rules(), [
 
             'type_document'   => 'nullable|string',
             'number_document' => 'nullable|string',
@@ -31,7 +31,10 @@ class IndexUserRequest extends IndexRequest
             'address'         => 'nullable|string',
             'phone'           => 'nullable|string',
             'email'           => 'nullable|string',
+            'status'          => 'nullable|string|in:Activo,Inactivo',
+            'rol_id'          => 'nullable|integer|exists:rols,id',
+            'sort'            => 'nullable|string|in:id,names,username,status',
 
-        ];
+        ]);
     }
 }

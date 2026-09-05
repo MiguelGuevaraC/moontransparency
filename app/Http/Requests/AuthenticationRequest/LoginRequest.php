@@ -25,11 +25,13 @@ class LoginRequest extends StoreRequest
         return [
             "username" => [
                 "required",
-                'exists:users,username',
+                'string',
+                'max:255',
             ],
             "password" => [
                 "required",
-                "regex:/^[a-zA-Z0-9!@#$%^&*()_+=-]*$/",
+                'string',
+                'max:255',
             ],
         ];
     }
@@ -42,10 +44,7 @@ class LoginRequest extends StoreRequest
         return [
             "username.required" => "El Username es obligatorio.",
     
-            "username.exists" => "El Username no está registrado.",
-            "username.regex" => "El Username no es válido.",
             "password.required" => "La contraseña es obligatoria.",
-            "password.regex" => "La contraseña contiene caracteres no permitidos.",
         ];
     }
 

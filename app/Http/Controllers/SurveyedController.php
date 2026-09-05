@@ -43,6 +43,8 @@ class SurveyedController extends Controller
     {
         $query = Surveyed::query()->with([
             'respondent',
+            'createdBy.rol',
+            'updatedBy.rol',
             'survey.proyect',
             'surveyed_responses.survey_question.survey_questions_options',
             'surveyed_responses.surveyed_responses_options.survey_question_options',

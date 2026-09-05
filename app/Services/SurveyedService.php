@@ -27,6 +27,8 @@ class SurveyedService
     {
         return Surveyed::with([
             'respondent',
+            'createdBy.rol',
+            'updatedBy.rol',
             'survey.proyect',
             'survey.survey_questions.survey_questions_options',
             'surveyed_responses.survey_question.survey_questions_options',
@@ -46,16 +48,31 @@ class SurveyedService
                 $this->respondentData($data)
             );
 
+            $authenticatedUserId = $this->authenticatedUserId();
             $surveyed = Surveyed::firstOrCreate(
                 [
                     'respondent_id' => $person->id,
                     'survey_id' => $data['survey_id'],
                 ],
-                ['status' => Surveyed::STATUS_DRAFT]
+                array_filter([
+                    'status' => Surveyed::STATUS_DRAFT,
+                    'created_by' => $authenticatedUserId,
+                    'updated_by' => $authenticatedUserId,
+                ], static fn ($value) => $value !== null)
             );
 
+            $surveyedChanges = [];
             if (!$surveyed->status) {
-                $surveyed->update(['status' => Surveyed::STATUS_DRAFT]);
+                $surveyedChanges['status'] = Surveyed::STATUS_DRAFT;
+            }
+            if ($authenticatedUserId !== null) {
+                $surveyedChanges['updated_by'] = $authenticatedUserId;
+                if (!$surveyed->created_by) {
+                    $surveyedChanges['created_by'] = $authenticatedUserId;
+                }
+            }
+            if ($surveyedChanges) {
+                $surveyed->update($surveyedChanges);
             }
 
             $measurement = $this->resolveMeasurement($surveyed, $data);
@@ -85,7 +102,10 @@ class SurveyedService
             $person->fill($this->respondentData($data));
             $person->save();
 
-            $surveyed->update(['status' => Surveyed::STATUS_DRAFT]);
+            $surveyed->update(array_filter([
+                'status' => Surveyed::STATUS_DRAFT,
+                'updated_by' => $this->authenticatedUserId(),
+            ], static fn ($value) => $value !== null));
 
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
@@ -119,7 +139,9 @@ class SurveyedService
             $surveyed->update([
                 'status' => Surveyed::STATUS_FINALIZED,
                 'completed_at' => now(),
-            ]);
+            ] + array_filter([
+                'updated_by' => $this->authenticatedUserId(),
+            ], static fn ($value) => $value !== null));
 
             return $this->getSurveyedById($surveyed->id);
         });
@@ -413,6 +435,13 @@ class SurveyedService
     public function destroyById($id)
     {
         return Surveyed::find($id)?->delete() ?? false;
+    }
+
+    private function authenticatedUserId(): ?int
+    {
+        $id = auth('sanctum')->id() ?? auth()->id();
+
+        return $id !== null ? (int) $id : null;
     }
 
 }

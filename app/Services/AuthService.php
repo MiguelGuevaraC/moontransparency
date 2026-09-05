@@ -22,10 +22,10 @@ class AuthService
     {
         
         // Busca al usuario por correo
-        $user = User::where('username', $username)->first();
+        $user = User::with('rol')->where('username', $username)->first();
 
         // Si el usuario no existe, retornamos un error genérico sin dar pistas sobre la existencia
-        if (!$user) {
+        if (!$user || !$user->isActive()) {
             return [
                 'status' => false,
                 'message' => "Credenciales inválidas", // Mensaje más general
