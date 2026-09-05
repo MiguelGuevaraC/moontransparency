@@ -29,6 +29,17 @@ class SurveyedResource extends JsonResource
  */
 public function toArray($request)
 {
+    $orderedResponses = $this->surveyed_responses
+        ? $this->surveyed_responses
+            ->sortBy(function ($response) {
+                return [
+                    (float) ($response->survey_question?->order ?? PHP_INT_MAX),
+                    (int) $response->id,
+                ];
+            })
+            ->values()
+        : collect();
+
     return [
         'id'               => $this->id ?? null,
         'respondent_id'=> $this->respondent_id ?? null,
@@ -39,7 +50,7 @@ public function toArray($request)
         'completed_at'=> $this->completed_at,
         'survey'=> $this->survey ?? null,
         'respondent'=> $this->respondent ? new RespondentResource($this->respondent) : null,
-        'surveyed_responses'=> $this->surveyed_responses ? SurveyedResponseResource::collection($this->surveyed_responses) : null,
+        'surveyed_responses'=> SurveyedResponseResource::collection($orderedResponses),
         'created_at'       => $this->created_at,
     ];
 }
