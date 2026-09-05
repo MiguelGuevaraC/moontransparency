@@ -9,10 +9,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Surveyed extends Model
 {
     use SoftDeletes;
+
+    public const STATUS_DRAFT = 'BORRADOR';
+
     protected $fillable = [
         'id',
         'respondent_id',
         'survey_id',
+        'status',
    
         'created_at',
         'updated_at',
@@ -30,6 +34,7 @@ class Surveyed extends Model
         'survey.proyect_id'=> '=',
         'created_at'=> 'between',
         'survey.survey_type'=> '=',
+        'status'=> '=',
     ];
 
     /**

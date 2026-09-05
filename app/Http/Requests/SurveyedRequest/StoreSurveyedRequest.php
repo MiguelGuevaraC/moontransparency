@@ -5,9 +5,6 @@ use App\Http\Requests\StoreRequest;
 use App\Models\Respondent;
 use App\Models\Survey;
 use App\Models\Surveyed;
-use App\Models\SurveyQuestion;
-use App\Models\User;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class StoreSurveyedRequest extends StoreRequest
@@ -38,7 +35,7 @@ class StoreSurveyedRequest extends StoreRequest
             'genero' => 'nullable|string|max:255',
 
             'survey_id' => 'required|integer|exists:surveys,id',
-            'responses' => 'required|array',
+            'responses' => 'sometimes|array',
             'responses.*.survey_question_id' => 'required|integer|exists:survey_questions,id',
             'responses.*.survey_question_option_id' => 'nullable|array',
             'responses.*.survey_question_option_id.*' => 'integer|exists:survey_question_options,id',
@@ -51,32 +48,6 @@ class StoreSurveyedRequest extends StoreRequest
     public function withValidator(Validator $validator)
     {
         $validator->after(function ($validator) {
-            $responses = $this->input('responses', []);
-            foreach ($responses as $index => $response) {
-                if (empty($response['survey_question_id'])) {
-                    continue;
-                }
-
-                $question = SurveyQuestion::find($response['survey_question_id']);
-
-                if (!$question) {
-                    continue; // ya será rechazado por el exists
-                }
-
-
-                if ($question->question_type === 'OPCIONES' && empty($response['survey_question_option_id'])) {
-                    $validator->errors()->add("responses.$index.survey_question_option_id", "Debe seleccionar al menos una opción para preguntas de tipo OPCIONES.");
-                }
-
-                if ($question->question_type === 'FILE') {
-                    // con multipart/form-data el archivo aparece en $this->file()
-                    $fileExists = $this->hasFile("responses.$index.file") || isset($response['file']);
-                    if (!$fileExists) {
-                        $validator->errors()->add("responses.$index.file", "Debe adjuntar un archivo para preguntas de tipo FILE.");
-                    }
-                }
-            }
-
             $numberDocument = $this->input('number_document');
             $surveyId = $this->input('survey_id');
 
@@ -96,7 +67,7 @@ class StoreSurveyedRequest extends StoreRequest
                         ->exists();
 
                     if ($exists) {
-                        $validator->errors()->add('number_document', 'Esta persona ya ha sido encuestada en este proyecto.');
+                        $validator->errors()->add('number_document', 'Esta persona ya tiene un registro para esta encuesta. Continúe usando el registro existente.');
                     }
                 }
             }
@@ -129,7 +100,6 @@ class StoreSurveyedRequest extends StoreRequest
             'survey_id.integer' => 'El campo survey_id debe ser un número entero.',
             'survey_id.exists' => 'El survey_id no existe en la base de datos.',
 
-            'responses.required' => 'Debe proporcionar al menos una respuesta.',
             'responses.array' => 'Las respuestas deben enviarse como un arreglo.',
 
             'responses.*.survey_question_id.required' => 'La pregunta es obligatoria.',

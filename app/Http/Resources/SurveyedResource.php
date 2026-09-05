@@ -35,6 +35,7 @@ public function toArray($request)
         'respondent_names'=> $this->respondent?->names ?? null,
         'proyect_name'=> $this?->survey?->proyect?->name ?? null,
         'survey_id'=> $this->survey_id ?? null,
+        'status'=> $this->status ?? null,
         'survey'=> $this->survey ?? null,
         'respondent'=> $this->respondent ? new RespondentResource($this->respondent) : null,
         'surveyed_responses'=> $this->surveyed_responses ? SurveyedResponseResource::collection($this->surveyed_responses) : null,

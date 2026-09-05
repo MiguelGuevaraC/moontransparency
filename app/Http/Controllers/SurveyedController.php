@@ -92,7 +92,7 @@ class SurveyedController extends Controller
                 });
         }
         
-        $query->select('surveyeds.id','surveyeds.id as surveyed_id','surveyeds.respondent_id','respondents.names as respondent_name','proyects.name as proyect_name','surveys.id as survey_id',
+        $query->select('surveyeds.id','surveyeds.id as surveyed_id','surveyeds.respondent_id','surveyeds.status','respondents.names as respondent_name','proyects.name as proyect_name','surveys.id as survey_id',
                     'surveyed_responses.id as response_id','surveyed_responses.survey_question_id','survey_questions.question_text as survey_question_text','survey_questions.question_type as survey_question_type',
                     'surveyed_responses.response_text','survey_question_options.description as selected_option_description','surveyed_responses.file_path','surveyed_responses.created_at as response_created_at',
                     'surveyeds.created_at as surveyed_created_at','surveyeds.created_at as loaded_at','respondents.genero as respondent_gender','surveys.survey_name','surveyed_response_options.id as id2')
@@ -366,6 +366,19 @@ class SurveyedController extends Controller
         return new SurveyedResource($surveyed);
     }
 
+    public function show($id)
+    {
+        $surveyed = $this->surveyService->getSurveyedById((int) $id);
+
+        if (!$surveyed) {
+            return response()->json([
+                'message' => 'Respuesta de encuesta no encontrada.',
+            ], 404);
+        }
+
+        return new SurveyedResource($surveyed);
+    }
+
     /**
      * @OA\Put(
      *     path="/moontransparency/public/api/surveyed",
@@ -392,7 +405,13 @@ class SurveyedController extends Controller
         // agregamos todos los archivos (mantienen la misma estructura anidada que envía el cliente)
         $validated['_files'] = $request->allFiles();
 
-        $surveyed = $this->surveyService->createSurveyed($validated);
+        $surveyed = $this->surveyService->updateSurveyedById((int) $id, $validated);
+
+        if (!$surveyed) {
+            return response()->json([
+                'message' => 'Respuesta de encuesta no encontrada.',
+            ], 404);
+        }
 
         return new SurveyedResource($surveyed);
     }
