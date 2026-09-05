@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Resources;
 
+use App\Models\Surveyed;
 use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * @OA\Schema(
@@ -29,6 +30,7 @@ class SurveyedResource extends JsonResource
  */
 public function toArray($request)
 {
+    $status = $this->status ?? Surveyed::STATUS_DRAFT;
     $orderedResponses = $this->surveyed_responses
         ? $this->surveyed_responses
             ->sortBy(function ($response) {
@@ -47,7 +49,8 @@ public function toArray($request)
         'respondent_names'=> $this->respondent?->names ?? null,
         'proyect_name'=> $this?->survey?->proyect?->name ?? null,
         'survey_id'=> $this->survey_id ?? null,
-        'status'=> $this->status ?? null,
+        'status'=> $status,
+        'can_edit'=> $status === Surveyed::STATUS_DRAFT,
         'completed_at'=> $this->completed_at,
         'survey'=> $this->survey ?? null,
         'respondent'=> $this->respondent ? new RespondentResource($this->respondent) : null,

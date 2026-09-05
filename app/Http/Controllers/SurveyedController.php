@@ -40,19 +40,62 @@ class SurveyedController extends Controller
 
     public function index(IndexSurveyedRequest $request)
     {
-        $query = Surveyed::query();
+        $query = Surveyed::query()->with([
+            'respondent',
+            'survey.proyect',
+            'surveyed_responses.survey_question.survey_questions_options',
+            'surveyed_responses.surveyed_responses_options.survey_question_options',
+            'surveyed_responses.measurement',
+            'measurements.surveyed_responses.survey_question.survey_questions_options',
+            'measurements.surveyed_responses.surveyed_responses_options.survey_question_options',
+            'measurements.surveyed_responses.measurement',
+        ]);
+
+        if ($request->filled('respondent')) {
+            $respondent = $request->query('respondent');
+            $query->whereHas('respondent', function ($respondentQuery) use ($respondent) {
+                $respondentQuery
+                    ->where('names', 'like', "%$respondent%")
+                    ->orWhere('number_document', 'like', "%$respondent%");
+            });
+        }
+
+        if ($request->filled('respondent_name')) {
+            $respondentName = $request->query('respondent_name');
+            $query->whereHas('respondent', function ($respondentQuery) use ($respondentName) {
+                $respondentQuery->where('names', 'like', "%$respondentName%");
+            });
+        }
+
+        if ($request->filled('number_document')) {
+            $numberDocument = $request->query('number_document');
+            $query->whereHas('respondent', function ($respondentQuery) use ($numberDocument) {
+                $respondentQuery->where('number_document', 'like', "%$numberDocument%");
+            });
+        }
+
+        if ($request->filled('project_id')) {
+            $projectId = $request->integer('project_id');
+            $query->whereHas('survey', function ($surveyQuery) use ($projectId) {
+                $surveyQuery->where('proyect_id', $projectId);
+            });
+        }
+
         if ($request->filled('response_text')) {
-                $query = $query->whereHas('surveyed_responses', function ($q) use ($request) {
-                    $q->where(DB::raw('upper(response_text)'), 'like', DB::raw("upper('%{$request->input('response_text')}%')"));
-                });
+            $responseText = $request->query('response_text');
+            $query->whereHas('surveyed_responses', function ($responseQuery) use ($responseText) {
+                $responseQuery->whereRaw('UPPER(response_text) LIKE UPPER(?)', ["%$responseText%"]);
+            });
         }
         if ($request->filled('response_text_lena')) {
-                $query = $query->whereHas('surveyed_responses', function ($q) use ($request) {
-                    $q->where(DB::raw('upper(response_text)'), 'like', DB::raw("upper('%{$request->input('response_text_lena')}%')"))
-                        ->whereHas('survey_question', function ($q2) use ($request) {
-                          $q2->where(DB::raw('upper(question_text)'), 'like', DB::raw("upper('%Tipo de Le%')"));
-                      });
-                });
+            $firewoodResponse = $request->query('response_text_lena');
+            $query->whereHas('surveyed_responses', function ($responseQuery) use ($firewoodResponse) {
+                $responseQuery
+                    ->whereRaw('UPPER(response_text) LIKE UPPER(?)', ["%$firewoodResponse%"])
+                    ->whereHas('survey_question', function ($questionQuery) {
+                        $questionQuery->whereRaw('UPPER(question_text) LIKE UPPER(?)', ['%Tipo de Le%']);
+                    });
+            });
         }
 
         return $this->getFilteredResults(

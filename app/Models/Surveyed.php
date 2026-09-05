@@ -31,6 +31,7 @@ class Surveyed extends Model
         'deleted_at',
     ];
     const filters = [
+        'id'=> '=',
         'respondent_id'=> '=',
         'survey_id'=> '=',
         'survey.proyect_id'=> '=',
