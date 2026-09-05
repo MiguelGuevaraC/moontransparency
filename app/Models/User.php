@@ -97,6 +97,22 @@ class User extends Authenticatable
         return in_array($roleName, ['administrador', 'administrador moon'], true);
     }
 
+    public function hasPermission(string $permission): bool
+    {
+        if (!$this->isActive() || !$this->rol_id) {
+            return false;
+        }
+
+        return $this->rol()
+            ->where('status', Rol::STATUS_ACTIVE)
+            ->whereHas('permissions', function ($query) use ($permission) {
+                $query
+                    ->where('permissions.route', $permission)
+                    ->where('permissions.status', Permission::STATUS_ACTIVE);
+            })
+            ->exists();
+    }
+
     public function setPasswordAttribute(string $password): void
     {
         $this->attributes['password'] = Hash::needsRehash($password)

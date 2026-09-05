@@ -32,6 +32,10 @@ class UserResource extends JsonResource
             'status' => $this->status,
             'rol_id' => $this->rol_id,
             'rol' => $this->whenLoaded('rol', fn () => $this->rol ? new RolResource($this->rol) : null),
+            'permissions' => $this->when(
+                $this->relationLoaded('rol') && $this->rol?->relationLoaded('permissions'),
+                fn () => $this->rol->permissions->pluck('route')->filter()->values()
+            ),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

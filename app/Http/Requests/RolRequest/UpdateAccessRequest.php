@@ -3,44 +3,26 @@
 namespace App\Http\Requests\RolRequest;
 
 use App\Http\Requests\UpdateRequest;
+use App\Models\Permission;
 use Illuminate\Validation\Rule;
 
 class UpdateAccessRequest extends UpdateRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, mixed>
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
-            'access' => [
-                'required',
-                'array',
-                'exists:permissions,id,deleted_at,NULL', // Valida que cada ID exista en la tabla permissions
+            'access' => ['present', 'array'],
+            'access.*' => [
+                'integer', 'distinct',
+                Rule::exists('permissions', 'id')
+                    ->whereNull('deleted_at')
+                    ->where('status', Permission::STATUS_ACTIVE),
             ],
         ];
     }
-    
-    public function messages()
-    {
-        return [
-            'access.required' => 'El campo "access" es obligatorio.',
-            'access.array' => 'El campo "access" debe ser un arreglo de IDs de permisos.',
-            'access.exists' => 'Al menos uno de los IDs en "access" no es válido.',
-        ];
-    }
-    
-
 }

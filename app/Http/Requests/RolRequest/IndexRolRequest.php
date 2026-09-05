@@ -3,28 +3,22 @@
 namespace App\Http\Requests\RolRequest;
 
 use App\Http\Requests\IndexRequest;
+use App\Models\Rol;
+use Illuminate\Validation\Rule;
 
 class IndexRolRequest extends IndexRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, mixed>
-     */
     public function rules(): array
     {
-        return [
-            'name' => 'nullable|string',
-        ];
+        return array_merge(parent::rules(), [
+            'name' => ['nullable', 'string'],
+            'status' => ['nullable', Rule::in([Rol::STATUS_ACTIVE, Rol::STATUS_INACTIVE])],
+            'sort' => ['nullable', Rule::in(Rol::sorts)],
+        ]);
     }
 }

@@ -215,6 +215,7 @@ class SurveyedCalculatorApiTest extends TestCase
             'number_document' => 'USR-CALC-001',
             'username' => 'calculator-test',
             'password' => bcrypt('password'),
+            'rol_id' => \App\Models\Rol::where('name', 'Encuestador')->value('id'),
             'status' => 'Activo',
         ]));
     }

@@ -46,7 +46,7 @@ class UserManagementTest extends TestCase
 
     public function test_only_an_administrator_can_manage_users(): void
     {
-        $operatorRole = Rol::create(['name' => 'Encuestador', 'status' => User::STATUS_ACTIVE]);
+        $operatorRole = Rol::firstOrCreate(['name' => 'Encuestador'], ['status' => User::STATUS_ACTIVE]);
         $operator = $this->createUser('encuestador', User::STATUS_ACTIVE, $operatorRole);
         Sanctum::actingAs($operator);
 

@@ -1,16 +1,10 @@
 <?php
 
 use App\Http\Controllers\RespondentController;
-use App\Http\Controllers\SurveyController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::group(["middleware" => ["auth:sanctum"]], function () {
-    
-    Route::get('respondent', [RespondentController::class, 'index']);
-    Route::post('respondent', [RespondentController::class, 'store']);
-    Route::get('respondent/{id}', [RespondentController::class, 'show']);
-    Route::put('respondent/{id}', [RespondentController::class, 'update']);
-    Route::delete('respondent/{id}', [RespondentController::class, 'destroy']);
-
-});
+Route::get('respondent', [RespondentController::class, 'index'])->middleware('permission:respondents.view');
+Route::get('respondent/{id}', [RespondentController::class, 'show'])->middleware('permission:respondents.view');
+Route::post('respondent', [RespondentController::class, 'store'])->middleware('permission:respondents.manage');
+Route::put('respondent/{id}', [RespondentController::class, 'update'])->middleware('permission:respondents.manage');
+Route::delete('respondent/{id}', [RespondentController::class, 'destroy'])->middleware('permission:respondents.manage');

@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Permission extends Model
 {
     use SoftDeletes;
+
+    public const STATUS_ACTIVE = 'Activo';
+    public const STATUS_INACTIVE = 'Inactivo';
     protected $fillable = [
         'id',
         'name',
@@ -34,14 +37,11 @@ class Permission extends Model
     /**
      * Campos de ordenación disponibles.
      */
-    const sorts = [
-        'id' => 'desc',
-        'type' => 'desc',
-        'name' => 'desc',
-    ];
+    const sorts = ['id', 'type', 'name', 'route', 'status'];
 
     public function roles()
     {
-        return $this->belongsToMany(Rol::class, 'permission_rols', 'permission_id', 'rol_id');
+        return $this->belongsToMany(Rol::class, 'permission_rols', 'permission_id', 'rol_id')
+            ->wherePivotNull('deleted_at');
     }
 }

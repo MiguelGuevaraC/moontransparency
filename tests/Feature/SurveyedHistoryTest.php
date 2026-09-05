@@ -236,6 +236,7 @@ class SurveyedHistoryTest extends TestCase
             'number_document' => 'USR-HISTORY-001',
             'username' => 'history-test',
             'password' => bcrypt('password'),
+            'rol_id' => \App\Models\Rol::where('name', 'Encuestador')->value('id'),
             'status' => 'Activo',
         ]));
     }

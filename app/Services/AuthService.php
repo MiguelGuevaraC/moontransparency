@@ -22,10 +22,10 @@ class AuthService
     {
         
         // Busca al usuario por correo
-        $user = User::with('rol')->where('username', $username)->first();
+        $user = User::with('rol.permissions')->where('username', $username)->first();
 
         // Si el usuario no existe, retornamos un error genérico sin dar pistas sobre la existencia
-        if (!$user || !$user->isActive()) {
+        if (!$user || !$user->isActive() || ($user->rol && $user->rol->status !== 'Activo')) {
             return [
                 'status' => false,
                 'message' => "Credenciales inválidas", // Mensaje más general
@@ -65,7 +65,7 @@ class AuthService
     public function authenticate(): array
     {
 
-        $user = auth()->user();
+        $user = auth()->user()?->load('rol.permissions');
         $status = true;
 
         if (!$user) {

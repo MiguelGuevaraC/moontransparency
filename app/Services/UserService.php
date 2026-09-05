@@ -10,7 +10,7 @@ class UserService
 {
     public function getUserById(int $id): ?User
     {
-        return User::with('rol')->find($id);
+        return User::with('rol.permissions')->find($id);
     }
 
     public function createUser(array $data): User
@@ -18,7 +18,7 @@ class UserService
         $data['status'] = $data['status'] ?? User::STATUS_ACTIVE;
 
         return DB::transaction(function () use ($data) {
-            return User::create($data)->load('rol');
+            return User::create($data)->load('rol.permissions');
         });
     }
 
@@ -39,7 +39,7 @@ class UserService
                 $user->tokens()->delete();
             }
 
-            return $user->load('rol');
+            return $user->load('rol.permissions');
         });
     }
 
@@ -47,7 +47,7 @@ class UserService
     {
         $user->update(['status' => User::STATUS_ACTIVE]);
 
-        return $user->load('rol');
+        return $user->load('rol.permissions');
     }
 
     public function deactivate(User $user, int $currentUserId): User
@@ -57,7 +57,7 @@ class UserService
         $user->update(['status' => User::STATUS_INACTIVE]);
         $user->tokens()->delete();
 
-        return $user->load('rol');
+        return $user->load('rol.permissions');
     }
 
     public function destroy(User $user, int $currentUserId): void

@@ -72,6 +72,7 @@ class SurveyedDailyContinuityTest extends TestCase
             'number_document' => 'USR-DAYS-001',
             'username' => 'days-test',
             'password' => bcrypt('password'),
+            'rol_id' => \App\Models\Rol::where('name', 'Encuestador')->value('id'),
             'status' => 'Activo',
         ]));
 

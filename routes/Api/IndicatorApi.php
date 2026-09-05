@@ -1,14 +1,8 @@
 <?php
-
 use App\Http\Controllers\IndicatorController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-
-Route::group(["middleware" => ["auth:sanctum"]], function () {
-    Route::get('indicator', [IndicatorController::class, 'index']);
-    Route::post('indicator', [IndicatorController::class, 'store']);
-    Route::get('indicator/{id}', [IndicatorController::class, 'show']);
-    Route::put('indicator/{id}', [IndicatorController::class, 'update']);
-    Route::delete('indicator/{id}', [IndicatorController::class, 'destroy']);
-
-});
+Route::get('indicator', [IndicatorController::class, 'index'])->middleware('permission:content.view');
+Route::get('indicator/{id}', [IndicatorController::class, 'show'])->middleware('permission:content.view');
+Route::post('indicator', [IndicatorController::class, 'store'])->middleware('permission:content.manage');
+Route::put('indicator/{id}', [IndicatorController::class, 'update'])->middleware('permission:content.manage');
+Route::delete('indicator/{id}', [IndicatorController::class, 'destroy'])->middleware('permission:content.manage');

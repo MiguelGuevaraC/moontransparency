@@ -20,7 +20,7 @@ class UserController extends Controller
     public function index(IndexUserRequest $request)
     {
         return $this->getFilteredResults(
-            User::query()->with('rol'),
+            User::query()->with('rol.permissions'),
             $request,
             User::filters,
             User::sorts,

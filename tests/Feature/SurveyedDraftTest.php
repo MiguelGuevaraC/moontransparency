@@ -130,6 +130,7 @@ class SurveyedDraftTest extends TestCase
             'username' => 'admin-test',
             'password' => bcrypt('password'),
             'status' => 'Activo',
+            'rol_id' => \App\Models\Rol::where('name', 'Encuestador')->value('id'),
         ]);
         Sanctum::actingAs($user);
 

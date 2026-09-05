@@ -5,9 +5,9 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class EnsureAdministrator
+class EnsurePermission
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next, string $permission)
     {
         $user = $request->user();
 
@@ -19,8 +19,11 @@ class EnsureAdministrator
             return response()->json(['message' => 'La cuenta de usuario está inactiva.'], 403);
         }
 
-        if (!$user->isAdministrator()) {
-            return response()->json(['message' => 'Solo un administrador puede gestionar usuarios.'], 403);
+        if (!$user->hasPermission($permission)) {
+            return response()->json([
+                'message' => 'No tiene permiso para realizar esta acción.',
+                'required_permission' => $permission,
+            ], 403);
         }
 
         return $next($request);
