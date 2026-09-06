@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Requests\SurveyedRequest;
 
 use App\Http\Requests\StoreRequest;
@@ -35,6 +36,8 @@ class StoreSurveyedRequest extends StoreRequest
             'genero' => 'nullable|string|max:255',
 
             'survey_id' => 'required|integer|exists:surveys,id',
+            'latitude' => 'nullable|required_with:longitude|numeric|between:-90,90',
+            'longitude' => 'nullable|required_with:latitude|numeric|between:-180,180',
             'day_number' => 'nullable|integer|between:1,7',
             'responses' => 'sometimes|array',
             'responses.*.survey_question_id' => 'required|integer|exists:survey_questions,id',
@@ -64,7 +67,7 @@ class StoreSurveyedRequest extends StoreRequest
                         /*->whereHas('survey', function ($q) use ($survey) {
                             $q->where('proyect_id', $survey->proyect_id);
                         })*/
-                        ->where('survey_id',$survey->id)
+                        ->where('survey_id', $survey->id)
                         ->exists();
 
                     if ($exists) {
@@ -101,6 +104,13 @@ class StoreSurveyedRequest extends StoreRequest
             'survey_id.integer' => 'El campo survey_id debe ser un número entero.',
             'survey_id.exists' => 'El survey_id no existe en la base de datos.',
 
+            'latitude.required_with' => 'La latitud y la longitud deben enviarse juntas.',
+            'latitude.numeric' => 'La latitud debe ser un número.',
+            'latitude.between' => 'La latitud debe estar entre -90 y 90.',
+            'longitude.required_with' => 'La latitud y la longitud deben enviarse juntas.',
+            'longitude.numeric' => 'La longitud debe ser un número.',
+            'longitude.between' => 'La longitud debe estar entre -180 y 180.',
+
             'day_number.integer' => 'El día de medición debe ser un número entero.',
             'day_number.between' => 'El día de medición debe estar entre 1 y 7.',
 
@@ -117,11 +127,9 @@ class StoreSurveyedRequest extends StoreRequest
             'responses.*.response_text.string' => 'La respuesta de texto debe ser una cadena.',
             'responses.*.response_text.max' => 'La respuesta de texto no debe exceder los 1000 caracteres.',
 
-
             'responses.*.file.file' => 'El archivo debe ser un archivo válido.',
             'responses.*.file.max' => 'El archivo no debe exceder los 5 MB.',
             'responses.*.file.mimes' => 'Tipos permitidos: jpg, jpeg, png, pdf, doc, docx, xlsx, mp4, zip.',
         ];
     }
-
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Respondent;
@@ -56,21 +57,24 @@ class SurveyedService
                 ],
                 array_filter([
                     'status' => Surveyed::STATUS_DRAFT,
+                    'latitude' => $data['latitude'] ?? null,
+                    'longitude' => $data['longitude'] ?? null,
                     'created_by' => $authenticatedUserId,
                     'updated_by' => $authenticatedUserId,
                 ], static fn ($value) => $value !== null)
             );
 
             $surveyedChanges = [];
-            if (!$surveyed->status) {
+            if (! $surveyed->status) {
                 $surveyedChanges['status'] = Surveyed::STATUS_DRAFT;
             }
             if ($authenticatedUserId !== null) {
                 $surveyedChanges['updated_by'] = $authenticatedUserId;
-                if (!$surveyed->created_by) {
+                if (! $surveyed->created_by) {
                     $surveyedChanges['created_by'] = $authenticatedUserId;
                 }
             }
+            $surveyedChanges += $this->coordinateData($data);
             if ($surveyedChanges) {
                 $surveyed->update($surveyedChanges);
             }
@@ -87,7 +91,7 @@ class SurveyedService
         return DB::transaction(function () use ($id, $data) {
             $surveyed = Surveyed::lockForUpdate()->find($id);
 
-            if (!$surveyed) {
+            if (! $surveyed) {
                 return null;
             }
 
@@ -105,7 +109,7 @@ class SurveyedService
             $surveyed->update(array_filter([
                 'status' => Surveyed::STATUS_DRAFT,
                 'updated_by' => $this->authenticatedUserId(),
-            ], static fn ($value) => $value !== null));
+            ], static fn ($value) => $value !== null) + $this->coordinateData($data));
 
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
@@ -119,7 +123,7 @@ class SurveyedService
         return DB::transaction(function () use ($id, $data) {
             $surveyed = Surveyed::lockForUpdate()->find($id);
 
-            if (!$surveyed) {
+            if (! $surveyed) {
                 return null;
             }
 
@@ -134,6 +138,8 @@ class SurveyedService
 
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
+            $surveyed->update($this->coordinateData($data));
+            $this->validateRequiredCoordinates($surveyed);
             $this->validateRequiredResponses($surveyed);
 
             $surveyed->update([
@@ -157,7 +163,7 @@ class SurveyedService
 
         $person = Respondent::find($surveyed->respondent_id);
 
-        if (!$person || $person->number_document !== $data['number_document']) {
+        if (! $person || $person->number_document !== $data['number_document']) {
             throw ValidationException::withMessages([
                 'number_document' => 'El encuestado enviado no corresponde al registro que se intenta actualizar.',
             ]);
@@ -187,7 +193,7 @@ class SurveyedService
                 ->where('survey_id', $surveyed->survey_id)
                 ->first();
 
-            if (!$question || Str::lower(Str::ascii(trim((string) $question->question_text))) !== 'dia de medicion') {
+            if (! $question || Str::lower(Str::ascii(trim((string) $question->question_text))) !== 'dia de medicion') {
                 continue;
             }
 
@@ -247,7 +253,7 @@ class SurveyedService
             $measurement->restore();
         }
 
-        if (!$measurement->exists) {
+        if (! $measurement->exists) {
             $measurement->save();
         }
 
@@ -263,14 +269,13 @@ class SurveyedService
         Respondent $person,
         array $responses,
         ?SurveyedMeasurement $measurement = null
-    ): void
-    {
+    ): void {
         foreach ($responses as $index => $response) {
             $question = SurveyQuestion::whereKey($response['survey_question_id'])
                 ->where('survey_id', $surveyed->survey_id)
                 ->first();
 
-            if (!$question) {
+            if (! $question) {
                 throw ValidationException::withMessages([
                     "responses.$index.survey_question_id" => 'La pregunta no pertenece a la encuesta seleccionada.',
                 ]);
@@ -362,7 +367,7 @@ class SurveyedService
                 $isAnswered = $answer && filled($answer->response_text);
             }
 
-            if (!$isAnswered) {
+            if (! $isAnswered) {
                 $errors['responses.'.$question->id] = sprintf(
                     'La pregunta obligatoria %s no tiene una respuesta válida.',
                     $question->id
@@ -373,6 +378,38 @@ class SurveyedService
         if ($errors) {
             throw ValidationException::withMessages($errors);
         }
+    }
+
+    private function validateRequiredCoordinates(Surveyed $surveyed): void
+    {
+        $requiresLocation = $surveyed->survey()
+            ->where('survey_name', GeobosquesSurveyConfigurator::SURVEY_NAME)
+            ->whereHas('survey_questions', function ($query) {
+                $query->where('question_type', 'UBICACION')
+                    ->where('is_required', true);
+            })
+            ->exists();
+
+        if ($requiresLocation && ($surveyed->latitude === null || $surveyed->longitude === null)) {
+            throw ValidationException::withMessages([
+                'coordinates' => 'La latitud y la longitud son obligatorias para finalizar la encuesta GeoBosques.',
+            ]);
+        }
+    }
+
+    private function coordinateData(array $data): array
+    {
+        $coordinates = [];
+
+        if (array_key_exists('latitude', $data)) {
+            $coordinates['latitude'] = $data['latitude'];
+        }
+
+        if (array_key_exists('longitude', $data)) {
+            $coordinates['longitude'] = $data['longitude'];
+        }
+
+        return $coordinates;
     }
 
     private function syncResponseOptions(
@@ -443,5 +480,4 @@ class SurveyedService
 
         return $id !== null ? (int) $id : null;
     }
-
 }

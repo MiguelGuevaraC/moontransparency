@@ -29,16 +29,17 @@ class SurveyedController extends Controller
      *     summary="Obtener el historial de participaciones con filtros y ordenamiento",
      *     tags={"Surveyed"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
      *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
      *     @OA\Parameter(name="proyect_id", in="query", description="ID del proyecto", required=false, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="survey_name", in="query", description="Nombre de la encuesta", required=false, @OA\Schema(type="string")),
      *     @OA\Parameter(name="description", in="query", description="Descripción de la encuesta", required=false, @OA\Schema(type="string")),
+     *
      *     @OA\Response(response=200, description="Lista de Surveys", @OA\JsonContent(ref="#/components/schemas/Survey")),
      *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(@OA\Property(property="error", type="string")))
      * )
      */
-
     public function index(IndexSurveyedRequest $request)
     {
         $query = Surveyed::query()->with([
@@ -131,17 +132,17 @@ class SurveyedController extends Controller
                 ->whereNull('proyects.deleted_at')
                 ->whereNull('surveyed_responses.deleted_at')
                 ->whereNull('survey_questions.deleted_at');
-            
+
         if ($request->filled('response_text')) {
-                $query = $query->whereHas('surveyed_responses', function ($q) use ($request) {
-                    $q->where(DB::raw('upper(response_text)'), 'like', DB::raw("upper('%{$request->input('response_text')}%')"));
-                });
+            $query = $query->whereHas('surveyed_responses', function ($q) use ($request) {
+                $q->where(DB::raw('upper(response_text)'), 'like', DB::raw("upper('%{$request->input('response_text')}%')"));
+            });
         }
-        
-        $query->select('surveyeds.id','surveyeds.id as surveyed_id','surveyeds.respondent_id','surveyeds.status','surveyeds.completed_at','respondents.names as respondent_name','proyects.name as proyect_name','surveys.id as survey_id',
-                    'surveyed_responses.id as response_id','surveyed_responses.survey_question_id','survey_questions.question_text as survey_question_text','survey_questions.question_type as survey_question_type',
-                    'surveyed_responses.response_text','survey_question_options.description as selected_option_description','surveyed_responses.file_path','surveyed_responses.created_at as response_created_at',
-                    'surveyeds.created_at as surveyed_created_at','surveyeds.created_at as loaded_at','respondents.genero as respondent_gender','surveys.survey_name','surveyed_response_options.id as id2')
+
+        $query->select('surveyeds.id', 'surveyeds.id as surveyed_id', 'surveyeds.respondent_id', 'surveyeds.status', 'surveyeds.completed_at', 'surveyeds.latitude', 'surveyeds.longitude', 'respondents.names as respondent_name', 'proyects.name as proyect_name', 'surveys.id as survey_id',
+            'surveyed_responses.id as response_id', 'surveyed_responses.survey_question_id', 'survey_questions.question_text as survey_question_text', 'survey_questions.question_type as survey_question_type',
+            'surveyed_responses.response_text', 'survey_question_options.description as selected_option_description', 'surveyed_responses.file_path', 'surveyed_responses.created_at as response_created_at',
+            'surveyeds.created_at as surveyed_created_at', 'surveyeds.created_at as loaded_at', 'respondents.genero as respondent_gender', 'surveys.survey_name', 'surveyed_response_options.id as id2')
                 ->orderBy('surveyeds.id');
 
         return response()->json($query->get());
@@ -170,55 +171,55 @@ class SurveyedController extends Controller
                 ->whereNull('proyects.deleted_at')
                 ->whereNull('surveyed_responses.deleted_at')
                 ->whereNull('survey_questions.deleted_at');
-            
+
         if ($request->filled('response_text')) {
-                $query = $query->whereHas('surveyed_responses', function ($q) use ($request) {
-                    $q->where(DB::raw('upper(response_text)'), 'like', DB::raw("upper('%{$request->input('response_text')}%')"));
-                });
+            $query = $query->whereHas('surveyed_responses', function ($q) use ($request) {
+                $q->where(DB::raw('upper(response_text)'), 'like', DB::raw("upper('%{$request->input('response_text')}%')"));
+            });
         }
-        
-        $query->select('surveyeds.id','surveyeds.id as surveyed_id','surveyeds.respondent_id','respondents.names as respondent_name','proyects.name as proyect_name','surveys.id as survey_id',
-                    'surveyed_responses.id as response_id','surveyed_responses.survey_question_id','survey_questions.question_text as survey_question_text','survey_questions.question_type as survey_question_type',
-                    'surveyed_responses.response_text','survey_question_options.description as selected_option_description','surveyed_responses.file_path','surveyed_responses.created_at as response_created_at',
-                    'surveyeds.created_at as surveyed_created_at','surveyeds.created_at as loaded_at','respondents.genero as respondent_gender','surveys.survey_name','surveyed_response_options.id as id2')
+
+        $query->select('surveyeds.id', 'surveyeds.id as surveyed_id', 'surveyeds.respondent_id', 'respondents.names as respondent_name', 'proyects.name as proyect_name', 'surveys.id as survey_id',
+            'surveyed_responses.id as response_id', 'surveyed_responses.survey_question_id', 'survey_questions.question_text as survey_question_text', 'survey_questions.question_type as survey_question_type',
+            'surveyed_responses.response_text', 'survey_question_options.description as selected_option_description', 'surveyed_responses.file_path', 'surveyed_responses.created_at as response_created_at',
+            'surveyeds.created_at as surveyed_created_at', 'surveyeds.created_at as loaded_at', 'respondents.genero as respondent_gender', 'surveys.survey_name', 'surveyed_response_options.id as id2')
                 ->orderBy('surveyeds.id');
 
         $rows = $query->get();
 
         $excel = "<table border='1'>";
-        $excel .= "<thead><tr>";
-        $excel .= "<th>ID</th>";
-        $excel .= "<th>Proyecto</th>";
-        $excel .= "<th>Encuesta</th>";
-        $excel .= "<th>Fecha Respuesta</th>";
-        $excel .= "<th>Genero Encuestado</th>";
-        $excel .= "<th>Encuestado</th>";
-        $excel .= "<th>Pregunta</th>";
-        $excel .= "<th>Tipo Pregunta</th>";
-        $excel .= "<th>Respuesta</th>";
-        $excel .= "<th>Opción Seleccionada</th>";
-        $excel .= "<th>ID Opción Seleccionada</th>";
-        $excel .= "<th>Archivo</th>";
-        $excel .= "</tr></thead><tbody>";
+        $excel .= '<thead><tr>';
+        $excel .= '<th>ID</th>';
+        $excel .= '<th>Proyecto</th>';
+        $excel .= '<th>Encuesta</th>';
+        $excel .= '<th>Fecha Respuesta</th>';
+        $excel .= '<th>Genero Encuestado</th>';
+        $excel .= '<th>Encuestado</th>';
+        $excel .= '<th>Pregunta</th>';
+        $excel .= '<th>Tipo Pregunta</th>';
+        $excel .= '<th>Respuesta</th>';
+        $excel .= '<th>Opción Seleccionada</th>';
+        $excel .= '<th>ID Opción Seleccionada</th>';
+        $excel .= '<th>Archivo</th>';
+        $excel .= '</tr></thead><tbody>';
 
         foreach ($rows as $row) {
-            $excel .= "<tr>";
-            $excel .= "<td>" . ($row->response_id ?? '') . "</td>";
-            $excel .= "<td>" . ($row->proyect_name ?? '') . "</td>";
-            $excel .= "<td>" . ($row->survey_name ?? '') . "</td>";
-            $excel .= "<td>" . ($row->loaded_at ?? '') . "</td>";
-            $excel .= "<td>" . ($row->respondent_gender ?? '') . "</td>";
-            $excel .= "<td>" . ($row->respondent_name ?? '') . "</td>";
-            $excel .= "<td>" . ($row->survey_question_text ?? '') . "</td>";
-            $excel .= "<td>" . ($row->survey_question_type ?? '') . "</td>";
-            $excel .= "<td>" . ($row->response_text ?? '') . "</td>";
-            $excel .= "<td>" . ($row->selected_option_description ?? '') . "</td>";
-            $excel .= "<td>" . ($row->id2 ?? '') . "</td>";
-            $excel .= "<td>" . ($row->file_path ?? '') . "</td>";
-            $excel .= "</tr>";
+            $excel .= '<tr>';
+            $excel .= '<td>'.($row->response_id ?? '').'</td>';
+            $excel .= '<td>'.($row->proyect_name ?? '').'</td>';
+            $excel .= '<td>'.($row->survey_name ?? '').'</td>';
+            $excel .= '<td>'.($row->loaded_at ?? '').'</td>';
+            $excel .= '<td>'.($row->respondent_gender ?? '').'</td>';
+            $excel .= '<td>'.($row->respondent_name ?? '').'</td>';
+            $excel .= '<td>'.($row->survey_question_text ?? '').'</td>';
+            $excel .= '<td>'.($row->survey_question_type ?? '').'</td>';
+            $excel .= '<td>'.($row->response_text ?? '').'</td>';
+            $excel .= '<td>'.($row->selected_option_description ?? '').'</td>';
+            $excel .= '<td>'.($row->id2 ?? '').'</td>';
+            $excel .= '<td>'.($row->file_path ?? '').'</td>';
+            $excel .= '</tr>';
         }
 
-        $excel .= "</tbody></table>";
+        $excel .= '</tbody></table>';
 
         /*header("Content-type: application/vnd.ms-excel");
         header("Content-Disposition: attachment; filename=encuestas_respuestas.xls");
@@ -235,21 +236,20 @@ class SurveyedController extends Controller
         ini_set('memory_limit', '-1');
 
         $request->validate([
-            'file' => 'required|file|mimes:xls,xlsx'
+            'file' => 'required|file|mimes:xls,xlsx',
         ]);
 
         DB::beginTransaction();
 
         try {
-
             $rows = Excel::toArray([], $request->file('file'));
             $rows = $rows[0];
 
             if (count($rows) <= 1) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'El archivo no contiene registros.'
-                ],422);
+                    'message' => 'El archivo no contiene registros.',
+                ], 422);
             }
 
             // Validar encabezado
@@ -258,8 +258,8 @@ class SurveyedController extends Controller
             if ($header[0] != 'ID' || $header[8] != 'Respuesta') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'El formato del Excel no es válido.'
-                ],422);
+                    'message' => 'El formato del Excel no es válido.',
+                ], 422);
             }
 
             $chunk = 50;
@@ -268,49 +268,50 @@ class SurveyedController extends Controller
             $datos2 = [];
 
             foreach ($rows as $i => $row) {
-
-                if ($i == 0) continue;
+                if ($i == 0) {
+                    continue;
+                }
 
                 $id = trim($row[0]);
 
-                if ($id == '') continue;
-                if($row[8]!=""){
+                if ($id == '') {
+                    continue;
+                }
+                if ($row[8] != '') {
                     $datos[] = [
                         'id' => $id,
-                        'respuesta' => $row[8] ?? ''
+                        'respuesta' => $row[8] ?? '',
                     ];
                 }
-                if(trim($row[7])=="OPCIONES"){
+                if (trim($row[7]) == 'OPCIONES') {
                     $datos2[] = [
                         'id' => $id,
                         'option' => $row[9] ?? '',
-                        'id_option' => $row[10]
+                        'id_option' => $row[10],
                     ];
                 }
             }
 
             foreach (array_chunk($datos, $chunk) as $grupo) {
-
                 $cases = [];
                 $ids = [];
 
                 foreach ($grupo as $item) {
-
                     $respuesta = str_replace("'", "\\'", $item['respuesta']);
 
                     $cases[] = "WHEN {$item['id']} THEN '{$respuesta}'";
                     $ids[] = $item['id'];
                 }
 
-                $sql = "
+                $sql = '
                     UPDATE surveyed_responses
                     SET
                         response_text = CASE id
-                            ".implode("\n",$cases)."
+                            '.implode("\n", $cases).'
                         END,
                         updated_at = NOW()
-                    WHERE id IN (".implode(',',$ids).")
-                ";
+                    WHERE id IN ('.implode(',', $ids).')
+                ';
 
                 DB::statement($sql);
             }
@@ -324,21 +325,19 @@ class SurveyedController extends Controller
                         ->keyBy(function ($item) {
                             return $item->survey_question_id.'|'.mb_strtolower(trim($item->description));
                         });
-                        
-            foreach (array_chunk($datos2, 100) as $grupo) {
 
+            foreach (array_chunk($datos2, 100) as $grupo) {
                 $cases = [];
                 $ids = [];
 
                 foreach ($grupo as $item) {
-
-                    if (!isset($surveyQuestions[$item['id']])) {
+                    if (! isset($surveyQuestions[$item['id']])) {
                         continue;
                     }
 
                     $key = $surveyQuestions[$item['id']].'|'.mb_strtolower(trim($item['option']));
 
-                    if (!isset($options[$key])) {
+                    if (! isset($options[$key])) {
                         continue;
                     }
 
@@ -347,19 +346,16 @@ class SurveyedController extends Controller
                 }
 
                 if (count($ids)) {
-
-                    DB::statement("
+                    DB::statement('
                         UPDATE surveyed_response_options
                         SET
                             survey_question_options_id = CASE id
-                                ".implode("\n", $cases)."
+                                '.implode("\n", $cases).'
                             END,
                             updated_at = NOW()
-                        WHERE id IN (".implode(',', $ids).")
-                    ");
-
+                        WHERE id IN ('.implode(',', $ids).')
+                    ');
                 }
-
             }
 
             DB::commit();
@@ -367,18 +363,15 @@ class SurveyedController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Registro actualizados '.count($ids),
-                'actualizados' => count($ids)
+                'actualizados' => count($ids),
             ]);
-
         } catch (\Exception $e) {
-
             DB::rollBack();
 
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
-            ],500);
-
+                'message' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -388,13 +381,17 @@ class SurveyedController extends Controller
      *     summary="Crear Surveyed",
      *     tags={"Surveyed"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
+     *
      *             @OA\Schema(ref="#/components/schemas/SurveyRequest")
      *         )
      *     ),
+     *
      *     @OA\Response(response=200, description="Encuesta creada exitosamente", @OA\JsonContent(ref="#/components/schemas/Surveyed")),
      *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
      * )
@@ -416,7 +413,7 @@ class SurveyedController extends Controller
     {
         $surveyed = $this->surveyService->getSurveyedById((int) $id);
 
-        if (!$surveyed) {
+        if (! $surveyed) {
             return response()->json([
                 'message' => 'Respuesta de encuesta no encontrada.',
             ], 404);
@@ -431,15 +428,20 @@ class SurveyedController extends Controller
      *     summary="Obtener datos consolidados de una participación para la calculadora de CO2",
      *     tags={"Surveyed"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", minimum=1)),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Participación consolidada en un contrato estable de siete días",
+     *
      *         @OA\JsonContent(
      *             type="object",
+     *
      *             @OA\Property(property="data", ref="#/components/schemas/CalculatorParticipation")
      *         )
      *     ),
+     *
      *     @OA\Response(response=401, description="No autenticado"),
      *     @OA\Response(response=404, description="Participación no encontrada")
      * )
@@ -448,7 +450,7 @@ class SurveyedController extends Controller
     {
         $surveyed = $this->surveyService->getSurveyedById((int) $id);
 
-        if (!$surveyed) {
+        if (! $surveyed) {
             return response()->json([
                 'message' => 'Respuesta de encuesta no encontrada.',
             ], 404);
@@ -463,18 +465,22 @@ class SurveyedController extends Controller
      *     summary="Actualizar Surveyed",
      *     tags={"Surveyed"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
+     *
      *             @OA\Schema(ref="#/components/schemas/SurveyRequest")
      *         )
      *     ),
+     *
      *     @OA\Response(response=200, description="Encuesta creada exitosamente", @OA\JsonContent(ref="#/components/schemas/Surveyed")),
      *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
      * )
      */
-    public function update(UpdateSurveyedRequest $request,$id)
+    public function update(UpdateSurveyedRequest $request, $id)
     {
         //Log::info('Request data', $request->all());
         // validado para los campos textuales
@@ -485,7 +491,7 @@ class SurveyedController extends Controller
 
         $surveyed = $this->surveyService->updateSurveyedById((int) $id, $validated);
 
-        if (!$surveyed) {
+        if (! $surveyed) {
             return response()->json([
                 'message' => 'Respuesta de encuesta no encontrada.',
             ], 404);
@@ -501,7 +507,7 @@ class SurveyedController extends Controller
 
         $surveyed = $this->surveyService->finalizeSurveyedById((int) $id, $validated);
 
-        if (!$surveyed) {
+        if (! $surveyed) {
             return response()->json([
                 'message' => 'Respuesta de encuesta no encontrada.',
             ], 404);
@@ -510,26 +516,25 @@ class SurveyedController extends Controller
         return new SurveyedResource($surveyed);
     }
 
-
     /**
      * @OA\Delete(
      *     path="/moontransparency/public/api/surveyed/{id}",
      *     summary="Eliminar un Survey por ID",
      *     tags={"Surveyed"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
+     *
      *     @OA\Response(response=200, description="Encuesta eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Encuesta eliminado exitosamente"))),
      *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Encuesta No Encontrada"))),
 
      * )
      */
-
     public function destroy($id)
     {
-
         $survey = $this->surveyService->getSurveyedById($id);
 
-        if (!$survey) {
+        if (! $survey) {
             return response()->json([
                 'error' => 'Respuesta Encuesta No Encontrada.',
             ], 404);
