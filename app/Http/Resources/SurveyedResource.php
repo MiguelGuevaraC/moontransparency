@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Surveyed;
+use App\Services\GeobosquesMapService;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
@@ -36,6 +37,10 @@ class SurveyedResource extends JsonResource
     public function toArray($request)
     {
         $status = $this->status ?? Surveyed::STATUS_DRAFT;
+        $geobosquesMap = app(GeobosquesMapService::class)->build(
+            $this->latitude,
+            $this->longitude
+        );
         $orderedResponses = $this->surveyed_responses
             ? $this->surveyed_responses
                 ->sortBy(function ($response) {
@@ -59,6 +64,7 @@ class SurveyedResource extends JsonResource
             'completed_at' => $this->completed_at,
             'latitude' => $this->latitude !== null ? (float) $this->latitude : null,
             'longitude' => $this->longitude !== null ? (float) $this->longitude : null,
+            'geobosques_map' => $geobosquesMap,
             'created_by' => $this->created_by,
             'updated_by' => $this->updated_by,
             'created_by_user' => $this->whenLoaded('createdBy', fn () => $this->createdBy ? new UserResource($this->createdBy) : null),

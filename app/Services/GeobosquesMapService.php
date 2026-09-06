@@ -1,0 +1,91 @@
+<?php
+
+namespace App\Services;
+
+class GeobosquesMapService
+{
+    public const VIEWER_BASE_URL = 'https://geobosques.minam.gob.pe/geobosque/visor/index.php';
+
+    /**
+     * Build the GeoBosques viewer contract for a coordinate pair.
+     */
+    public function build($latitude, $longitude): array
+    {
+        if ($this->isMissing($latitude) && $this->isMissing($longitude)) {
+            return $this->unavailable(
+                'No hay coordenadas registradas para mostrar el mapa.'
+            );
+        }
+
+        if (! $this->isValidLatitude($latitude) || ! $this->isValidLongitude($longitude)) {
+            return $this->unavailable(
+                'Las coordenadas registradas no son válidas para mostrar el mapa.'
+            );
+        }
+
+        $normalizedLatitude = $this->normalize((float) $latitude);
+        $normalizedLongitude = $this->normalize((float) $longitude);
+
+        return [
+            'available' => true,
+            'provider' => 'GEOBOSQUES_MINAM',
+            'latitude' => (float) $normalizedLatitude,
+            'longitude' => (float) $normalizedLongitude,
+            'viewer_url' => self::VIEWER_BASE_URL.'?xy='.$normalizedLatitude.','.$normalizedLongitude,
+            'embed_url' => route('geobosques.map', [
+                'latitude' => $normalizedLatitude,
+                'longitude' => $normalizedLongitude,
+            ]),
+            'marker_supported' => true,
+            'marker_parameter' => 'xy',
+            'requires_connection' => true,
+            'load_strategy' => 'WHEN_ONLINE',
+            'message' => null,
+        ];
+    }
+
+    private function unavailable(string $message): array
+    {
+        return [
+            'available' => false,
+            'provider' => 'GEOBOSQUES_MINAM',
+            'latitude' => null,
+            'longitude' => null,
+            'viewer_url' => null,
+            'embed_url' => null,
+            'marker_supported' => true,
+            'marker_parameter' => 'xy',
+            'requires_connection' => true,
+            'load_strategy' => 'WHEN_ONLINE',
+            'message' => $message,
+        ];
+    }
+
+    private function isMissing($value): bool
+    {
+        return $value === null || $value === '';
+    }
+
+    private function isValidLatitude($latitude): bool
+    {
+        return ! $this->isMissing($latitude)
+            && is_numeric($latitude)
+            && (float) $latitude >= -90
+            && (float) $latitude <= 90;
+    }
+
+    private function isValidLongitude($longitude): bool
+    {
+        return ! $this->isMissing($longitude)
+            && is_numeric($longitude)
+            && (float) $longitude >= -180
+            && (float) $longitude <= 180;
+    }
+
+    private function normalize(float $coordinate): string
+    {
+        $normalized = rtrim(rtrim(number_format($coordinate, 7, '.', ''), '0'), '.');
+
+        return $normalized === '-0' ? '0' : $normalized;
+    }
+}

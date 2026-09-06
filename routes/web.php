@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GeobosquesMapController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,6 +20,5 @@ Route::get('/', function () {
 Route::get('/calculadora', function () {
     return view('calculadora');
 });
-Route::get('/mapa', function () {
-    return view('mapa');
-});
+Route::get('/mapa', [GeobosquesMapController::class, 'show'])
+    ->name('geobosques.map');

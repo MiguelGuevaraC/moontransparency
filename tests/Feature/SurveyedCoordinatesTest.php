@@ -26,7 +26,14 @@ class SurveyedCoordinatesTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('data.latitude', -6.39454)
-            ->assertJsonPath('data.longitude', -79.822403);
+            ->assertJsonPath('data.longitude', -79.822403)
+            ->assertJsonPath('data.geobosques_map.available', true)
+            ->assertJsonPath(
+                'data.geobosques_map.viewer_url',
+                'https://geobosques.minam.gob.pe/geobosque/visor/index.php?xy=-6.39454,-79.822403'
+            )
+            ->assertJsonPath('data.geobosques_map.marker_parameter', 'xy')
+            ->assertJsonPath('data.geobosques_map.load_strategy', 'WHEN_ONLINE');
 
         $this->assertDatabaseHas('surveyeds', [
             'id' => $response->json('data.id'),
@@ -90,7 +97,12 @@ class SurveyedCoordinatesTest extends TestCase
         $draft = $this->postJson('/api/response-survey', $payload)
             ->assertOk()
             ->assertJsonPath('data.latitude', null)
-            ->assertJsonPath('data.longitude', null);
+            ->assertJsonPath('data.longitude', null)
+            ->assertJsonPath('data.geobosques_map.available', false)
+            ->assertJsonPath(
+                'data.geobosques_map.message',
+                'No hay coordenadas registradas para mostrar el mapa.'
+            );
 
         $surveyedId = $draft->json('data.id');
 
