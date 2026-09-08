@@ -5,10 +5,12 @@ namespace App\Services;
 use App\Models\Respondent;
 use App\Models\Surveyed;
 use App\Models\SurveyedMeasurement;
+use App\Models\SurveyedReopening;
 use App\Models\SurveyedResponse;
 use App\Models\SurveyedResponseOption;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyQuestionOption;
+use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -30,6 +32,7 @@ class SurveyedService
             'respondent',
             'createdBy.rol',
             'updatedBy.rol',
+            'reopenings.reopenedBy.rol',
             'survey.proyect',
             'survey.survey_questions.survey_questions_options',
             'surveyed_responses.survey_question.survey_questions_options',
@@ -148,6 +151,39 @@ class SurveyedService
             ] + array_filter([
                 'updated_by' => $this->authenticatedUserId(),
             ], static fn ($value) => $value !== null));
+
+            return $this->getSurveyedById($surveyed->id);
+        });
+    }
+
+    public function reopenSurveyedById(int $id, string $reason, User $actor): ?Surveyed
+    {
+        return DB::transaction(function () use ($id, $reason, $actor) {
+            $surveyed = Surveyed::lockForUpdate()->find($id);
+
+            if (! $surveyed) {
+                return null;
+            }
+
+            if ($surveyed->status !== Surveyed::STATUS_FINALIZED) {
+                throw new ConflictHttpException(
+                    'Solo se puede reabrir una encuesta que se encuentre FINALIZADA.'
+                );
+            }
+
+            SurveyedReopening::create([
+                'surveyed_id' => $surveyed->id,
+                'previous_status' => $surveyed->status,
+                'previous_completed_at' => $surveyed->completed_at,
+                'reason' => trim($reason),
+                'reopened_by' => $actor->id,
+            ]);
+
+            $surveyed->update([
+                'status' => Surveyed::STATUS_DRAFT,
+                'completed_at' => null,
+                'updated_by' => $actor->id,
+            ]);
 
             return $this->getSurveyedById($surveyed->id);
         });

@@ -88,4 +88,11 @@ class Surveyed extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function reopenings()
+    {
+        return $this->hasMany(SurveyedReopening::class)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
+    }
 }

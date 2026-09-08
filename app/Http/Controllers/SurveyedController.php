@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SurveyedRequest\IndexSurveyedRequest;
+use App\Http\Requests\SurveyedRequest\ReopenSurveyedRequest;
 use App\Http\Requests\SurveyedRequest\StoreSurveyedRequest;
 use App\Http\Requests\SurveyedRequest\UpdateSurveyedRequest;
 use App\Http\Resources\CalculatorParticipationResource;
@@ -506,6 +507,58 @@ class SurveyedController extends Controller
         $validated['_files'] = $request->allFiles();
 
         $surveyed = $this->surveyService->finalizeSurveyedById((int) $id, $validated);
+
+        if (! $surveyed) {
+            return response()->json([
+                'message' => 'Respuesta de encuesta no encontrada.',
+            ], 404);
+        }
+
+        return new SurveyedResource($surveyed);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/moontransparency/public/api/surveyed/{id}/reopen",
+     *     summary="Reabrir una participación finalizada",
+     *     tags={"Surveyed"},
+     *     security={{"bearerAuth": {}}},
+     *
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", minimum=1)),
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *
+     *         @OA\JsonContent(
+     *             required={"reason"},
+     *
+     *             @OA\Property(property="reason", type="string", maxLength=1000, example="Se requiere corregir la medición del día 4")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(response=200, description="Participación reabierta como BORRADOR"),
+     *     @OA\Response(response=401, description="No autenticado"),
+     *     @OA\Response(response=403, description="Sin permiso o sin rol administrador"),
+     *     @OA\Response(response=404, description="Participación no encontrada"),
+     *     @OA\Response(response=409, description="La participación no está finalizada"),
+     *     @OA\Response(response=422, description="Motivo inválido")
+     * )
+     */
+    public function reopen(ReopenSurveyedRequest $request, $id)
+    {
+        $actor = $request->user();
+
+        if (! $actor || ! $actor->isAdministrator()) {
+            return response()->json([
+                'message' => 'Solo un administrador puede reabrir una encuesta finalizada.',
+            ], 403);
+        }
+
+        $surveyed = $this->surveyService->reopenSurveyedById(
+            (int) $id,
+            $request->validated('reason'),
+            $actor
+        );
 
         if (! $surveyed) {
             return response()->json([

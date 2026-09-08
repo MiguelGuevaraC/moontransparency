@@ -85,6 +85,11 @@ class User extends Authenticatable
         return $this->hasMany(Surveyed::class, 'updated_by');
     }
 
+    public function surveyedReopenings()
+    {
+        return $this->hasMany(SurveyedReopening::class, 'reopened_by');
+    }
+
     public function isActive(): bool
     {
         return Str::lower(trim((string) $this->status)) === Str::lower(self::STATUS_ACTIVE);

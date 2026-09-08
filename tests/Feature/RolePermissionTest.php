@@ -19,11 +19,14 @@ class RolePermissionTest extends TestCase
         $this->assertDatabaseHas('rols', ['name' => 'Encuestador', 'status' => Rol::STATUS_ACTIVE]);
         $this->assertDatabaseHas('permissions', ['route' => 'users.view', 'status' => Permission::STATUS_ACTIVE]);
         $this->assertDatabaseHas('permissions', ['route' => 'roles.assign_permissions', 'status' => Permission::STATUS_ACTIVE]);
+        $this->assertDatabaseHas('permissions', ['route' => 'participations.reopen', 'status' => Permission::STATUS_ACTIVE]);
 
         $administrator = Rol::where('name', 'Administrador')->firstOrFail();
         $surveyor = Rol::where('name', 'Encuestador')->firstOrFail();
         $this->assertTrue($administrator->permissions()->where('route', 'users.view')->exists());
+        $this->assertTrue($administrator->permissions()->where('route', 'participations.reopen')->exists());
         $this->assertFalse($surveyor->permissions()->where('route', 'users.view')->exists());
+        $this->assertFalse($surveyor->permissions()->where('route', 'participations.reopen')->exists());
         $this->assertTrue($surveyor->permissions()->where('route', 'participations.manage')->exists());
     }
 

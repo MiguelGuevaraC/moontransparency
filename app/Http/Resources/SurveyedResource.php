@@ -73,6 +73,7 @@ class SurveyedResource extends JsonResource
             'respondent' => $this->respondent ? new RespondentResource($this->respondent) : null,
             'surveyed_responses' => SurveyedResponseResource::collection($orderedResponses),
             'measurements' => SurveyedMeasurementResource::collection($this->measurements),
+            'reopenings' => SurveyedReopeningResource::collection($this->whenLoaded('reopenings')),
             'created_at' => $this->created_at,
         ];
     }
