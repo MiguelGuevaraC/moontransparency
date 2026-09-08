@@ -13,9 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="question_text", type="string", example="¿Qué fuentes de energía utiliza en su hogar?"),
  *     @OA\Property(property="question_type", type="string", example="multiple_choice")
  * )
- */
-
-/**
+ *
  * @OA\Schema(
  *     schema="SurveyQuestion",
  *     title="SurveyQuestion",

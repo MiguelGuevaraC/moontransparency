@@ -11,9 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="survey_question_id", type="integer", example=12),
  *     @OA\Property(property="description", type="string", example="Energía solar")
  * )
- */
-
-/**
+ *
  * @OA\Schema(
  *     schema="SurveyQuestionOption",
  *     title="SurveyQuestionOption",

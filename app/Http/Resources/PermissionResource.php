@@ -12,10 +12,11 @@ class PermissionResource extends JsonResource
      *     title="Permission",
      *     description="Permission model",
      *     @OA\Property( property="id", type="integer", example="1" ),
-     *     @OA\Property( property="name", type="string", example="users" ),
-     *     @OA\Property( property="type", type="string", example="Tipo-01" ),
-     *     @OA\Property( property="status", type="string", example="Activo" ),
-     *     @OA\Property(property="person_id",type="integer",description="Person Id", example="1"),
+     *     @OA\Property(property="name", type="string", example="Ver usuarios"),
+     *     @OA\Property(property="code", type="string", example="users.view"),
+     *     @OA\Property(property="route", type="string", example="users.view"),
+     *     @OA\Property(property="type", type="string", example="USUARIOS"),
+     *     @OA\Property(property="status", type="string", enum={"Activo", "Inactivo"}),
 
      * )
      */

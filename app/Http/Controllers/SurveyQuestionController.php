@@ -21,7 +21,7 @@ class SurveyQuestionController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/moontransparency/public/api/survey",
+     *     path="/moontransparency/public/api/surveyquestion",
      *     summary="Obtener información de SurveysQuestion con filtros y ordenamiento",
      *     tags={"Survey"},
      *     security={{"bearerAuth": {}}},
@@ -91,7 +91,7 @@ class SurveyQuestionController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/moontransparency/public/api/survey",
+     *     path="/moontransparency/public/api/surveyquestion",
      *     summary="Crear Survey",
      *     tags={"Survey"},
      *     security={{"bearerAuth": {}}},

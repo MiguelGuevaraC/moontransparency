@@ -35,7 +35,7 @@ class RespondentController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/moontransparency/public/api/survey",
+     *     path="/moontransparency/public/api/respondent-search",
      *     summary="Obtener información de Respondents con filtros y ordenamiento",
      *     tags={"Respondent"},
      *     security={{"bearerAuth": {}}},
@@ -125,7 +125,7 @@ class RespondentController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/moontransparency/public/api/survey/{id}",
+     *     path="/moontransparency/public/api/respondent/{id}",
      *     summary="Obtener detalles de un Respondent por ID",
      *     tags={"Respondent"},
      *     security={{"bearerAuth": {}}},
@@ -151,7 +151,7 @@ class RespondentController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/moontransparency/public/api/survey",
+     *     path="/moontransparency/public/api/respondent",
      *     summary="Crear Respondent",
      *     tags={"Respondent"},
      *     security={{"bearerAuth": {}}},
@@ -174,7 +174,7 @@ class RespondentController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/moontransparency/public/api/survey/{id}",
+     *     path="/moontransparency/public/api/respondent/{id}",
      *     summary="Actualizar un Respondent",
      *     tags={"Respondent"},
      *     security={{"bearerAuth": {}}},
@@ -211,7 +211,7 @@ class RespondentController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/moontransparency/public/api/survey/{id}",
+     *     path="/moontransparency/public/api/respondent/{id}",
      *     summary="Eliminar un Respondent por ID",
      *     tags={"Respondent"},
      *     security={{"bearerAuth": {}}},

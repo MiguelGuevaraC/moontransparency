@@ -16,9 +16,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="email", type="string", format="email", example="juan@example.com"),
  *     @OA\Property(property="genero", type="string", example="masculino")
  * )
- */
-
-/**
+ *
  * @OA\Schema(
  *     schema="Respondent",
  *     title="Respondent",

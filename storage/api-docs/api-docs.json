@@ -3305,6 +3305,118 @@
                 ]
             }
         },
+        "/moontransparency/public/api/permission": {
+            "get": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Listar permisos disponibles",
+                "operationId": "listPermissions",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permisos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Permission"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso roles.view"
+                    },
+                    "422": {
+                        "description": "Filtros inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/permission/{id}": {
+            "get": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Consultar permiso",
+                "operationId": "showPermission",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permiso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Permission"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso roles.view"
+                    },
+                    "404": {
+                        "description": "Permiso no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/proyect": {
             "get": {
                 "tags": [
@@ -3869,6 +3981,905 @@
                 ]
             }
         },
+        "/moontransparency/public/api/respondent-search": {
+            "get": {
+                "tags": [
+                    "Respondent"
+                ],
+                "summary": "Obtener información de Respondents con filtros y ordenamiento",
+                "operationId": "4f1df257244f274ee3614c0a5b13aae3",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "proyect_id",
+                        "in": "query",
+                        "description": "ID del proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "survey_name",
+                        "in": "query",
+                        "description": "Nombre de la encuesta",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "description",
+                        "in": "query",
+                        "description": "Descripción de la encuesta",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de Respondents",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Respondent"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/respondent/{id}": {
+            "get": {
+                "tags": [
+                    "Respondent"
+                ],
+                "summary": "Obtener detalles de un Respondent por ID",
+                "operationId": "6890828330e4a28534e5fc759b055868",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del Respondent",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Encuestado encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Respondent"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Encuestado No Encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Encuestado No Encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Respondent"
+                ],
+                "summary": "Actualizar un Respondent",
+                "operationId": "0d170fb5e9a8cd86da61955bcaa4837c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RespondentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Encuestado actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Respondent"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Encuestado No Encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Encuestado No Encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error interno del servidor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Respondent"
+                ],
+                "summary": "Eliminar un Respondent por ID",
+                "operationId": "7097a6ec1a219df17a2dc4fa59b0d9b5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Encuestado eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Encuestado eliminado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Encuestado No Encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/respondent": {
+            "post": {
+                "tags": [
+                    "Respondent"
+                ],
+                "summary": "Crear Respondent",
+                "operationId": "371d2476593b2abaeffc2538d043f375",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RespondentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Encuestado creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Respondent"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/rol": {
+            "get": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Listar roles",
+                "operationId": "listRoles",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Activo",
+                                "Inactivo"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Roles",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Rol"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso roles.view"
+                    },
+                    "422": {
+                        "description": "Filtros inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Crear rol",
+                "operationId": "createRole",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RoleInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Rol creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Rol"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso roles.create"
+                    },
+                    "422": {
+                        "description": "Datos inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/rol/{id}": {
+            "get": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Consultar rol y permisos",
+                "operationId": "showRole",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rol",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Rol"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso roles.view"
+                    },
+                    "404": {
+                        "description": "Rol no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Editar rol",
+                "operationId": "updateRole",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RoleInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Rol actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Rol"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso roles.update"
+                    },
+                    "404": {
+                        "description": "Rol no encontrado"
+                    },
+                    "422": {
+                        "description": "Datos inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Eliminar lógicamente un rol",
+                "operationId": "deleteRole",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rol eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso roles.delete"
+                    },
+                    "404": {
+                        "description": "Rol no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/rol/{id}/activate": {
+            "patch": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Activar rol",
+                "operationId": "activateRole",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rol activo",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Rol"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso roles.update"
+                    },
+                    "404": {
+                        "description": "Rol no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/rol/{id}/deactivate": {
+            "patch": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Desactivar rol",
+                "operationId": "deactivateRole",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rol inactivo",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Rol"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso roles.deactivate"
+                    },
+                    "404": {
+                        "description": "Rol no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/rol/{id}/setaccess": {
+            "put": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Reemplazar todos los permisos de un rol",
+                "operationId": "replaceRolePermissions",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RoleAccessInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permisos reemplazados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Rol"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Falta permiso para asignar o revocar"
+                    },
+                    "404": {
+                        "description": "Rol no encontrado"
+                    },
+                    "422": {
+                        "description": "Permisos inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/rol/{id}/permissions": {
+            "post": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Asignar permisos a un rol",
+                "operationId": "assignRolePermissions",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RoleAccessInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permisos asignados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Rol"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso roles.assign_permissions"
+                    },
+                    "404": {
+                        "description": "Rol no encontrado"
+                    },
+                    "422": {
+                        "description": "Permisos inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/rol/{id}/permissions/{permissionId}": {
+            "delete": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Revocar un permiso de un rol",
+                "operationId": "revokeRolePermission",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "permissionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permiso revocado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Rol"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso roles.revoke_permissions"
+                    },
+                    "404": {
+                        "description": "Rol o permiso no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/survey": {
             "get": {
                 "tags": [
@@ -4212,6 +5223,2152 @@
                     }
                 ]
             }
+        },
+        "/moontransparency/public/api/survey-web/{id}": {
+            "get": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Mostrar encuesta activa (show_web)",
+                "operationId": "213b7ae1c0235965ef48f6f0e1e28374",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "UUID",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Survey"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Encuesta no activa o no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Esta Encuesta no se encuentra Activa"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/moontransparency/public/api/surveyquestion": {
+            "get": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Obtener información de SurveysQuestion con filtros y ordenamiento",
+                "operationId": "779c9d34d20fab1f96ce85bb3dc3534d",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "proyect_id",
+                        "in": "query",
+                        "description": "ID del proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "survey_name",
+                        "in": "query",
+                        "description": "Nombre de la encuesta",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "description",
+                        "in": "query",
+                        "description": "Descripción de la encuesta",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de SurveysQuestion",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SurveyQuestion"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Crear Survey",
+                "operationId": "dac92bb28215241a76fa30fbe388d545",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SurveyQuestionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pregunta Encuesta creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SurveyQuestion"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/surveyquestion/{id}": {
+            "get": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Obtener detalles de un Survey por ID",
+                "operationId": "21fdba4e9c5e487050f509a0ace3d244",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del Survey",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pregunta Encuesta encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SurveyQuestion"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pregunta Encuesta No Encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Pregunta Encuesta No Encontrada"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Actualizar un Survey",
+                "operationId": "eadf420b8a81af4cbd5e63a32452cdc1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SurveyQuestionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pregunta Encuesta actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SurveyQuestion"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pregunta Encuesta No Encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Pregunta Encuesta No Encontrada"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error interno del servidor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Eliminar un Survey por ID",
+                "operationId": "7869db96fd2ee769692648593a2ded95",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pregunta Encuesta eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pregunta Encuesta eliminado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Pregunta Encuesta No Encontrada"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/surveyquestionoption": {
+            "get": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Obtener información de SurveysQuestion con filtros y ordenamiento",
+                "operationId": "dd7b154da5dd2fa9d55393e8f8230817",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "proyect_id",
+                        "in": "query",
+                        "description": "ID del proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "survey_name",
+                        "in": "query",
+                        "description": "Nombre de la encuesta",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "description",
+                        "in": "query",
+                        "description": "Descripción de la encuesta",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de SurveysQuestion",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SurveyQuestionOption"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Crear Survey",
+                "operationId": "9a1f550791da57d2b91ba51a30a64973",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SurveyQuestionOptionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Opción de Pregunta de Encuesta creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SurveyQuestionOption"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/surveyquestionoption/{id}": {
+            "get": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Obtener detalles de un Survey por ID",
+                "operationId": "0047adf35299f52496325fc222e01619",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del Survey",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Opción de Pregunta de Encuesta encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SurveyQuestionOption"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Opción de Pregunta de Encuesta No Encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Opción de Pregunta de Encuesta No Encontrada"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Actualizar un Survey",
+                "operationId": "4010d7cebb835eac0bba0fb3a71a6901",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SurveyQuestionOptionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Opción de Pregunta de Encuesta actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SurveyQuestionOption"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Opción de Pregunta de Encuesta No Encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Opción de Pregunta de Encuesta No Encontrada"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error interno del servidor"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Eliminar un Survey por ID",
+                "operationId": "b51bac2615a6856f198b731788f65d44",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Opción de Pregunta de Encuesta eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Opción de Pregunta de Encuesta eliminado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Opción de Pregunta de Encuesta No Encontrada"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/surveyed": {
+            "get": {
+                "tags": [
+                    "Surveyed"
+                ],
+                "summary": "Obtener el historial de participaciones con filtros y ordenamiento",
+                "description": "Busca participaciones por ID, encuestado, documento, hogar, encuesta, proyecto, fechas y estado. Cada registro incluye status, completed_at, can_edit, mediciones de los días 1 al 7 y geobosques_map.",
+                "operationId": "surveyedHistory",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Fecha de inicio",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "Fecha de fin",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "ID de la participación",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "respondent",
+                        "in": "query",
+                        "description": "Nombre o documento del encuestado",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "respondent_name",
+                        "in": "query",
+                        "description": "Nombre del encuestado",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "number_document",
+                        "in": "query",
+                        "description": "Documento del encuestado",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "respondent_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "survey_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "project_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "BORRADOR",
+                                "FINALIZADA"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "household_code",
+                        "in": "query",
+                        "description": "Código global del hogar",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "HOG-00000001"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Historial filtrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Surveyed"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin el permiso participations.view",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/response-survey": {
+            "post": {
+                "tags": [
+                    "Surveyed"
+                ],
+                "summary": "Crear Surveyed",
+                "description": "Crea una única participación en estado BORRADOR. Acepta respuestas incompletas y un day_number entre 1 y 7. Esta ruta pública no exige token.",
+                "operationId": "createSurveyedDraft",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SurveyedUpsertRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Encuesta creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Surveyed"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/moontransparency/public/api/surveyed/{id}": {
+            "get": {
+                "tags": [
+                    "Surveyed"
+                ],
+                "summary": "Consultar una participación por ID",
+                "description": "Recupera las respuestas, las mediciones ordenadas por día, el estado, completed_at, can_edit y geobosques_map.",
+                "operationId": "showSurveyed",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Participación encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Surveyed"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin el permiso participations.view",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Participación no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Surveyed"
+                ],
+                "summary": "Eliminar un Survey por ID",
+                "operationId": "49cf70846c914093b434a0c5b0abf3ec",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Encuesta eliminado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Encuesta eliminado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Encuesta No Encontrada"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/surveyed/{id}/calculator": {
+            "get": {
+                "tags": [
+                    "Surveyed"
+                ],
+                "summary": "Obtener datos consolidados de una participación para la calculadora de CO2",
+                "operationId": "showSurveyedCalculator",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Participación consolidada en un contrato estable de siete días",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/CalculatorParticipation"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso participations.view"
+                    },
+                    "404": {
+                        "description": "Participación no encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/response-survey/{id}": {
+            "post": {
+                "tags": [
+                    "Surveyed"
+                ],
+                "summary": "Actualizar Surveyed",
+                "description": "Actualiza el mismo BORRADOR, conserva los días previos y agrega o reemplaza las respuestas del day_number enviado sin duplicarlas. Esta ruta pública no exige token.",
+                "operationId": "updateSurveyedDraft",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SurveyedUpsertRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Borrador actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Surveyed"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Participación no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "La participación está FINALIZADA y debe reabrirse antes de editar",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/moontransparency/public/api/response-survey/{id}/finalize": {
+            "post": {
+                "tags": [
+                    "Surveyed"
+                ],
+                "summary": "Finalizar una participación",
+                "description": "Valida las preguntas obligatorias, cambia el estado a FINALIZADA y registra completed_at. No puede editarse hasta que un administrador la reabra. Esta ruta pública no exige token.",
+                "operationId": "finalizeSurveyed",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SurveyedUpsertRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Participación finalizada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Surveyed"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Participación no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "La participación ya estaba finalizada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Faltan respuestas obligatorias, coordenadas o hay datos inválidos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/moontransparency/public/api/surveyed/{id}/reopen": {
+            "post": {
+                "tags": [
+                    "Surveyed"
+                ],
+                "summary": "Reabrir una participación finalizada",
+                "operationId": "reopenSurveyed",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "reason"
+                                ],
+                                "properties": {
+                                    "reason": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "example": "Se requiere corregir la medición del día 4"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Participación reabierta como BORRADOR"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin permiso o sin rol administrador"
+                    },
+                    "404": {
+                        "description": "Participación no encontrada"
+                    },
+                    "409": {
+                        "description": "La participación no está finalizada"
+                    },
+                    "422": {
+                        "description": "Motivo inválido"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tecnimotors-backend/public/api/departments": {
+            "get": {
+                "tags": [
+                    "Ubigeo"
+                ],
+                "summary": "Get all departments",
+                "description": "Show all departments",
+                "operationId": "cb5de82e4a1f6a3cbefc6220a4f3846a",
+                "responses": {
+                    "200": {
+                        "description": "List of departments",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Amazonas"
+                                            },
+                                            "ubigeo_code": {
+                                                "type": "string",
+                                                "example": "01"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tecnimotors-backend/public/api/provinces/{departmentId}": {
+            "get": {
+                "tags": [
+                    "Ubigeo"
+                ],
+                "summary": "Get provinces by department ID",
+                "description": "Show all provinces for a given department ID",
+                "operationId": "57c8091b0b78f0149758a3ef4aada193",
+                "parameters": [
+                    {
+                        "name": "departmentId",
+                        "in": "path",
+                        "description": "ID of the department",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of provinces",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Chachapoyas"
+                                            },
+                                            "ubigeo_code": {
+                                                "type": "string",
+                                                "example": "0101"
+                                            },
+                                            "department_id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tecnimotors-backend/public/api/districts/{provinceId}": {
+            "get": {
+                "tags": [
+                    "Ubigeo"
+                ],
+                "summary": "Get districts by province ID",
+                "description": "Show all districts for a given province ID",
+                "operationId": "b0e4c3368f9453668da79d7b5d2ddad0",
+                "parameters": [
+                    {
+                        "name": "provinceId",
+                        "in": "path",
+                        "description": "ID of the province",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of districts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Chachapoyas"
+                                            },
+                                            "ubigeo_code": {
+                                                "type": "string",
+                                                "example": "010101"
+                                            },
+                                            "province_id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tecnimotors-backend/public/api/ubigeos": {
+            "get": {
+                "tags": [
+                    "Ubigeo"
+                ],
+                "summary": "Get ubigeo information",
+                "description": "Show a specific ubigeo by combining the ID, province, and department.",
+                "operationId": "4cf6627648af226b8b5fa94636063249",
+                "responses": {
+                    "200": {
+                        "description": "Ubigeo details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "province": {
+                                            "type": "string",
+                                            "example": "Trujillo"
+                                        },
+                                        "department": {
+                                            "type": "string",
+                                            "example": "La Libertad"
+                                        },
+                                        "ubigeo": {
+                                            "type": "string",
+                                            "example": "1-Trujillo-La Libertad"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/user": {
+            "get": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Listar usuarios",
+                "operationId": "listUsers",
+                "parameters": [
+                    {
+                        "name": "names",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "username",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "number_document",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Activo",
+                                "Inactivo"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "rol_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuarios",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/User"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin el permiso users.view",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Filtros inválidos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Crear usuario",
+                "operationId": "createUser",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin el permiso users.create",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Datos inválidos o duplicados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/user/{id}": {
+            "get": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Consultar usuario",
+                "operationId": "showUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin el permiso users.view",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Editar usuario",
+                "operationId": "updateUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserUpdateInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuario actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sin el permiso users.update",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Datos inválidos o duplicados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Eliminar lógicamente un usuario",
+                "operationId": "deleteUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario eliminado lógicamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso users.delete"
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/user/{id}/activate": {
+            "patch": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Activar usuario",
+                "operationId": "activateUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario activo",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso users.update"
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/user/{id}/deactivate": {
+            "patch": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Desactivar usuario",
+                "operationId": "deactivateUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario inactivo",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso users.update"
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -4494,6 +7651,32 @@
                 },
                 "type": "object"
             },
+            "StoreSurveyQuestionOdsRequest": {
+                "required": [
+                    "survey_question_id",
+                    "ods_id"
+                ],
+                "properties": {
+                    "survey_question_id": {
+                        "type": "integer"
+                    },
+                    "ods_id": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateSurveyQuestionOdsRequest": {
+                "properties": {
+                    "survey_question_id": {
+                        "type": "integer"
+                    },
+                    "ods_id": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
             "ActivityRequest": {
                 "required": [
                     "proyect_id"
@@ -4618,6 +7801,11 @@
                         "type": "string",
                         "example": "ally.com"
                     },
+                    "date_start": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-01-01"
+                    },
                     "phone": {
                         "type": "string",
                         "example": "987654321"
@@ -4637,6 +7825,141 @@
                     "participation_type": {
                         "type": "string",
                         "example": "Expositor"
+                    }
+                },
+                "type": "object"
+            },
+            "CalculatorParticipation": {
+                "required": [
+                    "contract",
+                    "participation",
+                    "respondent",
+                    "household",
+                    "survey",
+                    "project",
+                    "recorded_days",
+                    "missing_days",
+                    "fields",
+                    "days",
+                    "calculator_input"
+                ],
+                "properties": {
+                    "contract": {
+                        "properties": {
+                            "version": {
+                                "type": "string",
+                                "example": "1.2"
+                            },
+                            "expected_days": {
+                                "type": "integer",
+                                "example": 7
+                            },
+                            "missing_value": {
+                                "example": null,
+                                "nullable": true
+                            },
+                            "units": {
+                                "properties": {
+                                    "weight": {
+                                        "type": "string",
+                                        "example": "kg"
+                                    },
+                                    "people": {
+                                        "type": "string",
+                                        "example": "person"
+                                    },
+                                    "day": {
+                                        "type": "string",
+                                        "example": "day"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "participation": {
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "BORRADOR",
+                                    "FINALIZADA"
+                                ]
+                            },
+                            "data_state": {
+                                "type": "string",
+                                "enum": [
+                                    "PARTIAL",
+                                    "FINAL"
+                                ]
+                            },
+                            "is_partial": {
+                                "type": "boolean"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "recorded_days": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "example": [
+                            1,
+                            2
+                        ]
+                    },
+                    "missing_days": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "example": [
+                            3,
+                            4,
+                            5,
+                            6,
+                            7
+                        ]
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "calculator_input": {
+                        "description": "Datos semánticos listos para llenar la calculadora KPT",
+                        "type": "object"
+                    },
+                    "days": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "day_number": {
+                                    "type": "integer",
+                                    "maximum": 7,
+                                    "minimum": 1
+                                },
+                                "recorded": {
+                                    "type": "boolean"
+                                },
+                                "measurement_id": {
+                                    "type": "integer",
+                                    "nullable": true
+                                },
+                                "values": {
+                                    "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "maxItems": 7,
+                        "minItems": 7
                     }
                 },
                 "type": "object"
@@ -4950,20 +8273,26 @@
                     },
                     "name": {
                         "type": "string",
-                        "example": "users"
+                        "example": "Ver usuarios"
+                    },
+                    "code": {
+                        "type": "string",
+                        "example": "users.view"
+                    },
+                    "route": {
+                        "type": "string",
+                        "example": "users.view"
                     },
                     "type": {
                         "type": "string",
-                        "example": "Tipo-01"
+                        "example": "USUARIOS"
                     },
                     "status": {
                         "type": "string",
-                        "example": "Activo"
-                    },
-                    "person_id": {
-                        "description": "Person Id",
-                        "type": "integer",
-                        "example": "1"
+                        "enum": [
+                            "Activo",
+                            "Inactivo"
+                        ]
                     }
                 },
                 "type": "object"
@@ -5149,29 +8478,287 @@
                 },
                 "type": "object"
             },
-            "Rol": {
-                "title": "Rol",
-                "description": "Rol model",
+            "RespondentRequest": {
+                "required": [
+                    "number_document",
+                    "names",
+                    "date_of_birth"
+                ],
+                "properties": {
+                    "number_document": {
+                        "type": "string",
+                        "example": "12345678"
+                    },
+                    "names": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "date_of_birth": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-05-20"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "987654321"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "juan@example.com"
+                    },
+                    "genero": {
+                        "type": "string",
+                        "example": "masculino"
+                    }
+                },
+                "type": "object"
+            },
+            "Respondent": {
+                "title": "Respondent",
+                "description": "Modelo de Respondent",
                 "properties": {
                     "id": {
                         "type": "integer",
-                        "example": "1"
+                        "example": 1
+                    },
+                    "number_document": {
+                        "type": "string",
+                        "example": "12345678"
+                    },
+                    "names": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "date_of_birth": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-05-20"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "987654321"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "juan@example.com"
+                    },
+                    "genero": {
+                        "type": "string",
+                        "example": "masculino"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
+                    }
+                },
+                "type": "object"
+            },
+            "Rol": {
+                "required": [
+                    "id",
+                    "name",
+                    "status"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
                     },
                     "name": {
                         "type": "string",
-                        "example": "Cajero"
+                        "example": "Administrador"
                     },
-                    "person_id": {
-                        "description": "Person Id",
-                        "type": "integer",
-                        "example": "1"
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "Activo",
+                            "Inactivo"
+                        ]
                     },
                     "permissions": {
-                        "description": "Lista de permisos asociados al rol",
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Permission"
                         }
+                    },
+                    "permission_codes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "users.view",
+                            "participations.reopen"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "SearchDni": {
+                "title": "SearchDni",
+                "description": "Datos obtenidos de la búsqueda por DNI",
+                "properties": {
+                    "number_document": {
+                        "type": "string",
+                        "example": "12345678"
+                    },
+                    "names": {
+                        "type": "string",
+                        "example": "Juan Carlos"
+                    },
+                    "father_surname": {
+                        "type": "string",
+                        "example": "Perez"
+                    },
+                    "mother_surname": {
+                        "type": "string",
+                        "example": "Gomez"
+                    },
+                    "birthday": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-05-20"
+                    },
+                    "ubigeo": {
+                        "type": "string",
+                        "example": "150101"
+                    }
+                },
+                "type": "object"
+            },
+            "SearchRuc": {
+                "title": "SearchRuc",
+                "description": "Datos obtenidos de la búsqueda por DNI",
+                "properties": {
+                    "number_document": {
+                        "type": "string",
+                        "example": "12345678"
+                    },
+                    "names": {
+                        "type": "string",
+                        "example": "Juan Carlos"
+                    },
+                    "father_surname": {
+                        "type": "string",
+                        "example": "Perez"
+                    },
+                    "mother_surname": {
+                        "type": "string",
+                        "example": "Gomez"
+                    },
+                    "birthday": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-05-20"
+                    },
+                    "ubigeo": {
+                        "type": "string",
+                        "example": "150101"
+                    }
+                },
+                "type": "object"
+            },
+            "SurveyQuestionOdsResource": {
+                "properties": {
+                    "survey_question_id": {
+                        "type": "integer"
+                    },
+                    "ods_id": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "SurveyQuestionOptionRequest": {
+                "required": [
+                    "survey_question_id",
+                    "description"
+                ],
+                "properties": {
+                    "survey_question_id": {
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Energía solar"
+                    }
+                },
+                "type": "object"
+            },
+            "SurveyQuestionOption": {
+                "title": "SurveyQuestionOption",
+                "description": "Modelo de SurveyQuestionOption",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "survey_question_id": {
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Energía solar"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
+                    }
+                },
+                "type": "object"
+            },
+            "SurveyQuestionRequest": {
+                "required": [
+                    "survey_id",
+                    "question_text",
+                    "question_type"
+                ],
+                "properties": {
+                    "survey_id": {
+                        "type": "integer",
+                        "example": 101
+                    },
+                    "question_text": {
+                        "type": "string",
+                        "example": "¿Qué fuentes de energía utiliza en su hogar?"
+                    },
+                    "question_type": {
+                        "type": "string",
+                        "example": "multiple_choice"
+                    }
+                },
+                "type": "object"
+            },
+            "SurveyQuestion": {
+                "title": "SurveyQuestion",
+                "description": "Modelo de SurveyQuestion",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "survey_id": {
+                        "type": "integer",
+                        "example": 101
+                    },
+                    "question_text": {
+                        "type": "string",
+                        "example": "¿Qué fuentes de energía utiliza en su hogar?"
+                    },
+                    "question_type": {
+                        "type": "string",
+                        "example": "multiple_choice"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
                     }
                 },
                 "type": "object"
@@ -5194,6 +8781,28 @@
                     "description": {
                         "type": "string",
                         "example": "Encuesta para evaluar el uso de energía renovable en zonas rurales."
+                    },
+                    "household_code": {
+                        "type": "string",
+                        "pattern": "^HOG-[0-9]{8,}$",
+                        "example": "HOG-00000001",
+                        "nullable": true
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 90,
+                        "minimum": -90,
+                        "example": -6.39454,
+                        "nullable": true
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 180,
+                        "minimum": -180,
+                        "example": -79.822403,
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -5226,6 +8835,80 @@
                 },
                 "type": "object"
             },
+            "SurveyedResponseOptions": {
+                "title": "SurveyedResponse",
+                "description": "Modelo de respuesta de un encuestado",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "response_text": {
+                        "type": "string",
+                        "example": "Sí, uso paneles solares.",
+                        "nullable": true
+                    },
+                    "survey_question_id": {
+                        "description": "ID de la pregunta respondida",
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "surveyed_id": {
+                        "description": "ID del registro del encuestado",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "respondent_id": {
+                        "description": "ID de la persona encuestada",
+                        "type": "integer",
+                        "example": 3,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
+                    }
+                },
+                "type": "object"
+            },
+            "SurveyedResponse": {
+                "title": "SurveyedResponse",
+                "description": "Modelo de respuesta de un encuestado",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "response_text": {
+                        "type": "string",
+                        "example": "Sí, uso paneles solares.",
+                        "nullable": true
+                    },
+                    "survey_question_id": {
+                        "description": "ID de la pregunta respondida",
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "surveyed_id": {
+                        "description": "ID del registro del encuestado",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "respondent_id": {
+                        "description": "ID de la persona encuestada",
+                        "type": "integer",
+                        "example": 3,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-26T21:44:24"
+                    }
+                },
+                "type": "object"
+            },
             "User": {
                 "title": "User",
                 "description": "User model",
@@ -5234,17 +8917,55 @@
                         "type": "integer",
                         "example": "1"
                     },
+                    "type_document": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "number_document": {
+                        "type": "string"
+                    },
+                    "names": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
                     "email": {
                         "type": "string",
-                        "example": "miguel@gmail.com"
+                        "format": "email",
+                        "example": "miguel@gmail.com",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "Activo",
+                            "Inactivo"
+                        ]
                     },
                     "rol_id": {
                         "description": "Rol Id",
                         "type": "integer",
-                        "example": "1"
+                        "example": 1
                     },
                     "rol": {
                         "$ref": "#/components/schemas/Rol"
+                    },
+                    "permissions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -5472,6 +9193,490 @@
                     }
                 },
                 "type": "object"
+            },
+            "ErrorResponse": {
+                "required": [
+                    "message"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "El recurso solicitado no existe."
+                    }
+                },
+                "type": "object"
+            },
+            "ValidationErrorResponse": {
+                "required": [
+                    "message"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Los datos proporcionados no son válidos."
+                    },
+                    "errors": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "SurveyAnswerInput": {
+                "required": [
+                    "survey_question_id"
+                ],
+                "properties": {
+                    "survey_question_id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 15
+                    },
+                    "survey_question_option_id": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "example": [
+                            3
+                        ],
+                        "nullable": true
+                    },
+                    "response_text": {
+                        "type": "string",
+                        "maxLength": 1000,
+                        "example": "12.5",
+                        "nullable": true
+                    },
+                    "file": {
+                        "type": "string",
+                        "format": "binary",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "SurveyedUpsertRequest": {
+                "required": [
+                    "number_document",
+                    "names",
+                    "survey_id"
+                ],
+                "properties": {
+                    "number_document": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "example": "74859621"
+                    },
+                    "names": {
+                        "type": "string",
+                        "maxLength": 1000,
+                        "example": "María Quispe"
+                    },
+                    "date_of_birth": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "nullable": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "nullable": true
+                    },
+                    "genero": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "household_code": {
+                        "type": "string",
+                        "pattern": "^HOG-[0-9]{8,}$",
+                        "example": "HOG-00000001",
+                        "nullable": true
+                    },
+                    "survey_id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 9
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 90,
+                        "minimum": -90,
+                        "example": -6.39454,
+                        "nullable": true
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 180,
+                        "minimum": -180,
+                        "example": -79.822403,
+                        "nullable": true
+                    },
+                    "day_number": {
+                        "type": "integer",
+                        "maximum": 7,
+                        "minimum": 1,
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "responses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SurveyAnswerInput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "GeobosquesMap": {
+                "required": [
+                    "available",
+                    "provider",
+                    "marker_supported",
+                    "requires_connection",
+                    "load_strategy"
+                ],
+                "properties": {
+                    "available": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "provider": {
+                        "type": "string",
+                        "example": "GEOBOSQUES_MINAM"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 90,
+                        "minimum": -90,
+                        "nullable": true
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 180,
+                        "minimum": -180,
+                        "nullable": true
+                    },
+                    "viewer_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "embed_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "marker_supported": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "marker_parameter": {
+                        "type": "string",
+                        "example": "xy"
+                    },
+                    "requires_connection": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "load_strategy": {
+                        "type": "string",
+                        "enum": [
+                            "WHEN_ONLINE"
+                        ]
+                    },
+                    "message": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "SurveyedMeasurement": {
+                "required": [
+                    "id",
+                    "surveyed_id",
+                    "day_number",
+                    "responses"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "surveyed_id": {
+                        "type": "integer"
+                    },
+                    "day_number": {
+                        "type": "integer",
+                        "maximum": 7,
+                        "minimum": 1
+                    },
+                    "responses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SurveyedResponse"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Surveyed": {
+                "required": [
+                    "id",
+                    "survey_id",
+                    "status",
+                    "can_edit",
+                    "geobosques_map",
+                    "measurements"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 125
+                    },
+                    "respondent_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "respondent_names": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "household_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "survey_id": {
+                        "type": "integer"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "BORRADOR",
+                            "FINALIZADA"
+                        ]
+                    },
+                    "can_edit": {
+                        "description": "Solo es true para participaciones en BORRADOR.",
+                        "type": "boolean"
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 90,
+                        "minimum": -90,
+                        "nullable": true
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 180,
+                        "minimum": -180,
+                        "nullable": true
+                    },
+                    "geobosques_map": {
+                        "$ref": "#/components/schemas/GeobosquesMap"
+                    },
+                    "surveyed_responses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SurveyedResponse"
+                        }
+                    },
+                    "measurements": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SurveyedMeasurement"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "UserInput": {
+                "required": [
+                    "number_document",
+                    "names",
+                    "username",
+                    "password",
+                    "rol_id"
+                ],
+                "properties": {
+                    "type_document": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "nullable": true
+                    },
+                    "number_document": {
+                        "type": "string",
+                        "maxLength": 30
+                    },
+                    "names": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "username": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9._-]+$"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "minLength": 8,
+                        "writeOnly": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "Activo",
+                            "Inactivo"
+                        ]
+                    },
+                    "rol_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "type": "object"
+            },
+            "UserUpdateInput": {
+                "properties": {
+                    "type_document": {
+                        "type": "string",
+                        "maxLength": 30,
+                        "nullable": true
+                    },
+                    "number_document": {
+                        "type": "string",
+                        "maxLength": 30
+                    },
+                    "names": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "username": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9._-]+$"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "minLength": 8,
+                        "writeOnly": true,
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "Activo",
+                            "Inactivo"
+                        ]
+                    },
+                    "rol_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "type": "object"
+            },
+            "RoleInput": {
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Supervisor"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "Activo",
+                            "Inactivo"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "RoleAccessInput": {
+                "required": [
+                    "access"
+                ],
+                "properties": {
+                    "access": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "uniqueItems": true,
+                        "example": [
+                            1,
+                            2,
+                            3
+                        ]
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -5486,16 +9691,15 @@
     },
     "tags": [
         {
+            "name": "Search"
+        },
+        {
             "name": "Activity",
             "description": "Activity"
         },
         {
             "name": "Ally",
             "description": "Ally"
-        },
-        {
-            "name": "Search",
-            "description": "Search"
         },
         {
             "name": "Authentication",
@@ -5526,12 +9730,32 @@
             "description": "Ods"
         },
         {
+            "name": "Roles y permisos",
+            "description": "Roles y permisos"
+        },
+        {
             "name": "Proyect",
             "description": "Proyect"
         },
         {
+            "name": "Respondent",
+            "description": "Respondent"
+        },
+        {
             "name": "Survey",
             "description": "Survey"
+        },
+        {
+            "name": "Surveyed",
+            "description": "Surveyed"
+        },
+        {
+            "name": "Ubigeo",
+            "description": "Ubigeo"
+        },
+        {
+            "name": "Usuarios",
+            "description": "Usuarios"
         }
     ]
 }

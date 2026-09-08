@@ -27,18 +27,27 @@ class SurveyedController extends Controller
     /**
      * @OA\Get(
      *     path="/moontransparency/public/api/surveyed",
+     *     operationId="surveyedHistory",
+     *     description="Busca participaciones por ID, encuestado, documento, hogar, encuesta, proyecto, fechas y estado. Cada registro incluye status, completed_at, can_edit, mediciones de los días 1 al 7 y geobosques_map.",
      *     summary="Obtener el historial de participaciones con filtros y ordenamiento",
      *     tags={"Surveyed"},
      *     security={{"bearerAuth": {}}},
      *
      *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
      *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
-     *     @OA\Parameter(name="proyect_id", in="query", description="ID del proyecto", required=false, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="survey_name", in="query", description="Nombre de la encuesta", required=false, @OA\Schema(type="string")),
-     *     @OA\Parameter(name="description", in="query", description="Descripción de la encuesta", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="id", in="query", description="ID de la participación", required=false, @OA\Schema(type="integer", minimum=1)),
+     *     @OA\Parameter(name="respondent", in="query", description="Nombre o documento del encuestado", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="respondent_name", in="query", description="Nombre del encuestado", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="number_document", in="query", description="Documento del encuestado", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="respondent_id", in="query", required=false, @OA\Schema(type="integer", minimum=1)),
+     *     @OA\Parameter(name="survey_id", in="query", required=false, @OA\Schema(type="integer", minimum=1)),
+     *     @OA\Parameter(name="project_id", in="query", required=false, @OA\Schema(type="integer", minimum=1)),
+     *     @OA\Parameter(name="status", in="query", required=false, @OA\Schema(type="string", enum={"BORRADOR", "FINALIZADA"})),
      *     @OA\Parameter(name="household_code", in="query", description="Código global del hogar", required=false, @OA\Schema(type="string", example="HOG-00000001")),
      *
-     *     @OA\Response(response=200, description="Lista de Surveys", @OA\JsonContent(ref="#/components/schemas/Survey")),
+     *     @OA\Response(response=200, description="Historial filtrado", @OA\JsonContent(type="object", @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Surveyed")))),
+     *     @OA\Response(response=401, description="No autenticado", @OA\JsonContent(ref="#/components/schemas/ErrorResponse")),
+     *     @OA\Response(response=403, description="Sin el permiso participations.view", @OA\JsonContent(ref="#/components/schemas/ErrorResponse")),
      *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(@OA\Property(property="error", type="string")))
      * )
      */
@@ -388,9 +397,10 @@ class SurveyedController extends Controller
     /**
      * @OA\Post(
      *     path="/moontransparency/public/api/response-survey",
+     *     operationId="createSurveyedDraft",
+     *     description="Crea una única participación en estado BORRADOR. Acepta respuestas incompletas y un day_number entre 1 y 7. Esta ruta pública no exige token.",
      *     summary="Crear Surveyed",
      *     tags={"Surveyed"},
-     *     security={{"bearerAuth": {}}},
      *
      *     @OA\RequestBody(
      *         required=true,
@@ -398,7 +408,7 @@ class SurveyedController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *
-     *             @OA\Schema(ref="#/components/schemas/SurveyRequest")
+     *             @OA\Schema(ref="#/components/schemas/SurveyedUpsertRequest")
      *         )
      *     ),
      *
@@ -419,6 +429,21 @@ class SurveyedController extends Controller
         return new SurveyedResource($surveyed);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/moontransparency/public/api/surveyed/{id}",
+     *     operationId="showSurveyed",
+     *     summary="Consultar una participación por ID",
+     *     description="Recupera las respuestas, las mediciones ordenadas por día, el estado, completed_at, can_edit y geobosques_map.",
+     *     tags={"Surveyed"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", minimum=1)),
+     *     @OA\Response(response=200, description="Participación encontrada", @OA\JsonContent(type="object", @OA\Property(property="data", ref="#/components/schemas/Surveyed"))),
+     *     @OA\Response(response=401, description="No autenticado", @OA\JsonContent(ref="#/components/schemas/ErrorResponse")),
+     *     @OA\Response(response=403, description="Sin el permiso participations.view", @OA\JsonContent(ref="#/components/schemas/ErrorResponse")),
+     *     @OA\Response(response=404, description="Participación no encontrada", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     */
     public function show($id)
     {
         $surveyed = $this->surveyService->getSurveyedById((int) $id);
@@ -435,6 +460,7 @@ class SurveyedController extends Controller
     /**
      * @OA\Get(
      *     path="/moontransparency/public/api/surveyed/{id}/calculator",
+     *     operationId="showSurveyedCalculator",
      *     summary="Obtener datos consolidados de una participación para la calculadora de CO2",
      *     tags={"Surveyed"},
      *     security={{"bearerAuth": {}}},
@@ -453,6 +479,7 @@ class SurveyedController extends Controller
      *     ),
      *
      *     @OA\Response(response=401, description="No autenticado"),
+     *     @OA\Response(response=403, description="Sin el permiso participations.view"),
      *     @OA\Response(response=404, description="Participación no encontrada")
      * )
      */
@@ -472,9 +499,11 @@ class SurveyedController extends Controller
     /**
      * @OA\Post(
      *     path="/moontransparency/public/api/response-survey/{id}",
+     *     operationId="updateSurveyedDraft",
+     *     description="Actualiza el mismo BORRADOR, conserva los días previos y agrega o reemplaza las respuestas del day_number enviado sin duplicarlas. Esta ruta pública no exige token.",
      *     summary="Actualizar Surveyed",
      *     tags={"Surveyed"},
-     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", minimum=1)),
      *
      *     @OA\RequestBody(
      *         required=true,
@@ -482,11 +511,13 @@ class SurveyedController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *
-     *             @OA\Schema(ref="#/components/schemas/SurveyRequest")
+     *             @OA\Schema(ref="#/components/schemas/SurveyedUpsertRequest")
      *         )
      *     ),
      *
-     *     @OA\Response(response=200, description="Encuesta creada exitosamente", @OA\JsonContent(ref="#/components/schemas/Surveyed")),
+     *     @OA\Response(response=200, description="Borrador actualizado", @OA\JsonContent(ref="#/components/schemas/Surveyed")),
+     *     @OA\Response(response=404, description="Participación no encontrada", @OA\JsonContent(ref="#/components/schemas/ErrorResponse")),
+     *     @OA\Response(response=409, description="La participación está FINALIZADA y debe reabrirse antes de editar", @OA\JsonContent(ref="#/components/schemas/ErrorResponse")),
      *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
      * )
      */
@@ -510,6 +541,21 @@ class SurveyedController extends Controller
         return new SurveyedResource($surveyed);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/moontransparency/public/api/response-survey/{id}/finalize",
+     *     operationId="finalizeSurveyed",
+     *     summary="Finalizar una participación",
+     *     description="Valida las preguntas obligatorias, cambia el estado a FINALIZADA y registra completed_at. No puede editarse hasta que un administrador la reabra. Esta ruta pública no exige token.",
+     *     tags={"Surveyed"},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", minimum=1)),
+     *     @OA\RequestBody(required=true, @OA\MediaType(mediaType="multipart/form-data", @OA\Schema(ref="#/components/schemas/SurveyedUpsertRequest"))),
+     *     @OA\Response(response=200, description="Participación finalizada", @OA\JsonContent(type="object", @OA\Property(property="data", ref="#/components/schemas/Surveyed"))),
+     *     @OA\Response(response=404, description="Participación no encontrada", @OA\JsonContent(ref="#/components/schemas/ErrorResponse")),
+     *     @OA\Response(response=409, description="La participación ya estaba finalizada", @OA\JsonContent(ref="#/components/schemas/ErrorResponse")),
+     *     @OA\Response(response=422, description="Faltan respuestas obligatorias, coordenadas o hay datos inválidos", @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse"))
+     * )
+     */
     public function finalize(UpdateSurveyedRequest $request, $id)
     {
         $validated = $request->validated();
@@ -529,6 +575,7 @@ class SurveyedController extends Controller
     /**
      * @OA\Post(
      *     path="/moontransparency/public/api/surveyed/{id}/reopen",
+     *     operationId="reopenSurveyed",
      *     summary="Reabrir una participación finalizada",
      *     tags={"Surveyed"},
      *     security={{"bearerAuth": {}}},
