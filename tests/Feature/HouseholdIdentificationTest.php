@@ -39,7 +39,7 @@ class HouseholdIdentificationTest extends TestCase
         $this->authenticateSurveyor();
         $this->getJson("/api/surveyed/{$surveyedId}/calculator")
             ->assertOk()
-            ->assertJsonPath('data.contract.version', '1.1')
+            ->assertJsonPath('data.contract.version', '1.2')
             ->assertJsonPath('data.household.id', $householdId)
             ->assertJsonPath('data.household.code', 'HOG-00000001')
             ->assertJsonPath('data.household.identifier', 'HOG-00000001')

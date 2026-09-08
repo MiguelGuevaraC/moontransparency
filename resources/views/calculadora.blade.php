@@ -11,6 +11,39 @@
 <div class="container mt-4">
   <h1 class="text-center mb-4">Proyecto Línea Base</h1>
 
+  <div class="card mb-4" id="participationLoader">
+    <div class="card-body">
+      <h5 class="card-title">Cargar datos de una encuesta</h5>
+      <p class="text-muted mb-3">Inicia sesión y escribe el ID de la participación. Los permisos se validan mediante la API.</p>
+      <div class="row g-2 align-items-end" id="calculatorLoginFields">
+        <div class="col-md-3">
+          <label for="calculatorUsername" class="form-label">Usuario</label>
+          <input type="text" id="calculatorUsername" class="form-control" autocomplete="username">
+        </div>
+        <div class="col-md-3">
+          <label for="calculatorPassword" class="form-label">Contraseña</label>
+          <input type="password" id="calculatorPassword" class="form-control" autocomplete="current-password">
+        </div>
+        <div class="col-md-2">
+          <button type="button" id="btnCalculatorLogin" class="btn btn-outline-primary w-100">Iniciar sesión</button>
+        </div>
+      </div>
+      <div class="row g-2 align-items-end mt-1">
+        <div class="col-md-3">
+          <label for="calculatorParticipationId" class="form-label">ID de participación</label>
+          <input type="number" id="calculatorParticipationId" class="form-control" min="1" step="1">
+        </div>
+        <div class="col-md-3">
+          <button type="button" id="btnLoadParticipation" class="btn btn-primary w-100" disabled>Cargar participación</button>
+        </div>
+        <div class="col-md-2">
+          <button type="button" id="btnCalculatorLogout" class="btn btn-outline-secondary w-100" style="display:none;">Cerrar sesión</button>
+        </div>
+      </div>
+      <div id="calculatorLoadStatus" class="alert mt-3 mb-0" role="alert" style="display:none;"></div>
+    </div>
+  </div>
+
   <!-- Tabs -->
   <ul class="nav nav-tabs" id="myTab" role="tablist">
     <li class="nav-item" role="presentation">
@@ -703,6 +736,207 @@
 
 <script>
 $(document).ready(function(){
+  const calculatorApiBase = @json(url('/api'));
+  const calculatorTokenKey = 'moontransparency.calculator_token';
+  let calculatorToken = sessionStorage.getItem(calculatorTokenKey);
+
+  function showCalculatorStatus(message, type = 'info') {
+    $('#calculatorLoadStatus')
+      .removeClass('alert-info alert-success alert-warning alert-danger')
+      .addClass(`alert-${type}`)
+      .text(message)
+      .show();
+  }
+
+  function updateCalculatorAuthState() {
+    const authenticated = Boolean(calculatorToken);
+    $('#btnLoadParticipation').prop('disabled', !authenticated);
+    $('#calculatorLoginFields').toggle(!authenticated);
+    $('#btnCalculatorLogout').toggle(authenticated);
+
+    if (authenticated) {
+      showCalculatorStatus('Sesión disponible. Ingresa el ID de la participación.', 'info');
+    }
+  }
+
+  async function readJson(response) {
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const message = payload.message || payload.error || 'No se pudo completar la solicitud.';
+      throw new Error(message);
+    }
+
+    return payload;
+  }
+
+  function setNumericValue(selector, value) {
+    $(selector).val(value === null || value === undefined ? '' : value);
+  }
+
+  function fillHouseholdMembers(members, adjusted) {
+    const suffix = adjusted ? 'Adj' : '';
+    setNumericValue(`#ninos${suffix}`, members.children_0_14);
+    setNumericValue(`#mujeres${suffix}`, members.women_over_14);
+    setNumericValue(`#hombresJovenes${suffix}`, members.men_15_59);
+    setNumericValue(`#hombresMayores${suffix}`, members.men_over_59);
+  }
+
+  function fillKptSeries(series, adjusted) {
+    if (!series) {
+      return 0;
+    }
+
+    const rowSelector = adjusted ? '.filaDiaAdj' : '.filaDia';
+    const initialSelector = adjusted ? '.pesoInicialAdj' : '.pesoInicial';
+    const remainingSelector = adjusted ? '.pesoFinalAdj' : '.pesoFinal';
+    const charcoalSelector = adjusted ? '.pesoCarbonAdj' : '.pesoCarbon';
+    let readyDays = 0;
+
+    $(rowSelector).each(function () {
+      $(this).find(`${initialSelector}, ${remainingSelector}, ${charcoalSelector}`).val('');
+    });
+
+    series.days.forEach(function (day) {
+      const row = $(rowSelector).eq(day.day_number - 1);
+      setNumericValue(row.find(initialSelector), day.available_weight_kg);
+      setNumericValue(row.find(remainingSelector), day.remaining_weight_kg);
+      setNumericValue(row.find(charcoalSelector), day.charcoal_weight_kg);
+      readyDays += day.calculation_ready ? 1 : 0;
+    });
+
+    return readyDays;
+  }
+
+  function applyParticipation(payload) {
+    const data = payload.data;
+    const calculatorInput = data.calculator_input;
+
+    if (!calculatorInput || !calculatorInput.supported) {
+      const warning = calculatorInput?.warnings?.join(' ') || 'Esta encuesta no corresponde a un instrumento KPT compatible.';
+      throw new Error(warning);
+    }
+
+    const householdIdentifier = data.household?.identifier;
+    if (householdIdentifier) {
+      $('#idHogar1').val(householdIdentifier);
+    }
+
+    let baselineReadyDays = 0;
+    let projectReadyDays = 0;
+
+    if (calculatorInput.baseline) {
+      fillHouseholdMembers(calculatorInput.household_members, false);
+      baselineReadyDays = fillKptSeries(calculatorInput.baseline, false);
+    }
+
+    if (calculatorInput.project) {
+      fillHouseholdMembers(calculatorInput.household_members, true);
+      projectReadyDays = fillKptSeries(calculatorInput.project, true);
+    }
+
+    if (baselineReadyDays > 0 && calculatorInput.household_members.total > 0) {
+      $('#btnCalcular').trigger('click');
+    }
+
+    if (projectReadyDays > 0 && calculatorInput.household_members.total > 0) {
+      $('#btnCalcularAjustado').trigger('click');
+    }
+
+    const state = data.participation.is_partial ? 'BORRADOR' : 'FINALIZADA';
+    const loadedDays = data.recorded_days.length;
+    const warnings = calculatorInput.warnings.length
+      ? ` Advertencias: ${calculatorInput.warnings.join(' ')}`
+      : '';
+    const missingBaseline = calculatorInput.scenario === 'MONITORING_MOON_ONLY'
+      ? ' Para calcular la reducción completa también debes cargar la participación de línea base del mismo hogar.'
+      : '';
+
+    showCalculatorStatus(
+      `Participación ${data.participation.id} (${data.survey.name}) cargada: ${state}, ${loadedDays}/7 días.${missingBaseline}${warnings}`,
+      data.participation.is_partial || warnings || missingBaseline ? 'warning' : 'success'
+    );
+  }
+
+  $('#btnCalculatorLogin').click(async function () {
+    const username = $('#calculatorUsername').val().trim();
+    const password = $('#calculatorPassword').val();
+
+    if (!username || !password) {
+      showCalculatorStatus('Ingresa usuario y contraseña.', 'warning');
+      return;
+    }
+
+    const button = $(this).prop('disabled', true);
+
+    try {
+      const response = await fetch(`${calculatorApiBase}/login`, {
+        method: 'POST',
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        body: JSON.stringify({username, password}),
+      });
+      const payload = await readJson(response);
+      calculatorToken = payload.token;
+      sessionStorage.setItem(calculatorTokenKey, calculatorToken);
+      $('#calculatorPassword').val('');
+      updateCalculatorAuthState();
+    } catch (error) {
+      showCalculatorStatus(error.message, 'danger');
+    } finally {
+      button.prop('disabled', false);
+    }
+  });
+
+  $('#btnLoadParticipation').click(async function () {
+    const participationId = Number.parseInt($('#calculatorParticipationId').val(), 10);
+
+    if (!Number.isInteger(participationId) || participationId < 1) {
+      showCalculatorStatus('Ingresa un ID de participación válido.', 'warning');
+      return;
+    }
+
+    const button = $(this).prop('disabled', true);
+    showCalculatorStatus('Cargando participación...', 'info');
+
+    try {
+      const response = await fetch(`${calculatorApiBase}/surveyed/${participationId}/calculator`, {
+        headers: {'Accept': 'application/json', 'Authorization': `Bearer ${calculatorToken}`},
+      });
+
+      if (response.status === 401) {
+        calculatorToken = null;
+        sessionStorage.removeItem(calculatorTokenKey);
+        updateCalculatorAuthState();
+      }
+
+      const payload = await readJson(response);
+      applyParticipation(payload);
+    } catch (error) {
+      showCalculatorStatus(error.message, 'danger');
+    } finally {
+      button.prop('disabled', !calculatorToken);
+    }
+  });
+
+  $('#btnCalculatorLogout').click(async function () {
+    if (calculatorToken) {
+      await fetch(`${calculatorApiBase}/logout`, {
+        headers: {'Accept': 'application/json', 'Authorization': `Bearer ${calculatorToken}`},
+      }).catch(() => null);
+    }
+
+    calculatorToken = null;
+    sessionStorage.removeItem(calculatorTokenKey);
+    updateCalculatorAuthState();
+    showCalculatorStatus('Sesión cerrada.', 'info');
+  });
+
+  const participationFromUrl = new URLSearchParams(window.location.search).get('participation_id');
+  if (participationFromUrl) {
+    $('#calculatorParticipationId').val(participationFromUrl);
+  }
+  updateCalculatorAuthState();
+
     // --- KPT ---
   $("#btnCalcular").click(function(){
     const ninos = parseInt($("#ninos").val())||0;

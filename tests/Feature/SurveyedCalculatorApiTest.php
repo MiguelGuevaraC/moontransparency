@@ -27,7 +27,7 @@ class SurveyedCalculatorApiTest extends TestCase
 
         $response = $this->getJson('/api/surveyed/'.$surveyed->id.'/calculator')
             ->assertOk()
-            ->assertJsonPath('data.contract.version', '1.1')
+            ->assertJsonPath('data.contract.version', '1.2')
             ->assertJsonPath('data.contract.expected_days', 7)
             ->assertJsonPath('data.contract.units.weight', 'kg')
             ->assertJsonPath('data.contract.units.people', 'person')
@@ -44,7 +44,16 @@ class SurveyedCalculatorApiTest extends TestCase
             ->assertJsonPath('data.recorded_days', [1, 3])
             ->assertJsonPath('data.missing_days', [2, 4, 5, 6, 7])
             ->assertJsonCount(7, 'data.days')
-            ->assertJsonCount(4, 'data.fields');
+            ->assertJsonCount(10, 'data.fields')
+            ->assertJsonPath('data.calculator_input.supported', true)
+            ->assertJsonPath('data.calculator_input.scenario', 'BASELINE')
+            ->assertJsonPath('data.calculator_input.household_members.total', 4)
+            ->assertJsonPath('data.calculator_input.baseline.days.0.available_weight_kg', 12.5)
+            ->assertJsonPath('data.calculator_input.baseline.days.0.remaining_weight_kg', 8)
+            ->assertJsonPath('data.calculator_input.baseline.days.0.charcoal_weight_kg', 0.5)
+            ->assertJsonPath('data.calculator_input.baseline.days.0.calculation_ready', true)
+            ->assertJsonPath('data.calculator_input.baseline.days.2.available_weight_kg', null)
+            ->assertJsonPath('data.calculator_input.baseline.days.2.calculation_ready', false);
 
         $days = $response->json('data.days');
 
@@ -135,6 +144,7 @@ class SurveyedCalculatorApiTest extends TestCase
             'type_field' => 'CORTO',
             'order' => 1,
             'is_required' => true,
+            'calculator_key' => 'household.identifier',
         ]);
         $children = SurveyQuestion::create([
             'survey_id' => $survey->id,
@@ -143,6 +153,34 @@ class SurveyedCalculatorApiTest extends TestCase
             'type_field' => 'NUMERICO',
             'order' => 2,
             'is_required' => true,
+            'calculator_key' => 'household.children_0_14',
+        ]);
+        $women = SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Número de mujeres mayores de 14 años',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'order' => 2.1,
+            'is_required' => true,
+            'calculator_key' => 'household.women_over_14',
+        ]);
+        $men = SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Número de hombres de 15 a 59 años',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'order' => 2.2,
+            'is_required' => true,
+            'calculator_key' => 'household.men_15_59',
+        ]);
+        $olderMen = SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Número de hombres mayores de 59 años',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'order' => 2.3,
+            'is_required' => true,
+            'calculator_key' => 'household.men_over_59',
         ]);
         $dayQuestion = SurveyQuestion::create([
             'survey_id' => $survey->id,
@@ -163,6 +201,34 @@ class SurveyedCalculatorApiTest extends TestCase
             'type_field' => 'NUMERICO',
             'order' => 4,
             'is_required' => true,
+            'calculator_key' => 'baseline.initial_wood_kg',
+        ]);
+        $additionalWeight = SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Peso de leña adicional',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'order' => 5,
+            'is_required' => true,
+            'calculator_key' => 'baseline.additional_wood_kg',
+        ]);
+        $remainingWeight = SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Peso final de leña sobrante',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'order' => 6,
+            'is_required' => true,
+            'calculator_key' => 'baseline.remaining_wood_kg',
+        ]);
+        $charcoalWeight = SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Peso de carbón producido',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'order' => 7,
+            'is_required' => true,
+            'calculator_key' => 'baseline.charcoal_kg',
         ]);
 
         $dayOneMeasurement = SurveyedMeasurement::create([
@@ -171,6 +237,9 @@ class SurveyedCalculatorApiTest extends TestCase
         ]);
         $this->createAnswer($surveyed, $respondent, $dayOneMeasurement, $household, 'HOGAR-77');
         $this->createAnswer($surveyed, $respondent, $dayOneMeasurement, $children, '2');
+        $this->createAnswer($surveyed, $respondent, $dayOneMeasurement, $women, '1');
+        $this->createAnswer($surveyed, $respondent, $dayOneMeasurement, $men, '1');
+        $this->createAnswer($surveyed, $respondent, $dayOneMeasurement, $olderMen, '0');
         $dayAnswer = $this->createAnswer($surveyed, $respondent, $dayOneMeasurement, $dayQuestion, null);
         SurveyedResponseOption::create([
             'surveyed_response_id' => $dayAnswer->id,
@@ -179,12 +248,17 @@ class SurveyedCalculatorApiTest extends TestCase
             'respondent_id' => $respondent->id,
         ]);
         $this->createAnswer($surveyed, $respondent, $dayOneMeasurement, $weight, '12.50');
+        $this->createAnswer($surveyed, $respondent, $dayOneMeasurement, $remainingWeight, '8');
+        $this->createAnswer($surveyed, $respondent, $dayOneMeasurement, $charcoalWeight, '0.5');
 
         $dayThreeMeasurement = SurveyedMeasurement::create([
             'surveyed_id' => $surveyed->id,
             'day_number' => 3,
         ]);
         $this->createAnswer($surveyed, $respondent, $dayThreeMeasurement, $weight, 'sin dato');
+        $this->createAnswer($surveyed, $respondent, $dayThreeMeasurement, $additionalWeight, '2');
+        $this->createAnswer($surveyed, $respondent, $dayThreeMeasurement, $remainingWeight, '7');
+        $this->createAnswer($surveyed, $respondent, $dayThreeMeasurement, $charcoalWeight, '0.2');
 
         return [$surveyed, [
             'household' => $household,

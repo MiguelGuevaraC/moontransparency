@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Surveyed;
+use App\Services\CalculatorInputMapper;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -11,11 +12,12 @@ use Illuminate\Support\Str;
  * @OA\Schema(
  *     schema="CalculatorParticipation",
  *     type="object",
- *     required={"contract", "participation", "respondent", "household", "survey", "project", "recorded_days", "missing_days", "fields", "days"},
+ *     required={"contract", "participation", "respondent", "household", "survey", "project", "recorded_days", "missing_days", "fields", "days", "calculator_input"},
+ *
  *     @OA\Property(
  *         property="contract",
  *         type="object",
- *         @OA\Property(property="version", type="string", example="1.1"),
+ *         @OA\Property(property="version", type="string", example="1.2"),
  *         @OA\Property(property="expected_days", type="integer", example=7),
  *         @OA\Property(property="missing_value", nullable=true, example=null),
  *         @OA\Property(
@@ -37,13 +39,16 @@ use Illuminate\Support\Str;
  *     @OA\Property(property="recorded_days", type="array", @OA\Items(type="integer"), example={1, 2}),
  *     @OA\Property(property="missing_days", type="array", @OA\Items(type="integer"), example={3, 4, 5, 6, 7}),
  *     @OA\Property(property="fields", type="array", @OA\Items(type="object")),
+ *     @OA\Property(property="calculator_input", type="object", description="Datos semánticos listos para llenar la calculadora KPT"),
  *     @OA\Property(
  *         property="days",
  *         type="array",
  *         minItems=7,
  *         maxItems=7,
+ *
  *         @OA\Items(
  *             type="object",
+ *
  *             @OA\Property(property="day_number", type="integer", minimum=1, maximum=7),
  *             @OA\Property(property="recorded", type="boolean"),
  *             @OA\Property(property="measurement_id", type="integer", nullable=true),
@@ -90,10 +95,14 @@ class CalculatorParticipationResource extends JsonResource
                 'values' => $values,
             ];
         });
+        $calculatorInput = app(CalculatorInputMapper::class)->map(
+            $fields,
+            $days
+        );
 
         return [
             'contract' => [
-                'version' => '1.1',
+                'version' => '1.2',
                 'expected_days' => 7,
                 'missing_value' => null,
                 'units' => [
@@ -142,6 +151,7 @@ class CalculatorParticipationResource extends JsonResource
             'missing_days' => $missingDays,
             'fields' => $fields,
             'days' => $days,
+            'calculator_input' => $calculatorInput,
         ];
     }
 
@@ -151,6 +161,7 @@ class CalculatorParticipationResource extends JsonResource
 
         return [
             'key' => 'question_'.$question->id,
+            'calculator_key' => $question->calculator_key,
             'code' => Str::of($question->question_text)
                 ->ascii()
                 ->lower()
@@ -215,7 +226,7 @@ class CalculatorParticipationResource extends JsonResource
 
     private function answerValue($answer, array $field): array
     {
-        if (!$answer) {
+        if (! $answer) {
             return $this->missingAnswer($field);
         }
 
@@ -252,7 +263,7 @@ class CalculatorParticipationResource extends JsonResource
         $missing = $rawValue === null || trim((string) $rawValue) === '';
 
         if ($field['value_type'] === 'number') {
-            $valid = !$missing && is_numeric($rawValue);
+            $valid = ! $missing && is_numeric($rawValue);
 
             return [
                 'question_id' => $field['question_id'],
@@ -287,7 +298,7 @@ class CalculatorParticipationResource extends JsonResource
     {
         $field = $fields->firstWhere('code', 'id_del_hogar');
 
-        if (!$field) {
+        if (! $field) {
             return null;
         }
 

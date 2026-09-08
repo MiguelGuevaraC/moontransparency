@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -7,9 +8,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class SurveyQuestion extends Model
 {
     use SoftDeletes;
+
     protected $fillable = [
         'id',
         'question_text',
+        'calculator_key',
         'question_type',
         'type_field',
         'order',
@@ -21,11 +24,13 @@ class SurveyQuestion extends Model
         'updated_at',
         'deleted_at',
     ];
+
     protected $hidden = [
         'created_at',
         'updated_at',
         'deleted_at',
     ];
+
     const filters = [
         'survey_name' => 'like',
         'question_text' => 'like',
@@ -46,10 +51,12 @@ class SurveyQuestion extends Model
     {
         return $this->belongsTo(Survey::class, 'survey_id');
     }
+
     public function survey_questions_options()
     {
         return $this->hasMany(SurveyQuestionOption::class);
     }
+
     public function ods()
     {
         return $this->belongsToMany(
@@ -62,12 +69,8 @@ class SurveyQuestion extends Model
             ->wherePivotNull('deleted_at'); // Excluye registros eliminados lógicamente
     }
 
-
-
     public function surveyed_responses()
     {
         return $this->hasMany(SurveyedResponse::class, 'survey_question_id');
     }
-
-
 }
