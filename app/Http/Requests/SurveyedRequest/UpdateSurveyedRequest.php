@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests\SurveyedRequest;
 
+use App\Http\Requests\Concerns\ResolvesSurveyExpectedDays;
 use App\Http\Requests\StoreRequest;
 use App\Models\Household;
 
 class UpdateSurveyedRequest extends StoreRequest
 {
+    use ResolvesSurveyExpectedDays;
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -24,6 +27,8 @@ class UpdateSurveyedRequest extends StoreRequest
      */
     public function rules()
     {
+        $expectedDays = $this->expectedDaysFor($this->input('survey_id'));
+
         return [
             'number_document' => 'required|string|max:20',
             'names' => 'required|string|max:1000',
@@ -36,7 +41,7 @@ class UpdateSurveyedRequest extends StoreRequest
             'survey_id' => 'required|integer|exists:surveys,id',
             'latitude' => 'nullable|required_with:longitude|numeric|between:-90,90',
             'longitude' => 'nullable|required_with:latitude|numeric|between:-180,180',
-            'day_number' => 'nullable|integer|between:1,7',
+            'day_number' => "nullable|integer|between:1,$expectedDays",
             'responses' => 'sometimes|array',
             'responses.*.survey_question_id' => 'required|integer|exists:survey_questions,id',
             'responses.*.survey_question_option_id' => 'nullable|array',
@@ -86,7 +91,7 @@ class UpdateSurveyedRequest extends StoreRequest
             'longitude.between' => 'La longitud debe estar entre -180 y 180.',
 
             'day_number.integer' => 'El día de medición debe ser un número entero.',
-            'day_number.between' => 'El día de medición debe estar entre 1 y 7.',
+            'day_number.between' => 'El día de medición debe estar dentro de la cantidad configurada para la encuesta.',
 
             'responses.array' => 'Las respuestas deben enviarse como un arreglo.',
 

@@ -169,6 +169,8 @@ class SurveyedController extends Controller
 
     public function indexAllExcel(IndexSurveyedRequest $request)
     {
+        return app(SurveyedExcelController::class)->export($request);
+
         ini_set('max_execution_time', '9000');
 
         $query = Surveyed::query()
@@ -251,6 +253,8 @@ class SurveyedController extends Controller
 
     public function importExcel(Request $request)
     {
+        return app(SurveyedExcelController::class)->import($request);
+
         ini_set('max_execution_time', 9000);
         ini_set('memory_limit', '-1');
 
@@ -386,10 +390,11 @@ class SurveyedController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            report($e);
 
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'No se pudo importar el archivo.',
             ], 500);
         }
     }
@@ -437,7 +442,9 @@ class SurveyedController extends Controller
      *     description="Recupera las respuestas, las mediciones ordenadas por día, el estado, completed_at, can_edit y geobosques_map.",
      *     tags={"Surveyed"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", minimum=1)),
+     *
      *     @OA\Response(response=200, description="Participación encontrada", @OA\JsonContent(type="object", @OA\Property(property="data", ref="#/components/schemas/Surveyed"))),
      *     @OA\Response(response=401, description="No autenticado", @OA\JsonContent(ref="#/components/schemas/ErrorResponse")),
      *     @OA\Response(response=403, description="Sin el permiso participations.view", @OA\JsonContent(ref="#/components/schemas/ErrorResponse")),
@@ -503,6 +510,7 @@ class SurveyedController extends Controller
      *     description="Actualiza el mismo BORRADOR, conserva los días previos y agrega o reemplaza las respuestas del day_number enviado sin duplicarlas. Esta ruta pública no exige token.",
      *     summary="Actualizar Surveyed",
      *     tags={"Surveyed"},
+     *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", minimum=1)),
      *
      *     @OA\RequestBody(
@@ -548,8 +556,11 @@ class SurveyedController extends Controller
      *     summary="Finalizar una participación",
      *     description="Valida las preguntas obligatorias, cambia el estado a FINALIZADA y registra completed_at. No puede editarse hasta que un administrador la reabra. Esta ruta pública no exige token.",
      *     tags={"Surveyed"},
+     *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", minimum=1)),
+     *
      *     @OA\RequestBody(required=true, @OA\MediaType(mediaType="multipart/form-data", @OA\Schema(ref="#/components/schemas/SurveyedUpsertRequest"))),
+     *
      *     @OA\Response(response=200, description="Participación finalizada", @OA\JsonContent(type="object", @OA\Property(property="data", ref="#/components/schemas/Surveyed"))),
      *     @OA\Response(response=404, description="Participación no encontrada", @OA\JsonContent(ref="#/components/schemas/ErrorResponse")),
      *     @OA\Response(response=409, description="La participación ya estaba finalizada", @OA\JsonContent(ref="#/components/schemas/ErrorResponse")),

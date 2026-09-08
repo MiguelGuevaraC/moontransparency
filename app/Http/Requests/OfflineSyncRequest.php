@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ResolvesSurveyExpectedDays;
 use App\Models\Household;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -9,6 +10,8 @@ use Illuminate\Validation\Validator;
 
 class OfflineSyncRequest extends FormRequest
 {
+    use ResolvesSurveyExpectedDays;
+
     public function authorize(): bool
     {
         return true;
@@ -57,9 +60,9 @@ class OfflineSyncRequest extends FormRequest
             'items.*.latitude' => ['nullable', 'required_with:items.*.longitude', 'numeric', 'between:-90,90'],
             'items.*.longitude' => ['nullable', 'required_with:items.*.latitude', 'numeric', 'between:-180,180'],
             'items.*.responses' => ['sometimes', 'array'],
-            'items.*.measurements' => ['sometimes', 'array', 'max:7'],
+            'items.*.measurements' => ['sometimes', 'array', 'max:'.config('surveying.max_expected_days', 31)],
             'items.*.measurements.*.client_measurement_id' => ['required', 'uuid'],
-            'items.*.measurements.*.day_number' => ['required', 'integer', 'between:1,7'],
+            'items.*.measurements.*.day_number' => ['required', 'integer', 'min:1', 'max:'.config('surveying.max_expected_days', 31)],
             'items.*.measurements.*.responses' => ['sometimes', 'array'],
             'attachments' => ['sometimes', 'array'],
             'attachments.*' => ['file', 'max:5120', 'mimes:jpg,jpeg,png,pdf,doc,docx,xlsx,mp4,zip'],
@@ -82,6 +85,13 @@ class OfflineSyncRequest extends FormRequest
                 $attachmentKeys = [];
 
                 foreach ($this->input('items', []) as $itemIndex => $item) {
+                    $expectedDays = $this->expectedDaysFor($item['survey_id'] ?? null);
+                    if (count($item['measurements'] ?? []) > $expectedDays) {
+                        $validator->errors()->add(
+                            "items.$itemIndex.measurements",
+                            "La encuesta admite como máximo $expectedDays mediciones."
+                        );
+                    }
                     $participationId = $item['client_participation_id'] ?? null;
                     if ($participationId && isset($participationIds[$participationId])) {
                         $validator->errors()->add(
@@ -103,6 +113,12 @@ class OfflineSyncRequest extends FormRequest
                         $measurementIds[$measurementId] = true;
 
                         $day = $measurement['day_number'] ?? null;
+                        if ($day !== null && (int) $day > $expectedDays) {
+                            $validator->errors()->add(
+                                "items.$itemIndex.measurements.$measurementIndex.day_number",
+                                "El día supera los $expectedDays días configurados para la encuesta."
+                            );
+                        }
                         if ($day !== null && isset($days[$day])) {
                             $validator->errors()->add(
                                 "items.$itemIndex.measurements.$measurementIndex.day_number",

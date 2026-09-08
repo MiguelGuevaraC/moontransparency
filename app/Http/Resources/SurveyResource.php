@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\SurveyQuestionResource;
 
 class SurveyResource extends JsonResource
 {
@@ -17,7 +16,7 @@ class SurveyResource extends JsonResource
 
             if ($p) {
                 $postSurveyObj = $p;
-            } elseif (!empty($this->post_survey_id)) {
+            } elseif (! empty($this->post_survey_id)) {
                 $postSurveyObj = [
                     'id' => (int) $this->post_survey_id,
                     'survey_name' => null,
@@ -36,7 +35,7 @@ class SurveyResource extends JsonResource
         }
 
         // --- Casos generales (mostrar enlace mínimo si existe id)
-        if ($postSurveyObj === null && !empty($this->post_survey_id)) {
+        if ($postSurveyObj === null && ! empty($this->post_survey_id)) {
             $postSurveyObj = [
                 'id' => (int) $this->post_survey_id,
                 'survey_name' => null,
@@ -71,28 +70,31 @@ class SurveyResource extends JsonResource
         }
 
         return [
-            'id'                => $this->id,
-            'proyect_id'        => $this->proyect_id,
-            'survey_name'       => $this->survey_name,
-            'survey_type'       => $this->survey_type,
-            'description'       => $this->description,
-            'status'            => $this->status,
+            'id' => $this->id,
+            'code' => $this->code,
+            'proyect_id' => $this->proyect_id,
+            'survey_name' => $this->survey_name,
+            'survey_type' => $this->survey_type,
+            'description' => $this->description,
+            'status' => $this->status,
+            'requires_coordinates' => (bool) $this->requires_coordinates,
+            'expected_days' => $this->expectedDays(),
 
             // estado y links
-            'is_complete'       => $isComplete,
-            'survey_link'       => $surveyLink,     // {id, survey_name|null, survey_type|null} o null
+            'is_complete' => $isComplete,
+            'survey_link' => $surveyLink,     // {id, survey_name|null, survey_type|null} o null
 
             // relaciones (se accede con ?-> / fallback vacío si no hay nada)
-            'survey_questions'  => $this->survey_questions ? SurveyQuestionResource::collection($this->survey_questions) : null,
+            'survey_questions' => $this->survey_questions ? SurveyQuestionResource::collection($this->survey_questions) : null,
 
             // proyect usando null-safe
-            'proyect'           => $this->proyect ? [
-                                        'id' => $this->proyect?->id,
-                                        'name' => $this->proyect?->name ?? null,
-                                    ] : null,
+            'proyect' => $this->proyect ? [
+                'id' => $this->proyect?->id,
+                'name' => $this->proyect?->name ?? null,
+            ] : null,
 
-            'created_at'        => $this->created_at?->toIso8601String(),
-            'updated_at'        => $this->updated_at?->toIso8601String(),
+            'created_at' => $this->created_at?->toIso8601String(),
+            'updated_at' => $this->updated_at?->toIso8601String(),
         ];
     }
 }

@@ -53,21 +53,23 @@ class SurveyedService
                 ['number_document' => $data['number_document']],
                 $this->respondentData($data)
             );
+            $person = Respondent::lockForUpdate()->findOrFail($person->id);
 
             $authenticatedUserId = $this->authenticatedUserId();
-            $surveyed = Surveyed::firstOrCreate(
-                [
-                    'respondent_id' => $person->id,
-                    'survey_id' => $data['survey_id'],
-                ],
-                array_filter([
+            $participationKey = [
+                'respondent_id' => $person->id,
+                'survey_id' => $data['survey_id'],
+            ];
+            $surveyed = Surveyed::where($participationKey)->lockForUpdate()->first();
+            if (! $surveyed) {
+                $surveyed = Surveyed::create($participationKey + array_filter([
                     'status' => Surveyed::STATUS_DRAFT,
                     'latitude' => $data['latitude'] ?? null,
                     'longitude' => $data['longitude'] ?? null,
                     'created_by' => $authenticatedUserId,
                     'updated_by' => $authenticatedUserId,
-                ], static fn ($value) => $value !== null)
-            );
+                ], static fn ($value) => $value !== null));
+            }
 
             $surveyedChanges = [];
             $surveyedChanges['household_id'] = $this->resolveHousehold($surveyed, $person, $data)->id;
@@ -285,7 +287,7 @@ class SurveyedService
                 ->where('survey_id', $surveyed->survey_id)
                 ->first();
 
-            if (! $question || Str::lower(Str::ascii(trim((string) $question->question_text))) !== 'dia de medicion') {
+            if (! $question || $question->calculator_key !== 'measurement.day') {
                 continue;
             }
 
@@ -305,9 +307,11 @@ class SurveyedService
                 ->value('description');
             $day = filter_var($description, FILTER_VALIDATE_INT);
 
-            if ($day === false || $day < 1 || $day > 7) {
+            $expectedDays = $surveyed->survey?->expectedDays() ?? config('surveying.default_expected_days', 7);
+
+            if ($day === false || $day < 1 || $day > $expectedDays) {
                 throw ValidationException::withMessages([
-                    "responses.$index.survey_question_option_id" => 'La opción seleccionada no representa un día entre 1 y 7.',
+                    "responses.$index.survey_question_option_id" => "La opción seleccionada no representa un día entre 1 y $expectedDays.",
                 ]);
             }
 
@@ -474,13 +478,7 @@ class SurveyedService
 
     private function validateRequiredCoordinates(Surveyed $surveyed): void
     {
-        $requiresLocation = $surveyed->survey()
-            ->where('survey_name', GeobosquesSurveyConfigurator::SURVEY_NAME)
-            ->whereHas('survey_questions', function ($query) {
-                $query->where('question_type', 'UBICACION')
-                    ->where('is_required', true);
-            })
-            ->exists();
+        $requiresLocation = $surveyed->survey()->where('requires_coordinates', true)->exists();
 
         if ($requiresLocation && ($surveyed->latitude === null || $surveyed->longitude === null)) {
             throw ValidationException::withMessages([

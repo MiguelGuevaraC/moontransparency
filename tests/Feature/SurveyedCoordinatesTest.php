@@ -6,7 +6,6 @@ use App\Models\Proyect;
 use App\Models\Survey;
 use App\Models\Surveyed;
 use App\Models\SurveyQuestion;
-use App\Services\GeobosquesSurveyConfigurator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -161,7 +160,9 @@ class SurveyedCoordinatesTest extends TestCase
 
         return Survey::create([
             'proyect_id' => $project->id,
-            'survey_name' => GeobosquesSurveyConfigurator::SURVEY_NAME,
+            'survey_name' => config('geobosques.survey.name'),
+            'code' => config('geobosques.survey.code'),
+            'requires_coordinates' => true,
             'survey_type' => 'PRE',
             'status' => 'ACTIVA',
         ]);

@@ -24,7 +24,7 @@ class GeobosquesSurveyConfigurationTest extends TestCase
 
         $survey = $project->surveys()->where(
             'survey_name',
-            GeobosquesSurveyConfigurator::SURVEY_NAME
+            config('geobosques.survey.name')
         )->firstOrFail();
 
         $this->assertSame('PRE', $survey->survey_type);

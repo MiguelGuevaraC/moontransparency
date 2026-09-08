@@ -82,7 +82,7 @@ class GeobosquesMapTest extends TestCase
             ->assertOk()
             ->assertSee('No hay coordenadas registradas para mostrar el mapa.')
             ->assertDontSee('<iframe', false)
-            ->assertDontSee(GeobosquesMapService::VIEWER_BASE_URL, false);
+            ->assertDontSee(config('geobosques.viewer.base_url'), false);
 
         $this->get('/mapa?latitude=not-a-number&longitude=-79.822403')
             ->assertOk()

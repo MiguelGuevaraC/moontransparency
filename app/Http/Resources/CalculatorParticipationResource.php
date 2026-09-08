@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
  *     @OA\Property(
  *         property="contract",
  *         type="object",
- *         @OA\Property(property="version", type="string", example="1.2"),
+ *         @OA\Property(property="version", type="string", example="1.3"),
  *         @OA\Property(property="expected_days", type="integer", example=7),
  *         @OA\Property(property="missing_value", nullable=true, example=null),
  *         @OA\Property(
@@ -43,13 +43,13 @@ use Illuminate\Support\Str;
  *     @OA\Property(
  *         property="days",
  *         type="array",
- *         minItems=7,
- *         maxItems=7,
+ *         minItems=1,
+ *         maxItems=31,
  *
  *         @OA\Items(
  *             type="object",
  *
- *             @OA\Property(property="day_number", type="integer", minimum=1, maximum=7),
+ *             @OA\Property(property="day_number", type="integer", minimum=1, maximum=31),
  *             @OA\Property(property="recorded", type="boolean"),
  *             @OA\Property(property="measurement_id", type="integer", nullable=true),
  *             @OA\Property(property="values", type="object")
@@ -69,14 +69,15 @@ class CalculatorParticipationResource extends JsonResource
             ->values();
         $fields = $questions->map(fn ($question) => $this->fieldDefinition($question));
         $legacyHouseholdIdentifier = $this->legacyHouseholdIdentifier($fields);
+        $expectedDays = $this->survey?->expectedDays() ?? config('surveying.default_expected_days', 7);
         $measurements = $this->measurements->keyBy('day_number');
         $recordedDays = $measurements->keys()
             ->map(static fn ($day) => (int) $day)
-            ->filter(static fn (int $day) => $day >= 1 && $day <= 7)
+            ->filter(static fn (int $day) => $day >= 1 && $day <= $expectedDays)
             ->sort()
             ->values();
-        $missingDays = collect(range(1, 7))->diff($recordedDays)->values();
-        $days = collect(range(1, 7))->map(function (int $day) use ($fields, $measurements) {
+        $missingDays = collect(range(1, $expectedDays))->diff($recordedDays)->values();
+        $days = collect(range(1, $expectedDays))->map(function (int $day) use ($fields, $measurements) {
             $measurement = $measurements->get($day);
             $answers = $measurement
                 ? $measurement->surveyed_responses->keyBy('survey_question_id')
@@ -102,8 +103,8 @@ class CalculatorParticipationResource extends JsonResource
 
         return [
             'contract' => [
-                'version' => '1.2',
-                'expected_days' => 7,
+                'version' => config('surveying.calculator.contract_version', '1.3'),
+                'expected_days' => $expectedDays,
                 'missing_value' => null,
                 'units' => [
                     'weight' => 'kg',
@@ -114,6 +115,12 @@ class CalculatorParticipationResource extends JsonResource
                     'missing_day' => 'El día se entrega con recorded=false, measurement_id=null y valores null.',
                     'missing_answer' => 'El campo se entrega con value=null y validation_status=missing.',
                     'invalid_number' => 'El campo se entrega con value=null, conserva raw_value y usa validation_status=invalid.',
+                ],
+                'unit_policy' => [
+                    'canonical_weight_unit' => config('surveying.calculator.canonical_weight_unit', 'kg'),
+                    'accepted_weight_units' => config('surveying.calculator.supported_weight_units', ['kg', 'g']),
+                    'grams_to_kilograms' => 0.001,
+                    'raw_value_preserved' => true,
                 ],
             ],
             'participation' => [
@@ -157,7 +164,9 @@ class CalculatorParticipationResource extends JsonResource
 
     private function fieldDefinition($question): array
     {
-        $valueType = $this->valueType($question);
+        $valueType = $question->calculator_value_type ?: $this->valueType($question);
+        $sourceUnit = $question->calculator_unit ?: null;
+        $unit = $this->canonicalUnit($question->calculator_key, $sourceUnit);
 
         return [
             'key' => 'question_'.$question->id,
@@ -172,7 +181,9 @@ class CalculatorParticipationResource extends JsonResource
             'label' => $question->question_text,
             'order' => $question->order !== null ? (float) $question->order : null,
             'value_type' => $valueType,
-            'unit' => $this->unit($question, $valueType),
+            'unit' => $unit,
+            'source_unit' => $sourceUnit,
+            'conversion_factor' => $this->conversionFactor($sourceUnit, $unit),
             'required' => (bool) $question->is_required,
         ];
     }
@@ -205,23 +216,18 @@ class CalculatorParticipationResource extends JsonResource
         return 'string';
     }
 
-    private function unit($question, string $valueType): ?string
+    private function canonicalUnit(?string $calculatorKey, ?string $sourceUnit): ?string
     {
-        $label = Str::lower(Str::ascii((string) $question->question_text));
-
-        if (Str::contains($label, 'peso')) {
-            return 'kg';
+        if ($calculatorKey && Str::endsWith($calculatorKey, '_kg')) {
+            return config('surveying.calculator.canonical_weight_unit', 'kg');
         }
 
-        if ($valueType === 'number' && Str::contains($label, ['numero de ninos', 'numero de mujeres', 'numero de hombres'])) {
-            return 'person';
-        }
+        return $sourceUnit;
+    }
 
-        if ($label === 'dia de medicion') {
-            return 'day';
-        }
-
-        return null;
+    private function conversionFactor(?string $sourceUnit, ?string $unit): float
+    {
+        return $sourceUnit === 'g' && $unit === 'kg' ? 0.001 : 1.0;
     }
 
     private function answerValue($answer, array $field): array
@@ -244,6 +250,8 @@ class CalculatorParticipationResource extends JsonResource
                 'value' => $value ?: null,
                 'raw_value' => null,
                 'unit' => $field['unit'],
+                'source_unit' => $field['source_unit'],
+                'conversion_factor' => $field['conversion_factor'],
                 'validation_status' => $value ? 'valid' : 'missing',
             ];
         }
@@ -254,8 +262,10 @@ class CalculatorParticipationResource extends JsonResource
             return [
                 'question_id' => $field['question_id'],
                 'value' => $value,
-                'raw_value' => $answer->file_path,
+                'raw_value' => null,
                 'unit' => $field['unit'],
+                'source_unit' => $field['source_unit'],
+                'conversion_factor' => $field['conversion_factor'],
                 'validation_status' => $value ? 'valid' : 'missing',
             ];
         }
@@ -264,12 +274,15 @@ class CalculatorParticipationResource extends JsonResource
 
         if ($field['value_type'] === 'number') {
             $valid = ! $missing && is_numeric($rawValue);
+            $value = $valid ? ($rawValue + 0) * $field['conversion_factor'] : null;
 
             return [
                 'question_id' => $field['question_id'],
-                'value' => $valid ? $rawValue + 0 : null,
+                'value' => $value,
                 'raw_value' => $rawValue,
                 'unit' => $field['unit'],
+                'source_unit' => $field['source_unit'],
+                'conversion_factor' => $field['conversion_factor'],
                 'validation_status' => $missing ? 'missing' : ($valid ? 'valid' : 'invalid'),
             ];
         }
@@ -279,6 +292,8 @@ class CalculatorParticipationResource extends JsonResource
             'value' => $missing ? null : $rawValue,
             'raw_value' => $rawValue,
             'unit' => $field['unit'],
+            'source_unit' => $field['source_unit'],
+            'conversion_factor' => $field['conversion_factor'],
             'validation_status' => $missing ? 'missing' : 'valid',
         ];
     }
@@ -290,13 +305,15 @@ class CalculatorParticipationResource extends JsonResource
             'value' => null,
             'raw_value' => null,
             'unit' => $field['unit'],
+            'source_unit' => $field['source_unit'],
+            'conversion_factor' => $field['conversion_factor'],
             'validation_status' => 'missing',
         ];
     }
 
     private function legacyHouseholdIdentifier($fields): ?string
     {
-        $field = $fields->firstWhere('code', 'id_del_hogar');
+        $field = $fields->firstWhere('calculator_key', 'household.identifier');
 
         if (! $field) {
             return null;

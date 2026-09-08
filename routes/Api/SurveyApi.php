@@ -3,6 +3,7 @@
 use App\Http\Controllers\SurveyCleanupController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\SurveyedController;
+use App\Http\Controllers\SurveyedExcelController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('survey', [SurveyController::class, 'index'])->middleware('permission:surveys.view');
@@ -18,5 +19,5 @@ Route::get('surveyed/{id}/calculator', [SurveyedController::class, 'calculator']
 Route::post('surveyed/{id}/reopen', [SurveyedController::class, 'reopen'])->middleware('permission:participations.reopen');
 Route::get('surveyed/{id}', [SurveyedController::class, 'show'])->middleware('permission:participations.view');
 Route::get('surveyedAll', [SurveyedController::class, 'indexAll'])->middleware('permission:participations.view');
-Route::get('surveyedExcel', [SurveyedController::class, 'indexAllExcel'])->middleware('permission:participations.export');
-Route::post('surveyed/import-excel', [SurveyedController::class, 'importExcel'])->middleware('permission:participations.import');
+Route::get('surveyedExcel', [SurveyedExcelController::class, 'export'])->middleware('permission:participations.export');
+Route::post('surveyed/import-excel', [SurveyedExcelController::class, 'import'])->middleware('permission:participations.import');

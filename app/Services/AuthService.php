@@ -14,31 +14,28 @@ class AuthService
     /**
      * Maneja el proceso de inicio de sesión.
      *
-     * @param string $email
-     * @param string $password
-     * @return array
+     * @param  string  $email
      */
     public function login(string $username, string $password): array
     {
-        
         // Busca al usuario por correo
         $user = User::with('rol.permissions')->where('username', $username)->first();
 
         // Si el usuario no existe, retornamos un error genérico sin dar pistas sobre la existencia
-        if (!$user || !$user->isActive() || ($user->rol && $user->rol->status !== 'Activo')) {
+        if (! $user || ! $user->isActive() || ($user->rol && $user->rol->status !== 'Activo')) {
             return [
                 'status' => false,
-                'message' => "Credenciales inválidas", // Mensaje más general
+                'message' => 'Credenciales inválidas', // Mensaje más general
                 'user' => null,
                 'token' => null,
             ];
         }
 
         // Verifica si la contraseña es correcta
-        if (!Hash::check($password, $user->password)) {
+        if (! Hash::check($password, $user->password)) {
             return [
                 'status' => false,
-                'message' => "Credenciales inválidas", // Mensaje más general
+                'message' => 'Credenciales inválidas', // Mensaje más general
                 'user' => null,
                 'token' => null,
             ];
@@ -64,23 +61,15 @@ class AuthService
 
     public function authenticate(): array
     {
-
         $user = auth()->user()?->load('rol.permissions');
-        $status = true;
-
-        if (!$user) {
-            $status = false;
-            $user = null;
-        }
-
         // Llama al método login para realizar la autenticación
         return [
-            'status' => true,
+            'status' => $user !== null,
             'user' => $user,
             'person' => $user?->person,
+            'message' => $user ? 'Autenticado' : 'No autenticado',
         ];
     }
-
 
     public function logout(): JsonResponse
     {
@@ -97,18 +86,18 @@ class AuthService
                 }
             } else {
                 return response()->json([
-                    "message" => "El usuario no está Autenticado.",
+                    'message' => 'El usuario no está Autenticado.',
                 ], JsonResponse::HTTP_UNAUTHORIZED);
             }
         } catch (QueryException $e) {
             // Captura la excepción de la base de datos (por ejemplo, si hay un problema al eliminar el token)
             return response()->json([
-                "message" => "Ocurrio un error mientras cerraba sesión",
+                'message' => 'Ocurrio un error mientras cerraba sesión',
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return response()->json([
-            "message" => "Se cerró sesión Exitosamente",
+            'message' => 'Se cerró sesión Exitosamente',
         ]);
     }
 }

@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Http\Requests\SurveyRequest;
 
 use App\Http\Requests\StoreRequest;
-use Illuminate\Validation\Rule;
 use App\Models\Survey;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class UpdateSurveyRequest extends StoreRequest
 {
@@ -23,12 +24,12 @@ class UpdateSurveyRequest extends StoreRequest
         if ($routeSurvey instanceof Survey) {
             return $routeSurvey->id;
         }
-        if (!is_null($routeSurvey)) {
+        if (! is_null($routeSurvey)) {
             return $routeSurvey;
         }
 
         $routeId = $this->route('id');
-        if (!is_null($routeId)) {
+        if (! is_null($routeId)) {
             return $routeId;
         }
 
@@ -47,9 +48,9 @@ class UpdateSurveyRequest extends StoreRequest
 
             $map = [
                 'departamento_id' => 'department_id',
-                'provincia_id'    => 'province_id',
-                'distrito_id'     => 'district_id',
-                'comunidad'       => 'community',
+                'provincia_id' => 'province_id',
+                'distrito_id' => 'district_id',
+                'comunidad' => 'community',
             ];
 
             foreach ($map as $es => $en) {
@@ -67,30 +68,41 @@ class UpdateSurveyRequest extends StoreRequest
         $surveyId = $this->getSurveyId();
 
         return [
-            'proyect_id'        => 'required|integer|exists:proyects,id,deleted_at,NULL',
-            'survey_name'       => [
-                'required','string','max:255',
-                Rule::unique('surveys','survey_name')->ignore($surveyId)->where(function ($q) {
+            'proyect_id' => 'required|integer|exists:proyects,id,deleted_at,NULL',
+            'code' => [
+                'nullable',
+                'string',
+                'max:100',
+                'regex:/^[A-Z0-9_]+$/',
+                Rule::unique('surveys', 'code')->ignore($surveyId)->where(function ($query) {
+                    return $query->where('proyect_id', $this->input('proyect_id'))->whereNull('deleted_at');
+                }),
+            ],
+            'survey_name' => [
+                'required', 'string', 'max:255',
+                Rule::unique('surveys', 'survey_name')->ignore($surveyId)->where(function ($q) {
                     return $q->where('proyect_id', $this->input('proyect_id'))->whereNull('deleted_at');
                 }),
             ],
-            'description'       => 'required|string|max:1000',
-            'status'            => 'nullable|string|in:ACTIVA,INACTIVA',
-            'survey_type'       => 'required|string|in:PRE,POST',
+            'description' => 'required|string|max:1000',
+            'status' => 'nullable|string|in:ACTIVA,INACTIVA',
+            'requires_coordinates' => 'nullable|boolean',
+            'expected_days' => 'nullable|integer|min:1|max:'.config('surveying.max_expected_days', 31),
+            'survey_type' => 'required|string|in:PRE,POST',
             'is_consentimiento' => 'nullable|boolean',
 
             // data_ubicacion
-            'data_ubicacion'                       => 'nullable|array',
-            'data_ubicacion.department_id'         => 'required_with:data_ubicacion|integer|exists:departments,id',
-            'data_ubicacion.province_id'           => 'required_with:data_ubicacion|integer|exists:provinces,id',
-            'data_ubicacion.district_id'           => 'required_with:data_ubicacion|integer|exists:districts,id',
-            'data_ubicacion.community'             => 'required_with:data_ubicacion|string|max:255',
+            'data_ubicacion' => 'nullable|array',
+            'data_ubicacion.department_id' => 'required_with:data_ubicacion|integer|exists:departments,id',
+            'data_ubicacion.province_id' => 'required_with:data_ubicacion|integer|exists:provinces,id',
+            'data_ubicacion.district_id' => 'required_with:data_ubicacion|integer|exists:districts,id',
+            'data_ubicacion.community' => 'required_with:data_ubicacion|string|max:255',
 
             // referencias PRE/POST
-            'post_survey_id'    => 'nullable|integer',
-            'post_survey_name'  => 'nullable|string|max:255',
-            'pre_survey_id'     => 'nullable|integer',
-            'pre_survey_name'   => 'nullable|string|max:255',
+            'post_survey_id' => 'nullable|integer',
+            'post_survey_name' => 'nullable|string|max:255',
+            'pre_survey_id' => 'nullable|integer',
+            'pre_survey_name' => 'nullable|string|max:255',
         ];
     }
 
@@ -118,6 +130,7 @@ class UpdateSurveyRequest extends StoreRequest
 
                     if (! $provExists) {
                         $v->errors()->add('data_ubicacion.province_id', 'La provincia no pertenece al departamento indicado.');
+
                         return;
                     }
                 }
@@ -130,12 +143,14 @@ class UpdateSurveyRequest extends StoreRequest
 
                     if (! $distExists) {
                         $v->errors()->add('data_ubicacion.district_id', 'El distrito no pertenece a la provincia indicada.');
+
                         return;
                     }
                 }
 
                 if (isset($loc['community']) && trim($loc['community']) === '') {
                     $v->errors()->add('data_ubicacion.community', 'La comunidad no puede estar vacía.');
+
                     return;
                 }
             }
@@ -145,19 +160,24 @@ class UpdateSurveyRequest extends StoreRequest
                 $postId = $this->input('post_survey_id');
                 $postName = $this->input('post_survey_name');
 
-                if (is_null($postId) && is_null($postName)) return;
+                if (is_null($postId) && is_null($postName)) {
+                    return;
+                }
 
                 $post = null;
                 if ($postId) {
-                    $post = Survey::where('id', $postId)->where('survey_type','POST')->whereNull('deleted_at')->first();
+                    $post = Survey::where('id', $postId)->where('survey_type', 'POST')->whereNull('deleted_at')->first();
                 } else {
-                    $q = Survey::where('survey_name',$postName)->where('survey_type','POST')->whereNull('deleted_at');
-                    if ($this->filled('proyect_id')) $q->where('proyect_id', $projectId);
+                    $q = Survey::where('survey_name', $postName)->where('survey_type', 'POST')->whereNull('deleted_at');
+                    if ($this->filled('proyect_id')) {
+                        $q->where('proyect_id', $projectId);
+                    }
                     $post = $q->first();
                 }
 
                 if (! $post) {
-                    $v->errors()->add('post_survey_id','La encuesta POST indicada no existe o no es de tipo POST.');
+                    $v->errors()->add('post_survey_id', 'La encuesta POST indicada no existe o no es de tipo POST.');
+
                     return;
                 }
 
@@ -175,28 +195,32 @@ class UpdateSurveyRequest extends StoreRequest
                 $preName = $this->input('pre_survey_name');
 
                 if (is_null($preId) && is_null($preName)) {
-                    $v->errors()->add('pre_survey_id','Para una encuesta POST debes indicar la PRE asociada.');
+                    $v->errors()->add('pre_survey_id', 'Para una encuesta POST debes indicar la PRE asociada.');
+
                     return;
                 }
 
                 $pre = null;
                 if ($preId) {
-                    $pre = Survey::where('id',$preId)->where('survey_type','PRE')->whereNull('deleted_at')->first();
+                    $pre = Survey::where('id', $preId)->where('survey_type', 'PRE')->whereNull('deleted_at')->first();
                 } else {
-                    $q = Survey::where('survey_name',$preName)->where('survey_type','PRE')->whereNull('deleted_at');
-                    if ($this->filled('proyect_id')) $q->where('proyect_id', $projectId);
+                    $q = Survey::where('survey_name', $preName)->where('survey_type', 'PRE')->whereNull('deleted_at');
+                    if ($this->filled('proyect_id')) {
+                        $q->where('proyect_id', $projectId);
+                    }
                     $pre = $q->first();
                 }
 
                 if (! $pre) {
-                    $v->errors()->add('pre_survey_id','La encuesta PRE indicada no existe o no es de tipo PRE.');
+                    $v->errors()->add('pre_survey_id', 'La encuesta PRE indicada no existe o no es de tipo PRE.');
+
                     return;
                 }
 
                 if (! is_null($pre->post_survey_id) && intval($pre->post_survey_id) !== $surveyIdInt) {
                     $linkedPost = Survey::withTrashed()->find($pre->post_survey_id);
                     $v->errors()->add('pre_survey_id',
-                        "La encuesta PRE '{$pre->survey_name}' ya está asociada a la POST '".($linkedPost? $linkedPost->survey_name : $pre->post_survey_id)."'.");
+                        "La encuesta PRE '{$pre->survey_name}' ya está asociada a la POST '".($linkedPost ? $linkedPost->survey_name : $pre->post_survey_id)."'.");
                 }
 
                 return;

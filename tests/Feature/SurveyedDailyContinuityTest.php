@@ -157,6 +157,26 @@ class SurveyedDailyContinuityTest extends TestCase
         $this->assertDatabaseCount('surveyed_responses', 0);
     }
 
+    public function test_day_number_respects_the_limit_configured_on_the_survey(): void
+    {
+        [$survey, $dayQuestion, $dayOptions, $weightQuestion, $notesQuestion] = $this->createDailySurvey();
+        $survey->update(['expected_days' => 3]);
+        $payload = $this->payload(
+            $survey,
+            $dayQuestion,
+            $dayOptions[4],
+            $weightQuestion,
+            $notesQuestion,
+            4
+        );
+
+        $this->postJson('/api/response-survey', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('responses.0.survey_question_option_id');
+
+        $this->assertDatabaseCount('surveyeds', 0);
+    }
+
     private function createDailySurvey(): array
     {
         $project = Proyect::create(['name' => 'Proyecto de continuidad']);
@@ -167,6 +187,7 @@ class SurveyedDailyContinuityTest extends TestCase
         ]);
         $dayQuestion = SurveyQuestion::create([
             'survey_id' => $survey->id,
+            'calculator_key' => 'measurement.day',
             'question_text' => 'Día de medición',
             'question_type' => 'OPCIONES',
             'type_field' => 'SELECT',

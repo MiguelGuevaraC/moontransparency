@@ -27,7 +27,7 @@ class SurveyedCalculatorApiTest extends TestCase
 
         $response = $this->getJson('/api/surveyed/'.$surveyed->id.'/calculator')
             ->assertOk()
-            ->assertJsonPath('data.contract.version', '1.2')
+            ->assertJsonPath('data.contract.version', '1.3')
             ->assertJsonPath('data.contract.expected_days', 7)
             ->assertJsonPath('data.contract.units.weight', 'kg')
             ->assertJsonPath('data.contract.units.people', 'person')
@@ -102,6 +102,41 @@ class SurveyedCalculatorApiTest extends TestCase
             ->assertJsonPath('data.participation.completed_at', '2026-09-05T12:30:00-05:00');
     }
 
+    public function test_it_converts_explicit_grams_to_the_canonical_kilogram_unit(): void
+    {
+        [$surveyed, $questions] = $this->createCalculatorParticipation();
+        $questions['weight']->update(['calculator_unit' => 'g', 'calculator_value_type' => 'number']);
+        SurveyedResponse::query()
+            ->where('surveyed_id', $surveyed->id)
+            ->where('survey_question_id', $questions['weight']->id)
+            ->whereHas('measurement', fn ($query) => $query->where('day_number', 1))
+            ->update(['response_text' => '12500']);
+        $this->authenticate();
+
+        $key = 'question_'.$questions['weight']->id;
+        $this->getJson('/api/surveyed/'.$surveyed->id.'/calculator')
+            ->assertOk()
+            ->assertJsonPath('data.contract.version', '1.3')
+            ->assertJsonPath('data.days.0.values.'.$key.'.value', 12.5)
+            ->assertJsonPath('data.days.0.values.'.$key.'.raw_value', '12500')
+            ->assertJsonPath('data.days.0.values.'.$key.'.source_unit', 'g')
+            ->assertJsonPath('data.days.0.values.'.$key.'.unit', 'kg')
+            ->assertJsonPath('data.days.0.values.'.$key.'.conversion_factor', 0.001);
+    }
+
+    public function test_it_uses_the_number_of_days_configured_for_the_survey(): void
+    {
+        [$surveyed] = $this->createCalculatorParticipation();
+        $surveyed->survey->update(['expected_days' => 3]);
+        $this->authenticate();
+
+        $this->getJson('/api/surveyed/'.$surveyed->id.'/calculator')
+            ->assertOk()
+            ->assertJsonPath('data.contract.expected_days', 3)
+            ->assertJsonCount(3, 'data.days')
+            ->assertJsonPath('data.missing_days', [2]);
+    }
+
     public function test_calculator_contract_requires_authentication(): void
     {
         [$surveyed] = $this->createCalculatorParticipation();
@@ -154,6 +189,8 @@ class SurveyedCalculatorApiTest extends TestCase
             'order' => 2,
             'is_required' => true,
             'calculator_key' => 'household.children_0_14',
+            'calculator_value_type' => 'number',
+            'calculator_unit' => 'person',
         ]);
         $women = SurveyQuestion::create([
             'survey_id' => $survey->id,
@@ -163,6 +200,8 @@ class SurveyedCalculatorApiTest extends TestCase
             'order' => 2.1,
             'is_required' => true,
             'calculator_key' => 'household.women_over_14',
+            'calculator_value_type' => 'number',
+            'calculator_unit' => 'person',
         ]);
         $men = SurveyQuestion::create([
             'survey_id' => $survey->id,
@@ -172,6 +211,8 @@ class SurveyedCalculatorApiTest extends TestCase
             'order' => 2.2,
             'is_required' => true,
             'calculator_key' => 'household.men_15_59',
+            'calculator_value_type' => 'number',
+            'calculator_unit' => 'person',
         ]);
         $olderMen = SurveyQuestion::create([
             'survey_id' => $survey->id,
@@ -181,9 +222,14 @@ class SurveyedCalculatorApiTest extends TestCase
             'order' => 2.3,
             'is_required' => true,
             'calculator_key' => 'household.men_over_59',
+            'calculator_value_type' => 'number',
+            'calculator_unit' => 'person',
         ]);
         $dayQuestion = SurveyQuestion::create([
             'survey_id' => $survey->id,
+            'calculator_key' => 'measurement.day',
+            'calculator_value_type' => 'options',
+            'calculator_unit' => 'day',
             'question_text' => 'Día de medición',
             'question_type' => 'OPCIONES',
             'type_field' => 'LISTADO',
@@ -202,6 +248,8 @@ class SurveyedCalculatorApiTest extends TestCase
             'order' => 4,
             'is_required' => true,
             'calculator_key' => 'baseline.initial_wood_kg',
+            'calculator_value_type' => 'number',
+            'calculator_unit' => 'kg',
         ]);
         $additionalWeight = SurveyQuestion::create([
             'survey_id' => $survey->id,
@@ -211,6 +259,8 @@ class SurveyedCalculatorApiTest extends TestCase
             'order' => 5,
             'is_required' => true,
             'calculator_key' => 'baseline.additional_wood_kg',
+            'calculator_value_type' => 'number',
+            'calculator_unit' => 'kg',
         ]);
         $remainingWeight = SurveyQuestion::create([
             'survey_id' => $survey->id,
@@ -220,6 +270,8 @@ class SurveyedCalculatorApiTest extends TestCase
             'order' => 6,
             'is_required' => true,
             'calculator_key' => 'baseline.remaining_wood_kg',
+            'calculator_value_type' => 'number',
+            'calculator_unit' => 'kg',
         ]);
         $charcoalWeight = SurveyQuestion::create([
             'survey_id' => $survey->id,
@@ -229,6 +281,8 @@ class SurveyedCalculatorApiTest extends TestCase
             'order' => 7,
             'is_required' => true,
             'calculator_key' => 'baseline.charcoal_kg',
+            'calculator_value_type' => 'number',
+            'calculator_unit' => 'kg',
         ]);
 
         $dayOneMeasurement = SurveyedMeasurement::create([

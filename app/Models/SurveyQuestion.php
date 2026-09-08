@@ -13,6 +13,8 @@ class SurveyQuestion extends Model
         'id',
         'question_text',
         'calculator_key',
+        'calculator_value_type',
+        'calculator_unit',
         'question_type',
         'type_field',
         'order',
@@ -34,6 +36,7 @@ class SurveyQuestion extends Model
     const filters = [
         'survey_name' => 'like',
         'question_text' => 'like',
+        'calculator_key' => '=',
         'question_type' => 'like',
         'survey_id' => '=',
         'type_field' => '=',

@@ -4,8 +4,6 @@ namespace App\Services;
 
 class GeobosquesMapService
 {
-    public const VIEWER_BASE_URL = 'https://geobosques.minam.gob.pe/geobosque/visor/index.php';
-
     /**
      * Build the GeoBosques viewer contract for a coordinate pair.
      */
@@ -25,19 +23,20 @@ class GeobosquesMapService
 
         $normalizedLatitude = $this->normalize((float) $latitude);
         $normalizedLongitude = $this->normalize((float) $longitude);
+        $markerParameter = (string) config('geobosques.viewer.marker_parameter');
 
         return [
             'available' => true,
-            'provider' => 'GEOBOSQUES_MINAM',
+            'provider' => config('geobosques.viewer.provider'),
             'latitude' => (float) $normalizedLatitude,
             'longitude' => (float) $normalizedLongitude,
-            'viewer_url' => self::VIEWER_BASE_URL.'?xy='.$normalizedLatitude.','.$normalizedLongitude,
+            'viewer_url' => rtrim((string) config('geobosques.viewer.base_url'), '?').'?'.$markerParameter.'='.$normalizedLatitude.','.$normalizedLongitude,
             'embed_url' => route('geobosques.map', [
                 'latitude' => $normalizedLatitude,
                 'longitude' => $normalizedLongitude,
             ]),
             'marker_supported' => true,
-            'marker_parameter' => 'xy',
+            'marker_parameter' => $markerParameter,
             'requires_connection' => true,
             'load_strategy' => 'WHEN_ONLINE',
             'message' => null,
@@ -48,13 +47,13 @@ class GeobosquesMapService
     {
         return [
             'available' => false,
-            'provider' => 'GEOBOSQUES_MINAM',
+            'provider' => config('geobosques.viewer.provider'),
             'latitude' => null,
             'longitude' => null,
             'viewer_url' => null,
             'embed_url' => null,
             'marker_supported' => true,
-            'marker_parameter' => 'xy',
+            'marker_parameter' => config('geobosques.viewer.marker_parameter'),
             'requires_connection' => true,
             'load_strategy' => 'WHEN_ONLINE',
             'message' => $message,

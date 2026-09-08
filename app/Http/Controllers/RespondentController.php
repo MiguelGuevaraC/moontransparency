@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RespondentRequest\IndexRespondentRequest;
@@ -8,7 +9,6 @@ use App\Http\Resources\RespondentResource;
 use App\Http\Resources\RespondentSearchResource;
 use App\Models\Respondent;
 use App\Services\RespondentService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class RespondentController extends Controller
@@ -20,18 +20,16 @@ class RespondentController extends Controller
         $this->respondentService = $respondentService;
     }
 
-
      public function index(IndexRespondentRequest $request)
-    {
-
-        return $this->getFilteredResults(
-            Respondent::class,
-            $request,
-            Respondent::filters,
-            Respondent::sorts,
-            RespondentResource::class
-        );
-    }
+     {
+         return $this->getFilteredResults(
+             Respondent::class,
+             $request,
+             Respondent::filters,
+             Respondent::sorts,
+             RespondentResource::class
+         );
+     }
 
     /**
      * @OA\Get(
@@ -39,16 +37,17 @@ class RespondentController extends Controller
      *     summary="Obtener información de Respondents con filtros y ordenamiento",
      *     tags={"Respondent"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
      *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
      *     @OA\Parameter(name="proyect_id", in="query", description="ID del proyecto", required=false, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="survey_name", in="query", description="Nombre de la encuesta", required=false, @OA\Schema(type="string")),
      *     @OA\Parameter(name="description", in="query", description="Descripción de la encuesta", required=false, @OA\Schema(type="string")),
+     *
      *     @OA\Response(response=200, description="Lista de Respondents", @OA\JsonContent(ref="#/components/schemas/Respondent")),
      *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(@OA\Property(property="error", type="string")))
      * )
      */
-
     public function index_search(IndexRespondentRequest $request)
     {
         if ($request->header('UUID') !== env('APP_UUID')) {
@@ -67,12 +66,12 @@ class RespondentController extends Controller
             false // opcional: si getFilteredResults tiene flag de paginación o transformación
         );
 
-        if (!empty($results) && count($results) > 0) {
+        if (! empty($results) && count($results) > 0) {
             // Si se encuentra en DB, devolver resultados
             return response()->json([
                 'success' => true,
                 'message' => 'Información encontrada en la base de datos',
-                'data' => $results
+                'data' => $results,
             ], 200);
         }
 
@@ -84,7 +83,7 @@ class RespondentController extends Controller
             $externalData = $this->callExternalApi($url, [
                 'dni' => $dni,
                 'fe' => 'N',
-                'token' => $token
+                'token' => $token,
             ]);
 
             return response()->json([
@@ -92,28 +91,31 @@ class RespondentController extends Controller
                 'message' => 'Información encontrada en RENIEC',
                 'data' => [
                     [
-                        "id"=>null,
-                    "number_document"=>$externalData['dni'],
-                    "names"=>$externalData['nombres'] .' '.$externalData['apepat'] .' '.$externalData['apemat'],
-                    "date_of_birth"=>$externalData['fecnac'],
-                    ]
-                ]
+                        'id' => null,
+                        'number_document' => $externalData['dni'],
+                        'names' => $externalData['nombres'].' '.$externalData['apepat'].' '.$externalData['apemat'],
+                        'date_of_birth' => $externalData['fecnac'],
+                    ],
+                ],
             ], 200);
-
         } catch (\Exception $e) {
+            report($e);
+
             return response()->json([
                 'success' => false,
                 'message' => 'No se encontró información en la base de datos ni en RENIEC',
-                'error' => $e->getMessage()
             ], 404);
         }
     }
 
-    
     /** Llamada a API externa */
-    private function callExternalApi(string $url, array $params)
+    private function callExternalApi(?string $url, array $params)
     {
-        $response = Http::get($url, $params);
+        if (! $url || empty($params['token'])) {
+            throw new \RuntimeException('Servicio externo no configurado.');
+        }
+
+        $response = Http::acceptJson()->timeout(10)->get($url, $params);
         if ($response->successful()) {
             return $response->json();
         }
@@ -121,26 +123,24 @@ class RespondentController extends Controller
         throw new \Exception('Error al comunicarse con el servicio externo');
     }
 
-
-
     /**
      * @OA\Get(
      *     path="/moontransparency/public/api/respondent/{id}",
      *     summary="Obtener detalles de un Respondent por ID",
      *     tags={"Respondent"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="id", in="path", description="ID del Respondent", required=true, @OA\Schema(type="integer", example=1)),
+     *
      *     @OA\Response(response=200, description="Encuestado encontrado", @OA\JsonContent(ref="#/components/schemas/Respondent")),
      *     @OA\Response(response=404, description="Encuestado No Encontrado", @OA\JsonContent(type="object", @OA\Property(property="error", type="string", example="Encuestado No Encontrado")))
      * )
      */
-
     public function show($id)
     {
-
         $survey = $this->respondentService->getRespondentById($id);
 
-        if (!$survey) {
+        if (! $survey) {
             return response()->json([
                 'error' => 'Encuestado No Encontrado',
             ], 404);
@@ -155,13 +155,17 @@ class RespondentController extends Controller
      *     summary="Crear Respondent",
      *     tags={"Respondent"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
+     *
      *             @OA\Schema(ref="#/components/schemas/RespondentRequest")
      *         )
      *     ),
+     *
      *     @OA\Response(response=200, description="Encuestado creada exitosamente", @OA\JsonContent(ref="#/components/schemas/Respondent")),
      *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
      * )
@@ -169,6 +173,7 @@ class RespondentController extends Controller
     public function store(StoreRespondentRequest $request)
     {
         $survey = $this->respondentService->createRespondent($request->validated());
+
         return new RespondentResource($survey);
     }
 
@@ -178,34 +183,38 @@ class RespondentController extends Controller
      *     summary="Actualizar un Respondent",
      *     tags={"Respondent"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
+     *
      *             @OA\Schema(ref="#/components/schemas/RespondentRequest")
      *         )
      *     ),
+     *
      *     @OA\Response(response=200, description="Encuestado actualizado exitosamente", @OA\JsonContent(ref="#/components/schemas/Respondent")),
      *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
      *     @OA\Response(response=404, description="Encuestado No Encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Encuestado No Encontrado"))),
      *     @OA\Response(response=500, description="Error interno", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error interno del servidor")))
      * )
      */
-
     public function update(UpdateRespondentRequest $request, $id)
     {
-
         $validatedData = $request->validated();
 
         $survey = $this->respondentService->getRespondentById($id);
-        if (!$survey) {
+        if (! $survey) {
             return response()->json([
                 'error' => 'Encuestado No Encontrado',
             ], 404);
         }
 
         $updatedCompany = $this->respondentService->updateRespondent($survey, $validatedData);
+
         return new RespondentResource($updatedCompany);
     }
 
@@ -215,19 +224,19 @@ class RespondentController extends Controller
      *     summary="Eliminar un Respondent por ID",
      *     tags={"Respondent"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
+     *
      *     @OA\Response(response=200, description="Encuestado eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Encuestado eliminado exitosamente"))),
      *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Encuestado No Encontrado"))),
 
      * )
      */
-
     public function destroy($id)
     {
-
         $survey = $this->respondentService->getRespondentById($id);
 
-        if (!$survey) {
+        if (! $survey) {
             return response()->json([
                 'error' => 'Encuestado No Encontrado.',
             ], 404);

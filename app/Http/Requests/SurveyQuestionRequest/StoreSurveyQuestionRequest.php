@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Requests\SurveyQuestionRequest;
 
 use App\Http\Requests\StoreRequest;
@@ -29,12 +30,21 @@ class StoreSurveyQuestionRequest extends StoreRequest
             'question_type' => 'required|string|max:255|in:LIBRE,OPCIONES,UBICACION,FILE',
             'type_field' => 'required|string|max:255',
             'question_text' => 'required|string|max:1000',
+            'calculator_key' => [
+                'nullable',
+                'string',
+                'max:100',
+                'regex:/^[a-z0-9_.]+$/',
+                Rule::unique('survey_questions', 'calculator_key')->where(function ($query) {
+                    return $query->where('survey_id', $this->input('survey_id'))->whereNull('deleted_at');
+                }),
+            ],
+            'calculator_value_type' => ['nullable', Rule::in(['string', 'number', 'options', 'file', 'location', 'date', 'time'])],
+            'calculator_unit' => ['nullable', Rule::in(['kg', 'g', 'person', 'day', 'km'])],
 
             // NUEVOS: orden dentro de la encuesta y bandera si es requerido (true/false)
             'order' => 'nullable|integer|min:0',
             'is_required' => 'nullable|boolean',
-
-
 
             'eje' => 'nullable|string|max:255',
             'justification' => 'required|string',
@@ -74,11 +84,9 @@ class StoreSurveyQuestionRequest extends StoreRequest
             'justification.required' => 'La justificación es obligatoria.',
             'justification.string' => 'La justificación debe ser una cadena de texto.',
 
-
             'eje.required' => 'El campo Eje es obligatorio.',
             'eje.string' => 'El campo Eje debe ser una cadena de texto.',
             'eje.max' => 'El campo Eje no debe exceder los 255 caracteres.',
-
 
         ];
     }

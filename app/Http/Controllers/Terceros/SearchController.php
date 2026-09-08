@@ -14,7 +14,6 @@ class SearchController extends Controller
     /**
      * @OA\Tag(name="Search")
      */
-
     public function search_dni(SearchDniRequest $request)
     {
         $dni = $request->search;
@@ -23,16 +22,18 @@ class SearchController extends Controller
 
         try {
             $data = $this->callExternalApi($url, ['dni' => $dni, 'fe' => 'N', 'token' => $token]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Información encontrada exitosamente',
-                'data' => new SearchDniResource($data)
+                'data' => new SearchDniResource($data),
             ], 200);
         } catch (\Exception $e) {
+            report($e);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error al buscar DNI',
-                'error' => $e->getMessage()
+                'message' => 'El servicio de consulta de DNI no está disponible.',
             ], 500);
         }
     }
@@ -45,24 +46,30 @@ class SearchController extends Controller
 
         try {
             $data = $this->callExternalApi($url, ['ruc' => $ruc, 'fe' => 'N', 'token' => $token]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Información encontrada exitosamente',
-                'data' => new SearchRucResource($data)
+                'data' => new SearchRucResource($data),
             ], 200);
         } catch (\Exception $e) {
+            report($e);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error al buscar RUC',
-                'error' => $e->getMessage()
+                'message' => 'El servicio de consulta de RUC no está disponible.',
             ], 500);
         }
     }
 
     /** Llamada a API externa */
-    private function callExternalApi(string $url, array $params)
+    private function callExternalApi(?string $url, array $params)
     {
-        $response = Http::get($url, $params);
+        if (! $url || empty($params['token'])) {
+            throw new \RuntimeException('Servicio externo no configurado.');
+        }
+
+        $response = Http::acceptJson()->timeout(10)->get($url, $params);
         if ($response->successful()) {
             return $response->json();
         }

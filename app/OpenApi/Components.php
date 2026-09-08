@@ -50,7 +50,7 @@ namespace App\OpenApi;
  *     @OA\Property(property="survey_id", type="integer", minimum=1, example=9),
  *     @OA\Property(property="latitude", type="number", format="double", nullable=true, minimum=-90, maximum=90, example=-6.39454),
  *     @OA\Property(property="longitude", type="number", format="double", nullable=true, minimum=-180, maximum=180, example=-79.822403),
- *     @OA\Property(property="day_number", type="integer", nullable=true, minimum=1, maximum=7, example=1),
+ *     @OA\Property(property="day_number", type="integer", nullable=true, minimum=1, maximum=31, example=1, description="El límite efectivo proviene de expected_days de la encuesta."),
  *     @OA\Property(property="responses", type="array", @OA\Items(ref="#/components/schemas/SurveyAnswerInput"))
  * )
  *
@@ -79,7 +79,7 @@ namespace App\OpenApi;
  *
  *     @OA\Property(property="id", type="integer"),
  *     @OA\Property(property="surveyed_id", type="integer"),
- *     @OA\Property(property="day_number", type="integer", minimum=1, maximum=7),
+ *     @OA\Property(property="day_number", type="integer", minimum=1, maximum=31),
  *     @OA\Property(property="responses", type="array", @OA\Items(ref="#/components/schemas/SurveyedResponse")),
  *     @OA\Property(property="created_at", type="string", format="date-time", nullable=true),
  *     @OA\Property(property="updated_at", type="string", format="date-time", nullable=true)
@@ -123,7 +123,7 @@ namespace App\OpenApi;
  *     required={"client_measurement_id", "day_number"},
  *
  *     @OA\Property(property="client_measurement_id", type="string", format="uuid"),
- *     @OA\Property(property="day_number", type="integer", minimum=1, maximum=7),
+ *     @OA\Property(property="day_number", type="integer", minimum=1, maximum=31),
  *     @OA\Property(property="responses", type="array", @OA\Items(ref="#/components/schemas/OfflineSyncAnswerInput"))
  * )
  *
@@ -146,7 +146,7 @@ namespace App\OpenApi;
  *     @OA\Property(property="latitude", type="number", format="double", nullable=true, minimum=-90, maximum=90),
  *     @OA\Property(property="longitude", type="number", format="double", nullable=true, minimum=-180, maximum=180),
  *     @OA\Property(property="responses", type="array", @OA\Items(ref="#/components/schemas/OfflineSyncAnswerInput")),
- *     @OA\Property(property="measurements", type="array", maxItems=7, @OA\Items(ref="#/components/schemas/OfflineSyncMeasurementInput"))
+ *     @OA\Property(property="measurements", type="array", maxItems=31, @OA\Items(ref="#/components/schemas/OfflineSyncMeasurementInput"))
  * )
  *
  * @OA\Schema(
@@ -166,7 +166,7 @@ namespace App\OpenApi;
  *     required={"client_measurement_id", "day_number", "surveyed_measurement_id"},
  *
  *     @OA\Property(property="client_measurement_id", type="string", format="uuid"),
- *     @OA\Property(property="day_number", type="integer", minimum=1, maximum=7),
+ *     @OA\Property(property="day_number", type="integer", minimum=1, maximum=31),
  *     @OA\Property(property="surveyed_measurement_id", type="integer")
  * )
  *

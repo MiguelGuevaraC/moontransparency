@@ -9,8 +9,12 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     schema="SurveyQuestionRequest",
  *     type="object",
  *     required={"survey_id", "question_text", "question_type"},
+ *
  *     @OA\Property(property="survey_id", type="integer", example=101),
  *     @OA\Property(property="question_text", type="string", example="¿Qué fuentes de energía utiliza en su hogar?"),
+ *     @OA\Property(property="calculator_key", type="string", nullable=true, example="baseline.initial_wood_kg"),
+ *     @OA\Property(property="calculator_value_type", type="string", nullable=true, enum={"string", "number", "options", "file", "location", "date", "time"}),
+ *     @OA\Property(property="calculator_unit", type="string", nullable=true, enum={"kg", "g", "person", "day", "km"}),
  *     @OA\Property(property="question_type", type="string", example="multiple_choice")
  * )
  *
@@ -18,6 +22,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     schema="SurveyQuestion",
  *     title="SurveyQuestion",
  *     description="Modelo de SurveyQuestion",
+ *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="survey_id", type="integer", example=101),
  *     @OA\Property(property="question_text", type="string", example="¿Qué fuentes de energía utiliza en su hogar?"),
@@ -30,21 +35,24 @@ class SurveyQuestionResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'            => $this->id ?? null,
-            'survey_id'     => $this->survey_id ?? null,
+            'id' => $this->id ?? null,
+            'survey_id' => $this->survey_id ?? null,
             'question_text' => $this->question_text ?? null,
+            'calculator_key' => $this->calculator_key,
+            'calculator_value_type' => $this->calculator_value_type,
+            'calculator_unit' => $this->calculator_unit,
             'question_type' => $this->question_type ?? null,
-            'type_field'    => $this->type_field ?? null,
+            'type_field' => $this->type_field ?? null,
 
-            'eje'    => $this->eje ?? null,
-            'justification'    => $this->justification ?? null,
+            'eje' => $this->eje ?? null,
+            'justification' => $this->justification ?? null,
 
             'survey_name' => $this?->survey?->survey_name ?? null,
-            'order'         => $this->order ?? null,
-            'ods'         => $this->ods ?? null,
-            'is_required'   => $this->is_required ?? null,
+            'order' => $this->order ?? null,
+            'ods' => $this->ods ?? null,
+            'is_required' => $this->is_required ?? null,
             'survey_questions_options' => $this->survey_questions_options ?? [],
-            'created_at'    => $this->created_at ?? null,
+            'created_at' => $this->created_at ?? null,
         ];
     }
 }
