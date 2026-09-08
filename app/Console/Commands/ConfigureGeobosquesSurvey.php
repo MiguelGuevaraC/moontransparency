@@ -33,9 +33,9 @@ class ConfigureGeobosquesSurvey extends Command
         }
 
         $this->info("Encuesta GeoBosques configurada con ID {$survey->id}.");
-        $this->line('Estado: INACTIVA (pendiente de validación funcional antes de publicar).');
+        $this->line('Estado: INACTIVA (lista para publicarse desde el módulo dinámico).');
         $this->line('Preguntas dinámicas: '.$survey->survey_questions->count().'.');
-        $this->warn('El Excel no define obligatoriedad; se configuraron todos los campos como obligatorios para revisión.');
+        $this->line('Los nueve campos visibles están configurados como obligatorios.');
 
         return self::SUCCESS;
     }

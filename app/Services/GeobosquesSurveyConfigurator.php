@@ -17,8 +17,8 @@ class GeobosquesSurveyConfigurator
     /**
      * Configura el instrumento recibido en el módulo dinámico de encuestas.
      *
-     * La encuesta permanece inactiva hasta que el responsable funcional
-     * confirme la obligatoriedad y autorice su publicación.
+     * La encuesta permanece inactiva hasta que un usuario autorizado
+     * revise la configuración y la publique desde el módulo dinámico.
      */
     public function configure(Proyect $project): Survey
     {
@@ -29,7 +29,7 @@ class GeobosquesSurveyConfigurator
                 ->lockForUpdate()
                 ->first();
 
-            if ($survey && ($survey->status === 'ACTIVA' || Surveyed::withTrashed()->where('survey_id', $survey->id)->exists())) {
+            if ($survey && ($survey->status === Survey::STATUS_ACTIVE || Surveyed::withTrashed()->where('survey_id', $survey->id)->exists())) {
                 throw new DomainException(
                     'La encuesta GeoBosques ya fue publicada o tiene participaciones; no se puede resincronizar automáticamente.'
                 );
@@ -46,7 +46,7 @@ class GeobosquesSurveyConfigurator
                 'survey_name' => self::SURVEY_NAME,
                 'survey_type' => 'PRE',
                 'description' => 'Instrumento GeoBosques para registrar factores de presión y el estado de conservación del bosque.',
-                'status' => 'INACTIVA',
+                'status' => Survey::STATUS_INACTIVE,
                 'post_survey_id' => null,
             ])->save();
 

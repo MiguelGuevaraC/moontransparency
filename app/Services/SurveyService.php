@@ -2,7 +2,9 @@
 namespace App\Services;
 
 use App\Models\Survey;
+use App\Models\Surveyed;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class SurveyService
 {
@@ -27,7 +29,7 @@ class SurveyService
     {
         // Default status
         if (!isset($data['status'])) {
-            $data['status'] = 'ACTIVA';
+            $data['status'] = Survey::STATUS_ACTIVE;
         }
 
         // --- Eliminar campos que no deben almacenarse aquí ---
@@ -166,10 +168,24 @@ class SurveyService
         );
 
         return DB::transaction(function () use ($proyect, $data) {
+            $proyect = Survey::lockForUpdate()->findOrFail($proyect->id);
             $surveyId = $proyect->id;
             $projectId = $data['proyect_id'] ?? $proyect->proyect_id;
             $newType = isset($data['survey_type']) ? strtoupper($data['survey_type']) : strtoupper($proyect->survey_type);
             $newName = $data['survey_name'] ?? $proyect->survey_name;
+
+            $newStatus = strtoupper($data['status'] ?? $proyect->status);
+            $currentStatus = strtoupper((string) $proyect->status);
+
+            if (
+                $currentStatus !== Survey::STATUS_INACTIVE
+                && $newStatus === Survey::STATUS_INACTIVE
+                && Surveyed::withTrashed()->where('survey_id', $surveyId)->exists()
+            ) {
+                throw ValidationException::withMessages([
+                    'status' => 'No se puede inactivar una encuesta con participaciones o respuestas registradas. Primero debe ejecutarse y aprobarse una limpieza explícita de sus datos.',
+                ]);
+            }
 
             // Validar unicidad del nombre dentro del proyecto (ignorando la propia encuesta)
             if ($newName && $projectId) {

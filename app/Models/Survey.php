@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Survey extends Model
 {
     use SoftDeletes;
+
+    public const STATUS_ACTIVE = 'ACTIVA';
+
+    public const STATUS_INACTIVE = 'INACTIVA';
+
     protected $fillable = [
         'id',
         'proyect_id',
@@ -47,6 +52,11 @@ class Survey extends Model
     public function survey_questions()
     {
         return $this->hasMany(SurveyQuestion::class);
+    }
+
+    public function surveyeds()
+    {
+        return $this->hasMany(Surveyed::class);
     }
     public function proyect()
     {

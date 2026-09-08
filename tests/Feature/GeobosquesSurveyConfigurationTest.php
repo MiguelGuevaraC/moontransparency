@@ -19,6 +19,7 @@ class GeobosquesSurveyConfigurationTest extends TestCase
         $this->artisan('survey:configure-geobosques', ['project' => $project->id])
             ->expectsOutputToContain('Encuesta GeoBosques configurada')
             ->expectsOutputToContain('Estado: INACTIVA')
+            ->expectsOutputToContain('nueve campos visibles están configurados como obligatorios')
             ->assertSuccessful();
 
         $survey = $project->surveys()->where(
