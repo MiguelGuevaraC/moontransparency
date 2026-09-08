@@ -159,13 +159,24 @@ class CalculatorInputMapper
             $available = $dayNumber === 1
                 ? $initial
                 : ($previousRemaining !== null && $additional !== null ? $previousRemaining + $additional : null);
-            $ready = $available !== null && $remaining !== null && $charcoal !== null;
+            $hasRequiredWeights = $available !== null && $remaining !== null && $charcoal !== null;
+            $hasNonNegativeWeights = $hasRequiredWeights
+                && ($dayNumber === 1 ? $initial >= 0 : $additional >= 0)
+                && $available >= 0
+                && $remaining >= 0
+                && $charcoal >= 0;
+            $hasValidBalance = $hasNonNegativeWeights && ($remaining + $charcoal) <= $available;
+            $ready = $hasRequiredWeights && $hasNonNegativeWeights && $hasValidBalance;
 
-            if ($day['recorded'] && ! $ready) {
+            if ($day['recorded'] && ! $hasRequiredWeights) {
                 $warnings[] = 'El día '.$dayNumber.' no tiene todos los pesos necesarios para calcular consumo.';
+            } elseif ($day['recorded'] && ! $hasNonNegativeWeights) {
+                $warnings[] = 'El día '.$dayNumber.' contiene pesos negativos y se excluyó del cálculo.';
+            } elseif ($day['recorded'] && ! $hasValidBalance) {
+                $warnings[] = 'El día '.$dayNumber.' tiene un balance inválido: el peso sobrante más el carbón supera el peso disponible.';
             }
 
-            $previousRemaining = $remaining;
+            $previousRemaining = $remaining !== null && $remaining >= 0 ? $remaining : null;
 
             return [
                 'day_number' => $dayNumber,

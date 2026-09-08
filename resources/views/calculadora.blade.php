@@ -798,6 +798,10 @@ $(document).ready(function(){
     });
 
     series.days.forEach(function (day) {
+      if (!day.calculation_ready) {
+        return;
+      }
+
       const row = $(rowSelector).eq(day.day_number - 1);
       setNumericValue(row.find(initialSelector), day.available_weight_kg);
       setNumericValue(row.find(remainingSelector), day.remaining_weight_kg);
@@ -960,7 +964,15 @@ $(document).ready(function(){
       const pesoCarbon  = parseFloat($(this).find(".pesoCarbon").val());
       const personasDia = parseFloat($(this).find(".personasDia").val());
 
-      if(!isNaN(pesoInicial) && !isNaN(pesoFinal)){
+      const balanceValido = !isNaN(pesoInicial)
+        && !isNaN(pesoFinal)
+        && !isNaN(pesoCarbon)
+        && pesoInicial >= 0
+        && pesoFinal >= 0
+        && pesoCarbon >= 0
+        && (pesoFinal + pesoCarbon) <= pesoInicial;
+
+      if(balanceValido){
         const cd = pesoInicial - pesoFinal - pesoCarbon; // consumo del día
         suma += cd; count++;
         cdValues.push(cd);
@@ -1118,7 +1130,15 @@ $(document).ready(function(){
       const pesoFinal = parseFloat($(this).find(".pesoFinalAdj").val());
       const pesoCarbon = parseFloat($(this).find(".pesoCarbonAdj").val());
 
-      if(!isNaN(pesoInicial) && !isNaN(pesoFinal)) {
+      const balanceValido = !isNaN(pesoInicial)
+        && !isNaN(pesoFinal)
+        && !isNaN(pesoCarbon)
+        && pesoInicial >= 0
+        && pesoFinal >= 0
+        && pesoCarbon >= 0
+        && (pesoFinal + pesoCarbon) <= pesoInicial;
+
+      if(balanceValido) {
         const cd = pesoInicial - pesoFinal - pesoCarbon;
         suma += cd;
         count++;

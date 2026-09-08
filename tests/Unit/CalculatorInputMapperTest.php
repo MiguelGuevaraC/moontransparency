@@ -65,6 +65,40 @@ class CalculatorInputMapperTest extends TestCase
         $this->assertSame(9.0, $result['project']['days'][0]['available_weight_kg']);
     }
 
+    public function test_it_excludes_negative_or_physically_inconsistent_weights(): void
+    {
+        $fields = collect(array_merge(
+            $this->memberFields(),
+            $this->seriesFields('baseline', 'baseline')
+        ));
+        $days = collect([
+            $this->day(1, [
+                'children' => 1, 'women' => 1, 'men' => 1, 'older_men' => 0,
+                'baseline_initial' => 5,
+                'baseline_remaining' => 5,
+                'baseline_charcoal' => 1,
+            ]),
+            $this->day(2, [
+                'baseline_additional' => -1,
+                'baseline_remaining' => 3,
+                'baseline_charcoal' => 0.2,
+            ]),
+        ]);
+
+        $result = (new CalculatorInputMapper())->map($fields, $days);
+
+        $this->assertFalse($result['baseline']['days'][0]['calculation_ready']);
+        $this->assertFalse($result['baseline']['days'][1]['calculation_ready']);
+        $this->assertContains(
+            'El día 1 tiene un balance inválido: el peso sobrante más el carbón supera el peso disponible.',
+            $result['warnings']
+        );
+        $this->assertContains(
+            'El día 2 contiene pesos negativos y se excluyó del cálculo.',
+            $result['warnings']
+        );
+    }
+
     private function memberFields(): array
     {
         return [
