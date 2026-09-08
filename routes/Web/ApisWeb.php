@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AllyController;
 use App\Http\Controllers\ContactSenderController;
+use App\Http\Controllers\OfflineSyncController;
 use App\Http\Controllers\ProyectController;
 use App\Http\Controllers\RespondentController;
 use App\Http\Controllers\SurveyController;
@@ -18,5 +19,6 @@ Route::get('survey-show/{id}', [SurveyController::class, 'show_web']);
 Route::post('response-survey', [SurveyedController::class, 'store']);
 Route::post('response-survey/{id}/finalize', [SurveyedController::class, 'finalize']);
 Route::post('response-survey/{id}', [SurveyedController::class, 'update']);
+Route::post('offline-sync', [OfflineSyncController::class, 'store']);
 
 Route::get('respondent-search', [RespondentController::class, 'index_search']);

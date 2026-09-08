@@ -3305,6 +3305,90 @@
                 ]
             }
         },
+        "/moontransparency/public/api/offline-sync": {
+            "post": {
+                "tags": [
+                    "Surveyed"
+                ],
+                "summary": "Sincronizar un lote capturado sin conexión",
+                "description": "Contrato 1.0. batch_id hace idempotente el lote, client_participation_id y client_measurement_id evitan duplicados. Un reintento debe conservar exactamente el payload y los archivos. Cada elemento se procesa en su propia transacción; los conflictos no revierten los elementos correctos. Esta ruta sigue el mismo acceso público del formulario de campo.",
+                "operationId": "synchronizeOfflineSurveyBatch",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OfflineSyncRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "payload"
+                                ],
+                                "properties": {
+                                    "payload": {
+                                        "description": "JSON serializado conforme a OfflineSyncRequest.",
+                                        "type": "string"
+                                    },
+                                    "attachments": {
+                                        "description": "Archivos indexados por attachment_key.",
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Todos los elementos fueron sincronizados o el lote fue reproducido",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OfflineSyncResponse"
+                                }
+                            }
+                        }
+                    },
+                    "207": {
+                        "description": "Resultado por elemento: éxito parcial o todos fallidos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OfflineSyncResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "batch_id reutilizado con contenido distinto o lote todavía en proceso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "El sobre del lote o sus archivos no cumplen el contrato",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/moontransparency/public/api/permission": {
             "get": {
                 "tags": [
@@ -4871,6 +4955,112 @@
                     },
                     "404": {
                         "description": "Rol o permiso no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/survey/{id}/clean-participations": {
+            "post": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Respaldar y limpiar las participaciones de una encuesta",
+                "description": "Operación destructiva separada de Inactivar. Genera un respaldo JSON comprimido y una auditoría antes de eliminar participaciones, mediciones, respuestas y referencias de sincronización. Los archivos adjuntos se conservan. Por defecto solo el Administrador posee surveys.clean_participations.",
+                "operationId": "cleanSurveyParticipations",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SurveyCleanupInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Respaldo y limpieza completados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/SurveyCleanupResult"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No es administrador o no tiene surveys.clean_participations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Encuesta no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "La encuesta no tiene participaciones para limpiar",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Motivo o confirmación inválidos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -9526,6 +9716,411 @@
                 },
                 "type": "object"
             },
+            "OfflineSyncAnswerInput": {
+                "required": [
+                    "survey_question_id"
+                ],
+                "properties": {
+                    "survey_question_id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 15
+                    },
+                    "survey_question_option_id": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "uniqueItems": true,
+                        "nullable": true
+                    },
+                    "response_text": {
+                        "type": "string",
+                        "maxLength": 1000,
+                        "example": "12.5",
+                        "nullable": true
+                    },
+                    "attachment_key": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]+$",
+                        "example": "evidence_1",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "OfflineSyncMeasurementInput": {
+                "required": [
+                    "client_measurement_id",
+                    "day_number"
+                ],
+                "properties": {
+                    "client_measurement_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "day_number": {
+                        "type": "integer",
+                        "maximum": 7,
+                        "minimum": 1
+                    },
+                    "responses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OfflineSyncAnswerInput"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "OfflineSyncItemInput": {
+                "required": [
+                    "client_participation_id",
+                    "client_updated_at",
+                    "action",
+                    "number_document",
+                    "names",
+                    "survey_id"
+                ],
+                "properties": {
+                    "client_participation_id": {
+                        "description": "Identificador estable generado una sola vez en el dispositivo.",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "client_updated_at": {
+                        "description": "Versión del elemento usada para resolver conflictos; gana la más reciente.",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "action": {
+                        "type": "string",
+                        "enum": [
+                            "SAVE_DRAFT",
+                            "FINALIZE"
+                        ]
+                    },
+                    "number_document": {
+                        "type": "string",
+                        "maxLength": 20
+                    },
+                    "names": {
+                        "type": "string",
+                        "maxLength": 1000
+                    },
+                    "date_of_birth": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "nullable": true
+                    },
+                    "genero": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "household_code": {
+                        "type": "string",
+                        "pattern": "^HOG-[0-9]{8,}$",
+                        "nullable": true
+                    },
+                    "survey_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 90,
+                        "minimum": -90,
+                        "nullable": true
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "format": "double",
+                        "maximum": 180,
+                        "minimum": -180,
+                        "nullable": true
+                    },
+                    "responses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OfflineSyncAnswerInput"
+                        }
+                    },
+                    "measurements": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OfflineSyncMeasurementInput"
+                        },
+                        "maxItems": 7
+                    }
+                },
+                "type": "object"
+            },
+            "OfflineSyncRequest": {
+                "required": [
+                    "contract_version",
+                    "batch_id",
+                    "device_id",
+                    "items"
+                ],
+                "properties": {
+                    "contract_version": {
+                        "type": "string",
+                        "enum": [
+                            "1.0"
+                        ]
+                    },
+                    "batch_id": {
+                        "description": "Debe conservarse sin cambios durante todos los reintentos del lote.",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "device_id": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "example": "field-tablet-01"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OfflineSyncItemInput"
+                        },
+                        "maxItems": 100,
+                        "minItems": 1
+                    }
+                },
+                "type": "object"
+            },
+            "OfflineSyncMeasurementResult": {
+                "required": [
+                    "client_measurement_id",
+                    "day_number",
+                    "surveyed_measurement_id"
+                ],
+                "properties": {
+                    "client_measurement_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "day_number": {
+                        "type": "integer",
+                        "maximum": 7,
+                        "minimum": 1
+                    },
+                    "surveyed_measurement_id": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "OfflineSyncItemResult": {
+                "required": [
+                    "client_participation_id",
+                    "status",
+                    "http_status"
+                ],
+                "properties": {
+                    "client_participation_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "SYNCED",
+                            "ERROR"
+                        ]
+                    },
+                    "http_status": {
+                        "type": "integer",
+                        "enum": [
+                            200,
+                            409,
+                            422,
+                            500
+                        ]
+                    },
+                    "replayed": {
+                        "type": "boolean",
+                        "nullable": true
+                    },
+                    "surveyed_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "surveyed_status": {
+                        "type": "string",
+                        "enum": [
+                            "BORRADOR",
+                            "FINALIZADA"
+                        ],
+                        "nullable": true
+                    },
+                    "can_edit": {
+                        "type": "boolean",
+                        "nullable": true
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "server_updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "measurements": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OfflineSyncMeasurementResult"
+                        }
+                    },
+                    "code": {
+                        "type": "string",
+                        "enum": [
+                            "VALIDATION_ERROR",
+                            "RELATED_RESOURCE_NOT_FOUND",
+                            "CONFLICT",
+                            "DATABASE_CONFLICT",
+                            "SYNC_ERROR"
+                        ],
+                        "nullable": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "OfflineSyncResponse": {
+                "required": [
+                    "contract_version",
+                    "batch_id",
+                    "device_id",
+                    "status",
+                    "replayed",
+                    "success_count",
+                    "error_count",
+                    "items"
+                ],
+                "properties": {
+                    "contract_version": {
+                        "type": "string",
+                        "enum": [
+                            "1.0"
+                        ]
+                    },
+                    "batch_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "device_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "FULL_SUCCESS",
+                            "PARTIAL_SUCCESS",
+                            "FAILED"
+                        ]
+                    },
+                    "replayed": {
+                        "type": "boolean"
+                    },
+                    "success_count": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "error_count": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OfflineSyncItemResult"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "SurveyCleanupInput": {
+                "required": [
+                    "reason",
+                    "confirmation"
+                ],
+                "properties": {
+                    "reason": {
+                        "type": "string",
+                        "maxLength": 1000,
+                        "minLength": 10,
+                        "example": "Se volverá a cargar el instrumento oficial corregido."
+                    },
+                    "confirmation": {
+                        "description": "Debe coincidir exactamente con LIMPIAR ENCUESTA {id}.",
+                        "type": "string",
+                        "example": "LIMPIAR ENCUESTA 9"
+                    }
+                },
+                "type": "object"
+            },
+            "SurveyCleanupResult": {
+                "required": [
+                    "audit_id",
+                    "survey_id",
+                    "deleted_counts",
+                    "backup_reference",
+                    "backup_sha256",
+                    "performed_by",
+                    "performed_at"
+                ],
+                "properties": {
+                    "audit_id": {
+                        "type": "integer"
+                    },
+                    "survey_id": {
+                        "type": "integer"
+                    },
+                    "deleted_counts": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer"
+                        }
+                    },
+                    "backup_reference": {
+                        "type": "string"
+                    },
+                    "backup_sha256": {
+                        "type": "string",
+                        "maxLength": 64,
+                        "minLength": 64
+                    },
+                    "performed_by": {
+                        "type": "integer"
+                    },
+                    "performed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "UserInput": {
                 "required": [
                     "number_document",
@@ -9730,6 +10325,10 @@
             "description": "Ods"
         },
         {
+            "name": "Surveyed",
+            "description": "Surveyed"
+        },
+        {
             "name": "Roles y permisos",
             "description": "Roles y permisos"
         },
@@ -9744,10 +10343,6 @@
         {
             "name": "Survey",
             "description": "Survey"
-        },
-        {
-            "name": "Surveyed",
-            "description": "Surveyed"
         },
         {
             "name": "Ubigeo",
