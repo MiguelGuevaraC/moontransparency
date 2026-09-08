@@ -15,6 +15,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="proyect_id", type="integer", example="101"),
  *     @OA\Property(property="survey_name", type="string", example="Encuesta de Energía Renovable"),
  *     @OA\Property(property="description", type="string", example="Encuesta para evaluar el uso de energía renovable en zonas rurales."),
+ *     @OA\Property(property="household_code", type="string", nullable=true, pattern="^HOG-[0-9]{8,}$", example="HOG-00000001"),
  *     @OA\Property(property="latitude", type="number", format="double", nullable=true, minimum=-90, maximum=90, example=-6.39454),
  *     @OA\Property(property="longitude", type="number", format="double", nullable=true, minimum=-180, maximum=180, example=-79.822403),
  * )
@@ -57,6 +58,11 @@ class SurveyedResource extends JsonResource
             'id' => $this->id ?? null,
             'respondent_id' => $this->respondent_id ?? null,
             'respondent_names' => $this->respondent?->names ?? null,
+            'household_id' => $this->household_id,
+            'household' => $this->whenLoaded(
+                'household',
+                fn () => $this->household ? new HouseholdResource($this->household) : null
+            ),
             'proyect_name' => $this?->survey?->proyect?->name ?? null,
             'survey_id' => $this->survey_id ?? null,
             'status' => $status,

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\SurveyedRequest;
 
 use App\Http\Requests\StoreRequest;
+use App\Models\Household;
 
 class UpdateSurveyedRequest extends StoreRequest
 {
@@ -30,6 +31,7 @@ class UpdateSurveyedRequest extends StoreRequest
             'phone' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'genero' => 'nullable|string|max:255',
+            'household_code' => ['nullable', 'string', 'max:64', 'regex:'.Household::codePattern(), 'exists:households,code'],
 
             'survey_id' => 'required|integer|exists:surveys,id',
             'latitude' => 'nullable|required_with:longitude|numeric|between:-90,90',
@@ -66,6 +68,11 @@ class UpdateSurveyedRequest extends StoreRequest
 
             'genero.string' => 'El género debe ser una cadena de texto.',
             'genero.max' => 'El género no debe exceder los 255 caracteres.',
+
+            'household_code.string' => 'El ID del hogar debe ser un texto.',
+            'household_code.max' => 'El ID del hogar no debe superar los 64 caracteres.',
+            'household_code.regex' => 'El ID del hogar debe tener el formato '.Household::formatCode(1).'.',
+            'household_code.exists' => 'El ID del hogar indicado no existe.',
 
             'survey_id.required' => 'El campo survey_id es obligatorio.',
             'survey_id.integer' => 'El campo survey_id debe ser un número entero.',

@@ -27,7 +27,7 @@ class SurveyedCalculatorApiTest extends TestCase
 
         $response = $this->getJson('/api/surveyed/'.$surveyed->id.'/calculator')
             ->assertOk()
-            ->assertJsonPath('data.contract.version', '1.0')
+            ->assertJsonPath('data.contract.version', '1.1')
             ->assertJsonPath('data.contract.expected_days', 7)
             ->assertJsonPath('data.contract.units.weight', 'kg')
             ->assertJsonPath('data.contract.units.people', 'person')
@@ -38,6 +38,7 @@ class SurveyedCalculatorApiTest extends TestCase
             ->assertJsonPath('data.participation.is_partial', true)
             ->assertJsonPath('data.respondent.number_document', 'DOC-CALC-001')
             ->assertJsonPath('data.household.identifier', 'HOGAR-77')
+            ->assertJsonPath('data.household.source', 'LEGACY_RESPONSE')
             ->assertJsonPath('data.survey.name', 'KPT línea base')
             ->assertJsonPath('data.project.name', 'Proyecto calculadora')
             ->assertJsonPath('data.recorded_days', [1, 3])

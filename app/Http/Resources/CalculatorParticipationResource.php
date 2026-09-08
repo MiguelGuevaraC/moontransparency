@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
  *     @OA\Property(
  *         property="contract",
  *         type="object",
- *         @OA\Property(property="version", type="string", example="1.0"),
+ *         @OA\Property(property="version", type="string", example="1.1"),
  *         @OA\Property(property="expected_days", type="integer", example=7),
  *         @OA\Property(property="missing_value", nullable=true, example=null),
  *         @OA\Property(
@@ -63,6 +63,7 @@ class CalculatorParticipationResource extends JsonResource
             })
             ->values();
         $fields = $questions->map(fn ($question) => $this->fieldDefinition($question));
+        $legacyHouseholdIdentifier = $this->legacyHouseholdIdentifier($fields);
         $measurements = $this->measurements->keyBy('day_number');
         $recordedDays = $measurements->keys()
             ->map(static fn ($day) => (int) $day)
@@ -92,7 +93,7 @@ class CalculatorParticipationResource extends JsonResource
 
         return [
             'contract' => [
-                'version' => '1.0',
+                'version' => '1.1',
                 'expected_days' => 7,
                 'missing_value' => null,
                 'units' => [
@@ -121,7 +122,12 @@ class CalculatorParticipationResource extends JsonResource
                 'names' => $this->respondent?->names,
             ],
             'household' => [
-                'identifier' => $this->householdIdentifier($fields),
+                'id' => $this->household?->id,
+                'code' => $this->household?->code,
+                'identifier' => $this->household?->code ?? $legacyHouseholdIdentifier,
+                'source' => $this->household
+                    ? 'HOUSEHOLD'
+                    : ($legacyHouseholdIdentifier ? 'LEGACY_RESPONSE' : null),
             ],
             'survey' => [
                 'id' => $this->survey?->id,
@@ -277,7 +283,7 @@ class CalculatorParticipationResource extends JsonResource
         ];
     }
 
-    private function householdIdentifier($fields): ?string
+    private function legacyHouseholdIdentifier($fields): ?string
     {
         $field = $fields->firstWhere('code', 'id_del_hogar');
 

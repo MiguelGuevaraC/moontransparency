@@ -36,6 +36,7 @@ class SurveyedController extends Controller
      *     @OA\Parameter(name="proyect_id", in="query", description="ID del proyecto", required=false, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="survey_name", in="query", description="Nombre de la encuesta", required=false, @OA\Schema(type="string")),
      *     @OA\Parameter(name="description", in="query", description="Descripción de la encuesta", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="household_code", in="query", description="Código global del hogar", required=false, @OA\Schema(type="string", example="HOG-00000001")),
      *
      *     @OA\Response(response=200, description="Lista de Surveys", @OA\JsonContent(ref="#/components/schemas/Survey")),
      *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(@OA\Property(property="error", type="string")))
@@ -45,6 +46,7 @@ class SurveyedController extends Controller
     {
         $query = Surveyed::query()->with([
             'respondent',
+            'household',
             'createdBy.rol',
             'updatedBy.rol',
             'survey.proyect',
@@ -76,6 +78,13 @@ class SurveyedController extends Controller
             $numberDocument = $request->query('number_document');
             $query->whereHas('respondent', function ($respondentQuery) use ($numberDocument) {
                 $respondentQuery->where('number_document', 'like', "%$numberDocument%");
+            });
+        }
+
+        if ($request->filled('household_code')) {
+            $householdCode = $request->query('household_code');
+            $query->whereHas('household', function ($householdQuery) use ($householdCode) {
+                $householdQuery->where('code', $householdCode);
             });
         }
 

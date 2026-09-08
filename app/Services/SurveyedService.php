@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Household;
 use App\Models\Respondent;
 use App\Models\Surveyed;
 use App\Models\SurveyedMeasurement;
@@ -30,6 +31,7 @@ class SurveyedService
     {
         return Surveyed::with([
             'respondent',
+            'household',
             'createdBy.rol',
             'updatedBy.rol',
             'reopenings.reopenedBy.rol',
@@ -68,6 +70,7 @@ class SurveyedService
             );
 
             $surveyedChanges = [];
+            $surveyedChanges['household_id'] = $this->resolveHousehold($surveyed, $person, $data)->id;
             if (! $surveyed->status) {
                 $surveyedChanges['status'] = Surveyed::STATUS_DRAFT;
             }
@@ -109,8 +112,11 @@ class SurveyedService
             $person->fill($this->respondentData($data));
             $person->save();
 
+            $household = $this->resolveHousehold($surveyed, $person, $data);
+
             $surveyed->update(array_filter([
                 'status' => Surveyed::STATUS_DRAFT,
+                'household_id' => $household->id,
                 'updated_by' => $this->authenticatedUserId(),
             ], static fn ($value) => $value !== null) + $this->coordinateData($data));
 
@@ -139,9 +145,11 @@ class SurveyedService
             $person->fill($this->respondentData($data));
             $person->save();
 
+            $household = $this->resolveHousehold($surveyed, $person, $data);
+
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
-            $surveyed->update($this->coordinateData($data));
+            $surveyed->update(['household_id' => $household->id] + $this->coordinateData($data));
             $this->validateRequiredCoordinates($surveyed);
             $this->validateRequiredResponses($surveyed);
 
@@ -217,6 +225,54 @@ class SurveyedService
             'email' => $data['email'] ?? null,
             'genero' => $data['genero'] ?? null,
         ], static fn ($value) => $value !== null);
+    }
+
+    private function resolveHousehold(Surveyed $surveyed, Respondent $person, array $data): Household
+    {
+        $currentHousehold = $surveyed->household_id
+            ? Household::find($surveyed->household_id)
+            : null;
+        $requestedCode = isset($data['household_code'])
+            ? trim((string) $data['household_code'])
+            : null;
+
+        if ($requestedCode !== null && $requestedCode !== '') {
+            $requestedHousehold = Household::where('code', $requestedCode)->firstOrFail();
+
+            if ($currentHousehold && $currentHousehold->id !== $requestedHousehold->id) {
+                throw ValidationException::withMessages([
+                    'household_code' => 'La participación ya pertenece a otro hogar y no puede reasignarse.',
+                ]);
+            }
+
+            return $requestedHousehold;
+        }
+
+        if ($currentHousehold) {
+            return $currentHousehold;
+        }
+
+        $previousHouseholdId = Surveyed::where('respondent_id', $person->id)
+            ->where('id', '<>', $surveyed->id)
+            ->whereNotNull('household_id')
+            ->orderByDesc('id')
+            ->value('household_id');
+        $previousHousehold = $previousHouseholdId
+            ? Household::find($previousHouseholdId)
+            : null;
+
+        if ($previousHousehold) {
+            return $previousHousehold;
+        }
+
+        $household = Household::create([
+            'code' => 'PENDING-'.(string) Str::uuid(),
+        ]);
+        $household->update([
+            'code' => Household::formatCode($household->id),
+        ]);
+
+        return $household;
     }
 
     private function resolveMeasurement(Surveyed $surveyed, array $data): ?SurveyedMeasurement

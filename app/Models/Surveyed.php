@@ -16,6 +16,7 @@ class Surveyed extends Model
     protected $fillable = [
         'id',
         'respondent_id',
+        'household_id',
         'survey_id',
         'status',
         'completed_at',
@@ -77,6 +78,11 @@ class Surveyed extends Model
     public function respondent()
     {
         return $this->belongsTo(Respondent::class, 'respondent_id');
+    }
+
+    public function household()
+    {
+        return $this->belongsTo(Household::class);
     }
 
     public function createdBy()
