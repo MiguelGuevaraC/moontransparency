@@ -16,7 +16,7 @@ class SurveyCleanupController extends Controller
      *     path="/moontransparency/public/api/survey/{id}/clean-participations",
      *     operationId="cleanSurveyParticipations",
      *     summary="Respaldar y limpiar las participaciones de una encuesta",
-     *     description="Operación destructiva separada de Inactivar. Genera un respaldo JSON comprimido y una auditoría antes de eliminar participaciones, mediciones, respuestas y referencias de sincronización. Los archivos adjuntos se conservan. Por defecto solo el Administrador posee surveys.clean_participations.",
+     *     description="Operación destructiva separada de Inactivar. Genera un respaldo JSON comprimido y una auditoría antes de eliminar participaciones, mediciones, respuestas y referencias de sincronización. Los archivos adjuntos se conservan. Los roles Administrador y Administrador Moon poseen surveys.clean_participations.",
      *     tags={"Survey"},
      *     security={{"bearerAuth": {}}},
      *

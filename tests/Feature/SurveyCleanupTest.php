@@ -69,18 +69,19 @@ class SurveyCleanupTest extends TestCase
         $this->assertDatabaseCount('survey_cleanup_audits', 0);
     }
 
-    public function test_cleanup_is_restricted_to_the_primary_administrator_permission(): void
+    public function test_moon_administrator_can_use_the_cleanup_permission(): void
     {
+        Storage::fake('local');
         [$survey, $surveyed] = $this->createSurveyWithParticipation();
         $this->actingAsRole('Administrador Moon');
 
         $this->postJson("/api/survey/{$survey->id}/clean-participations", [
-            'reason' => 'Intento sin el permiso destructivo.',
+            'reason' => 'Limpieza autorizada para el administrador Moon.',
             'confirmation' => "LIMPIAR ENCUESTA {$survey->id}",
-        ])->assertForbidden()
-            ->assertJsonPath('required_permission', 'surveys.clean_participations');
+        ])->assertOk()
+            ->assertJsonPath('data.survey_id', $survey->id);
 
-        $this->assertDatabaseHas('surveyeds', ['id' => $surveyed->id]);
+        $this->assertDatabaseMissing('surveyeds', ['id' => $surveyed->id]);
     }
 
     public function test_cleanup_returns_a_conflict_when_there_is_nothing_to_clean(): void
