@@ -23,11 +23,26 @@ class PermissionController extends Controller
      */
     public function index(IndexPermissionRequest $request)
     {
-        return $this->getFilteredResults(
+        if (! $request->query->has('all')) {
+            $request->query->set('all', 'true');
+        }
+
+        $query = $this->applyFilters(
             Permission::query(),
             $request,
-            Permission::filters,
-            Permission::sorts,
+            Permission::filters
+        );
+        $query = $this->applySorting($query, $request, Permission::sorts);
+
+        if ($request->query('all') === 'true') {
+            return PermissionResource::collection($query->get());
+        }
+
+        return $this->getFilteredResults(
+            $query,
+            $request,
+            [],
+            [],
             PermissionResource::class
         );
     }

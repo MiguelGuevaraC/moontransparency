@@ -23,9 +23,11 @@ class IndexPermissionRequest extends IndexRequest
      */
     public function rules(): array
     {
-        return [
+        return parent::rules() + [
             'name' => 'nullable|string',
+            'type' => 'nullable|string',
             'status' => 'nullable|string',
+            'sort' => 'nullable|string|in:id,type,name,route,status',
         ];
     }
 }
