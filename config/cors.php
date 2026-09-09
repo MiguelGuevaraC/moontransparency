@@ -21,10 +21,13 @@ return [
 
     'allowed_origins' => array_values(array_filter(array_map(
         'trim',
-        explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173'))
+        explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173,https://moongroup-admin.vercel.app'))
     ))),
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', env('CORS_ALLOWED_ORIGIN_PATTERNS', '#^https://[a-z0-9-]+\.vercel\.app$#'))
+    ))),
 
     'allowed_headers' => ['*'],
 
