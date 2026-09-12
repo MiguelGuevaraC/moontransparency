@@ -1381,7 +1381,7 @@
                         "description": "No autenticado"
                     },
                     "403": {
-                        "description": "Sin el permiso participations.view"
+                        "description": "Sin el permiso calculator.view"
                     },
                     "404": {
                         "description": "Proyecto no encontrado"
@@ -1475,7 +1475,7 @@
                         "description": "No autenticado"
                     },
                     "403": {
-                        "description": "Sin el permiso participations.view"
+                        "description": "Sin el permiso calculator.view"
                     },
                     "422": {
                         "description": "Encuestas incompatibles o parámetros inválidos"

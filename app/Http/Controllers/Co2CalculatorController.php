@@ -23,7 +23,7 @@ class Co2CalculatorController extends Controller
      *
      *     @OA\Response(response=200, description="Configuración y encuestas disponibles"),
      *     @OA\Response(response=401, description="No autenticado"),
-     *     @OA\Response(response=403, description="Sin el permiso participations.view"),
+     *     @OA\Response(response=403, description="Sin el permiso calculator.view"),
      *     @OA\Response(response=404, description="Proyecto no encontrado"),
      *     @OA\Response(response=422, description="Validación fallida")
      * )
@@ -101,7 +101,7 @@ class Co2CalculatorController extends Controller
      *
      *     @OA\Response(response=200, description="Cálculo RECH, parámetros, pesos originales, componentes Moon/tradicional y trazabilidad por hogar"),
      *     @OA\Response(response=401, description="No autenticado"),
-     *     @OA\Response(response=403, description="Sin el permiso participations.view"),
+     *     @OA\Response(response=403, description="Sin el permiso calculator.view"),
      *     @OA\Response(response=422, description="Encuestas incompatibles o parámetros inválidos")
      * )
      */

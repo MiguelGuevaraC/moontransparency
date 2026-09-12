@@ -21,6 +21,7 @@ class RolePermissionTest extends TestCase
         $this->assertDatabaseHas('permissions', ['route' => 'roles.assign_permissions', 'status' => Permission::STATUS_ACTIVE]);
         $this->assertDatabaseHas('permissions', ['route' => 'participations.reopen', 'status' => Permission::STATUS_ACTIVE]);
         $this->assertDatabaseHas('permissions', ['route' => 'surveys.clean_participations', 'status' => Permission::STATUS_ACTIVE]);
+        $this->assertDatabaseHas('permissions', ['route' => 'calculator.view', 'status' => Permission::STATUS_ACTIVE]);
 
         $administrator = Rol::where('name', 'Administrador')->firstOrFail();
         $moonAdministrator = Rol::where('name', 'Administrador Moon')->firstOrFail();
@@ -32,13 +33,16 @@ class RolePermissionTest extends TestCase
         $this->assertTrue($administrator->permissions()->where('route', 'users.view')->exists());
         $this->assertTrue($administrator->permissions()->where('route', 'participations.reopen')->exists());
         $this->assertTrue($administrator->permissions()->where('route', 'surveys.clean_participations')->exists());
+        $this->assertTrue($administrator->permissions()->where('route', 'calculator.view')->exists());
         $this->assertTrue($moonAdministrator->permissions()->where('route', 'users.delete')->exists());
         $this->assertTrue($moonAdministrator->permissions()->where('route', 'participations.reopen')->exists());
         $this->assertTrue($moonAdministrator->permissions()->where('route', 'roles.assign_permissions')->exists());
         $this->assertTrue($moonAdministrator->permissions()->where('route', 'surveys.clean_participations')->exists());
+        $this->assertTrue($moonAdministrator->permissions()->where('route', 'calculator.view')->exists());
         $this->assertFalse($surveyor->permissions()->where('route', 'users.view')->exists());
         $this->assertFalse($surveyor->permissions()->where('route', 'participations.reopen')->exists());
         $this->assertFalse($surveyor->permissions()->where('route', 'surveys.clean_participations')->exists());
+        $this->assertFalse($surveyor->permissions()->where('route', 'calculator.view')->exists());
         $this->assertTrue($surveyor->permissions()->where('route', 'participations.manage')->exists());
     }
 
@@ -121,6 +125,19 @@ class RolePermissionTest extends TestCase
             ->assertJsonPath('user.rol.name', 'Encuestador')
             ->assertJsonFragment(['participations.manage'])
             ->assertJsonMissing(['users.view']);
+    }
+
+    public function test_administrator_login_returns_calculator_permission_for_menu_visibility(): void
+    {
+        $user = $this->userWithRole('login-calculadora', 'Administrador');
+
+        $this->postJson('/api/login', [
+            'username' => $user->username,
+            'password' => 'Password!2026',
+        ])
+            ->assertOk()
+            ->assertJsonPath('user.rol.name', 'Administrador')
+            ->assertJsonFragment(['calculator.view']);
     }
 
     public function test_inactive_roles_cannot_authorize_endpoints(): void

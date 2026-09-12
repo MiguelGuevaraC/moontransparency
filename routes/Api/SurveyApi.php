@@ -16,9 +16,9 @@ Route::post('survey/{id}/clean-participations', [SurveyCleanupController::class,
     ->middleware('permission:surveys.clean_participations');
 
 Route::get('calculator/co2/configuration', [Co2CalculatorController::class, 'configuration'])
-    ->middleware('permission:participations.view');
+    ->middleware('permission:calculator.view');
 Route::post('calculator/co2', [Co2CalculatorController::class, 'calculate'])
-    ->middleware('permission:participations.view');
+    ->middleware('permission:calculator.view');
 
 Route::get('surveyed', [SurveyedController::class, 'index'])->middleware('permission:participations.view');
 Route::get('surveyed/{id}/calculator', [SurveyedController::class, 'calculator'])->middleware('permission:participations.view');

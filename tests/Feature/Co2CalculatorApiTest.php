@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Household;
 use App\Models\Proyect;
 use App\Models\Respondent;
+use App\Models\Rol;
 use App\Models\Survey;
 use App\Models\Surveyed;
 use App\Models\SurveyedMeasurement;
@@ -76,6 +77,25 @@ class Co2CalculatorApiTest extends TestCase
     public function test_calculation_requires_authentication(): void
     {
         $this->postJson('/api/calculator/co2', [])->assertUnauthorized();
+    }
+
+    public function test_calculator_requires_its_specific_permission(): void
+    {
+        $surveyor = User::create([
+            'number_document' => 'USR-RECH-002',
+            'username' => 'rech-sin-permiso',
+            'password' => 'password',
+            'rol_id' => Rol::where('name', 'Encuestador')->value('id'),
+            'status' => User::STATUS_ACTIVE,
+        ]);
+        Sanctum::actingAs($surveyor);
+
+        $this->getJson('/api/calculator/co2/configuration?project_id=1')
+            ->assertForbidden()
+            ->assertJsonPath('required_permission', 'calculator.view');
+        $this->postJson('/api/calculator/co2', [])
+            ->assertForbidden()
+            ->assertJsonPath('required_permission', 'calculator.view');
     }
 
     private function createKptDataset(): array
@@ -185,7 +205,7 @@ class Co2CalculatorApiTest extends TestCase
             'number_document' => 'USR-RECH-001',
             'username' => 'rech-test',
             'password' => 'password',
-            'rol_id' => \App\Models\Rol::where('name', 'Encuestador')->value('id'),
+            'rol_id' => Rol::where('name', 'Administrador')->value('id'),
             'status' => User::STATUS_ACTIVE,
         ]));
     }
