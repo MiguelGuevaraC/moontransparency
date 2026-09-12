@@ -31,7 +31,9 @@ class OpenApiDocumentationTest extends TestCase
             '/moontransparency/public/api/user/{id}' => ['get', 'put', 'delete'],
             '/moontransparency/public/api/rol' => ['get', 'post'],
             '/moontransparency/public/api/rol/{id}' => ['get', 'put', 'delete'],
+            '/moontransparency/public/api/rol/{id}/menus' => ['put'],
             '/moontransparency/public/api/permission' => ['get'],
+            '/moontransparency/public/api/menu' => ['get'],
         ];
 
         foreach ($requiredOperations as $operationPath => $methods) {
@@ -41,7 +43,7 @@ class OpenApiDocumentationTest extends TestCase
             }
         }
 
-        foreach (['Surveyed', 'SurveyedUpsertRequest', 'SurveyedMeasurement', 'GeobosquesMap', 'OfflineSyncRequest', 'OfflineSyncResponse', 'SurveyCleanupInput', 'SurveyCleanupResult', 'User', 'Rol', 'Permission'] as $schema) {
+        foreach (['Surveyed', 'SurveyedUpsertRequest', 'SurveyedMeasurement', 'GeobosquesMap', 'OfflineSyncRequest', 'OfflineSyncResponse', 'SurveyCleanupInput', 'SurveyCleanupResult', 'User', 'Rol', 'Permission', 'Menu'] as $schema) {
             $this->assertArrayHasKey($schema, $document['components']['schemas']);
         }
 

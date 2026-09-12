@@ -19,7 +19,7 @@ class AuthService
     public function login(string $username, string $password): array
     {
         // Busca al usuario por correo
-        $user = User::with('rol.permissions')->where('username', $username)->first();
+        $user = User::with(['rol.permissions', 'rol.menus'])->where('username', $username)->first();
 
         // Si el usuario no existe, retornamos un error genérico sin dar pistas sobre la existencia
         if (! $user || ! $user->isActive() || ($user->rol && $user->rol->status !== 'Activo')) {
@@ -61,7 +61,7 @@ class AuthService
 
     public function authenticate(): array
     {
-        $user = auth()->user()?->load('rol.permissions');
+        $user = auth()->user()?->load(['rol.permissions', 'rol.menus']);
         // Llama al método login para realizar la autenticación
         return [
             'status' => $user !== null,

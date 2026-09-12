@@ -3088,6 +3088,46 @@
                 ]
             }
         },
+        "/moontransparency/public/api/menu": {
+            "get": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Listar opciones administrables del menú",
+                "operationId": "listMenus",
+                "responses": {
+                    "200": {
+                        "description": "Menús activos ordenados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Menu"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso roles.view"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/ods": {
             "get": {
                 "tags": [
@@ -4881,6 +4921,88 @@
                     },
                     "404": {
                         "description": "Rol o permiso no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/rol/{id}/menus": {
+            "put": {
+                "tags": [
+                    "Roles y permisos"
+                ],
+                "summary": "Asignar opciones de menú y sus permisos internos a un rol",
+                "operationId": "replaceRoleMenus",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "menus"
+                                ],
+                                "properties": {
+                                    "menus": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            10,
+                                            11,
+                                            12,
+                                            13
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Menús y permisos internos reemplazados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Rol"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Falta permiso para asignar o revocar"
+                    },
+                    "404": {
+                        "description": "Rol no encontrado"
+                    },
+                    "422": {
+                        "description": "Menús inválidos"
                     }
                 },
                 "security": [
@@ -8347,6 +8469,51 @@
                 },
                 "type": "object"
             },
+            "Menu": {
+                "required": [
+                    "id",
+                    "code",
+                    "name",
+                    "path",
+                    "sort_order",
+                    "status"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 13
+                    },
+                    "code": {
+                        "type": "string",
+                        "example": "calculator"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Calculadora"
+                    },
+                    "path": {
+                        "type": "string",
+                        "example": "/calculadora"
+                    },
+                    "icon": {
+                        "type": "string",
+                        "example": "calculate",
+                        "nullable": true
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 130
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "Activo",
+                            "Inactivo"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
             "Ods": {
                 "title": "ODS",
                 "description": "Modelo de ODS",
@@ -8708,6 +8875,23 @@
                         "example": [
                             "users.view",
                             "participations.reopen"
+                        ]
+                    },
+                    "menus": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Menu"
+                        }
+                    },
+                    "menu_codes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "users",
+                            "survey_history",
+                            "calculator"
                         ]
                     }
                 },
@@ -9097,6 +9281,18 @@
                         "$ref": "#/components/schemas/Rol"
                     },
                     "permissions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "menus": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Menu"
+                        }
+                    },
+                    "menu_codes": {
                         "type": "array",
                         "items": {
                             "type": "string"
@@ -10278,16 +10474,16 @@
             "description": "Indicator"
         },
         {
+            "name": "Roles y permisos",
+            "description": "Roles y permisos"
+        },
+        {
             "name": "Ods",
             "description": "Ods"
         },
         {
             "name": "Surveyed",
             "description": "Surveyed"
-        },
-        {
-            "name": "Roles y permisos",
-            "description": "Roles y permisos"
         },
         {
             "name": "Proyect",

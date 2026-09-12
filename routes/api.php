@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\UbigeoController;
 use App\Http\Controllers\AuthenticationController;
+use App\Http\Controllers\UbigeoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,33 +15,30 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::post('login', [AuthenticationController::class, 'login']);
-Route::group(["middleware" => ["auth:sanctum"]], function () {
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    require __DIR__.'/Api/AuthApi.php';        //AUTHENTICATE
+    require __DIR__.'/Api/UserApi.php';        //USER
+    require __DIR__.'/Api/RolApi.php';         //ROL
+    require __DIR__.'/Api/PermissionApi.php';  //PERMISSIONS
+    require __DIR__.'/Api/MenuApi.php';        //MENUS
+    require __DIR__.'/Api/ProyectApi.php';     //PROYECTS
+    require __DIR__.'/Api/OdsApi.php';         //ODS
+    require __DIR__.'/Api/AllyApi.php';        //ALLIES
+    require __DIR__.'/Api/ActivityApi.php';    //ACTIVITIES
+    require __DIR__.'/Api/DonationApi.php';    //DONATIONS
+    require __DIR__.'/Api/IndicatorApi.php';   //INDICATORS
+    require __DIR__.'/Api/SurveyApi.php';      //SURVEYS
+    require __DIR__.'/Api/ImagesApi.php';      //IMAGENES
+    require __DIR__.'/Api/ContactSendApi.php'; //CONTACTOS DE ENVIO
 
-    require __DIR__ . '/Api/AuthApi.php';        //AUTHENTICATE
-    require __DIR__ . '/Api/UserApi.php';        //USER
-    require __DIR__ . '/Api/RolApi.php';         //ROL
-    require __DIR__ . '/Api/PermissionApi.php';  //PERMISSIONS
-    require __DIR__ . '/Api/ProyectApi.php';     //PROYECTS
-    require __DIR__ . '/Api/OdsApi.php';         //ODS
-    require __DIR__ . '/Api/AllyApi.php';        //ALLIES
-    require __DIR__ . '/Api/ActivityApi.php';    //ACTIVITIES
-    require __DIR__ . '/Api/DonationApi.php';    //DONATIONS
-    require __DIR__ . '/Api/IndicatorApi.php';   //INDICATORS
-    require __DIR__ . '/Api/SurveyApi.php';      //SURVEYS
-    require __DIR__ . '/Api/ImagesApi.php';      //IMAGENES
-    require __DIR__ . '/Api/ContactSendApi.php'; //CONTACTOS DE ENVIO
-
-    require __DIR__ . '/Api/SurveyQuestionApi.php'; //SURVEY QUESTION
-    require __DIR__ . '/Api/SurveyQuestionOptionApi.php'; //SURVEY QUESTION OPTION
-    require __DIR__ . '/Api/RespondentApi.php'; //RESPONDENT
-    require __DIR__ . '/Api/SurveyQuestionOdsApi.php'; //RESPONDENT
-
-
+    require __DIR__.'/Api/SurveyQuestionApi.php'; //SURVEY QUESTION
+    require __DIR__.'/Api/SurveyQuestionOptionApi.php'; //SURVEY QUESTION OPTION
+    require __DIR__.'/Api/RespondentApi.php'; //RESPONDENT
+    require __DIR__.'/Api/SurveyQuestionOdsApi.php'; //RESPONDENT
 });
 
-require __DIR__ . '/Web/ApisWeb.php'; //APIS PARA WEB
-require __DIR__ . '/Web/GraficosApi.php'; //GRAFICOS
-
+require __DIR__.'/Web/ApisWeb.php'; //APIS PARA WEB
+require __DIR__.'/Web/GraficosApi.php'; //GRAFICOS
 
 //    UBIGEO
 Route::get('departments', [UbigeoController::class, 'indexDepartments'])->name('indexDepartments');

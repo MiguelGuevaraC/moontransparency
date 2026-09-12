@@ -16,3 +16,5 @@ Route::delete('rol/{id}/permissions/{permissionId}', [RolController::class, 'rev
     ->middleware('permission:roles.revoke_permissions');
 Route::put('rol/{id}/setaccess', [RolController::class, 'setAccess'])
     ->middleware(['permission:roles.assign_permissions', 'permission:roles.revoke_permissions']);
+Route::put('rol/{id}/menus', [RolController::class, 'setMenus'])
+    ->middleware(['permission:roles.assign_permissions', 'permission:roles.revoke_permissions']);

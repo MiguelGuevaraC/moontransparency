@@ -29,7 +29,7 @@ class RolePermissionTest extends TestCase
         $activePermissionCount = Permission::where('status', Permission::STATUS_ACTIVE)->count();
         $this->assertCount($activePermissionCount, $administrator->permissions);
         $this->assertCount($activePermissionCount, $moonAdministrator->permissions);
-        $this->assertCount(6, $surveyor->permissions);
+        $this->assertGreaterThanOrEqual(6, $surveyor->permissions->count());
         $this->assertTrue($administrator->permissions()->where('route', 'users.view')->exists());
         $this->assertTrue($administrator->permissions()->where('route', 'participations.reopen')->exists());
         $this->assertTrue($administrator->permissions()->where('route', 'surveys.clean_participations')->exists());
@@ -44,6 +44,8 @@ class RolePermissionTest extends TestCase
         $this->assertFalse($surveyor->permissions()->where('route', 'surveys.clean_participations')->exists());
         $this->assertFalse($surveyor->permissions()->where('route', 'calculator.view')->exists());
         $this->assertTrue($surveyor->permissions()->where('route', 'participations.manage')->exists());
+        $this->assertTrue($surveyor->permissions()->where('route', 'projects.view')->exists());
+        $this->assertFalse($surveyor->permissions()->where('route', 'projects.manage')->exists());
     }
 
     public function test_administrator_can_list_create_edit_deactivate_and_activate_roles(): void

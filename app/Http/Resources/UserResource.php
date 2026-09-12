@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -10,6 +11,7 @@ class UserResource extends JsonResource
      *     schema="User",
      *     title="User",
      *     description="User model",
+     *
      *     @OA\Property( property="id", type="integer", example="1" ),
      *     @OA\Property(property="type_document", type="string", nullable=true),
      *     @OA\Property(property="number_document", type="string"),
@@ -20,6 +22,8 @@ class UserResource extends JsonResource
      *     @OA\Property(property="rol_id", type="integer", description="Rol Id", example=1),
      *     @OA\Property(property="rol", ref="#/components/schemas/Rol"),
      *     @OA\Property(property="permissions", type="array", @OA\Items(type="string")),
+     *     @OA\Property(property="menus", type="array", @OA\Items(ref="#/components/schemas/Menu")),
+     *     @OA\Property(property="menu_codes", type="array", @OA\Items(type="string")),
      *     @OA\Property(property="created_at", type="string", format="date-time", nullable=true),
      *     @OA\Property(property="updated_at", type="string", format="date-time", nullable=true)
      * )
@@ -43,9 +47,16 @@ class UserResource extends JsonResource
                 $this->relationLoaded('rol') && $this->rol?->relationLoaded('permissions'),
                 fn () => $this->rol->permissions->pluck('route')->filter()->values()
             ),
+            'menus' => $this->when(
+                $this->relationLoaded('rol') && $this->rol?->relationLoaded('menus'),
+                fn () => MenuResource::collection($this->rol->menus)
+            ),
+            'menu_codes' => $this->when(
+                $this->relationLoaded('rol') && $this->rol?->relationLoaded('menus'),
+                fn () => $this->rol->menus->pluck('code')->values()
+            ),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
-
     }
 }

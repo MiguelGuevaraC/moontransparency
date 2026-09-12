@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Menu;
 use App\Models\Permission;
 use App\Models\Permission_rol;
 use App\Models\Rol;
@@ -14,14 +15,14 @@ class RolService
 
     public function getRolById(int $id): ?Rol
     {
-        return Rol::with('permissions')->find($id);
+        return Rol::with(['permissions', 'menus'])->find($id);
     }
 
     public function createRol(array $data): Rol
     {
         $data['status'] = $data['status'] ?? Rol::STATUS_ACTIVE;
 
-        return Rol::create($data)->load('permissions');
+        return Rol::create($data)->load(['permissions', 'menus']);
     }
 
     public function updateRol(Rol $rol, array $data): Rol
@@ -52,7 +53,7 @@ class RolService
                 return $this->activate($rol);
             }
 
-            return $rol->load('permissions');
+            return $rol->load(['permissions', 'menus']);
         });
     }
 
@@ -60,7 +61,7 @@ class RolService
     {
         $rol->update(['status' => Rol::STATUS_ACTIVE]);
 
-        return $rol->load('permissions');
+        return $rol->load(['permissions', 'menus']);
     }
 
     public function deactivate(Rol $rol): Rol
@@ -73,7 +74,7 @@ class RolService
 
         $rol->update(['status' => Rol::STATUS_INACTIVE]);
 
-        return $rol->load('permissions');
+        return $rol->load(['permissions', 'menus']);
     }
 
     public function destroy(Rol $rol): void
@@ -105,7 +106,7 @@ class RolService
                 $this->restoreAssignment($role, $permission);
             }
 
-            return $role->load('permissions');
+            return $role->load(['permissions', 'menus']);
         });
     }
 
@@ -118,7 +119,7 @@ class RolService
                 ->get()
                 ->each(fn (Permission $permission) => $this->restoreAssignment($role, $permission));
 
-            return $role->load('permissions');
+            return $role->load(['permissions', 'menus']);
         });
     }
 
@@ -128,7 +129,41 @@ class RolService
             ->where('permission_id', $permission->id)
             ->delete();
 
-        return $role->load('permissions');
+        return $role->load(['permissions', 'menus']);
+    }
+
+    public function setMenus(array $menuIds, Rol $role): Rol
+    {
+        return DB::transaction(function () use ($menuIds, $role) {
+            $menus = Menu::query()
+                ->whereIn('id', $menuIds)
+                ->where('status', Menu::STATUS_ACTIVE)
+                ->get();
+
+            $role->menus()->sync($menus->pluck('id')->all());
+
+            $managedPermissionIds = DB::table('menu_permissions')
+                ->distinct()
+                ->pluck('permission_id');
+            $selectedPermissionIds = DB::table('menu_permissions')
+                ->whereIn('menu_id', $menus->pluck('id'))
+                ->distinct()
+                ->pluck('permission_id');
+
+            Permission_rol::query()
+                ->where('rol_id', $role->id)
+                ->whereIn('permission_id', $managedPermissionIds)
+                ->whereNotIn('permission_id', $selectedPermissionIds)
+                ->delete();
+
+            Permission::query()
+                ->whereIn('id', $selectedPermissionIds)
+                ->where('status', Permission::STATUS_ACTIVE)
+                ->get()
+                ->each(fn (Permission $permission) => $this->restoreAssignment($role, $permission));
+
+            return $role->load(['permissions', 'menus']);
+        });
     }
 
     private function restoreAssignment(Rol $role, Permission $permission): void
@@ -146,6 +181,7 @@ class RolService
         if ($assignment) {
             $assignment->restore();
             $assignment->update($values);
+
             return;
         }
 
