@@ -75,6 +75,7 @@ class SurveyResource extends JsonResource
             'proyect_id' => $this->proyect_id,
             'survey_name' => $this->survey_name,
             'survey_type' => $this->survey_type,
+            'kind' => $this->calculatorKind(),
             'description' => $this->description,
             'status' => $this->status,
             'requires_coordinates' => (bool) $this->requires_coordinates,

@@ -6,6 +6,7 @@ class Co2EmissionCalculator
 {
     public function calculate(array $families, array $overrides = []): array
     {
+        $this->assertMethodologyConfiguration();
         $parameters = $this->parameters($overrides);
         $baselineFamilies = [];
         $monitoringFamilies = [];
@@ -65,7 +66,8 @@ class Co2EmissionCalculator
             'contract' => [
                 'version' => config('co2.contract_version', '1.0'),
                 'methodology' => config('co2.methodology', 'RECH v5.0'),
-                'source' => 'ECUACION DE REDUCCION DE EMISIONES DE CO2 V2-3.xlsx + calculadora_emisiones_co2 (3).html',
+                'formula_version' => config('co2.formula_version'),
+                'factor_source' => config('co2.factor_source'),
                 'units' => [
                     'weight' => 'kg',
                     'daily_consumption' => 'kg/hogar/día',
@@ -121,6 +123,38 @@ class Co2EmissionCalculator
     public function defaultParameters(): array
     {
         return $this->parameters([]);
+    }
+
+    private function assertMethodologyConfiguration(): void
+    {
+        $requiredPositive = [
+            'per_capita_cap_t_year',
+            'net_calorific_value_tj_t',
+            'co2_emission_factor_t_tj',
+            'stove_lifetime_years',
+        ];
+        foreach ($requiredPositive as $key) {
+            if ((float) config('co2.'.$key, 0) <= 0) {
+                throw new \LogicException("El factor RECH {$key} debe ser mayor que cero.");
+            }
+        }
+
+        $fractions = [
+            'precision_threshold',
+            'non_renewable_biomass_fraction',
+            'usage_cap',
+            'market_leakage_percentage',
+        ];
+        foreach ($fractions as $key) {
+            $value = (float) config('co2.'.$key, -1);
+            if ($value < 0 || $value > 1) {
+                throw new \LogicException("El factor RECH {$key} debe estar entre cero y uno.");
+            }
+        }
+
+        if (! config('co2.adult_equivalent') || ! config('co2.operational_groups') || ! config('co2.usage_groups')) {
+            throw new \LogicException('La configuración RECH debe incluir equivalencias, grupos operativos y grupos de uso.');
+        }
     }
 
     private function familyConsumption(array $family, string $daysKey, array $factors): ?array

@@ -42,6 +42,8 @@ class SurveyedController extends Controller
      *     @OA\Parameter(name="respondent_id", in="query", required=false, @OA\Schema(type="integer", minimum=1)),
      *     @OA\Parameter(name="survey_id", in="query", required=false, @OA\Schema(type="integer", minimum=1)),
      *     @OA\Parameter(name="project_id", in="query", required=false, @OA\Schema(type="integer", minimum=1)),
+    *     @OA\Parameter(name="created_by", in="query", description="Usuario que registró la participación", required=false, @OA\Schema(type="integer", minimum=1)),
+    *     @OA\Parameter(name="survey_kind", in="query", description="Tipo KPT normalizado", required=false, @OA\Schema(type="string", enum={"BASELINE", "MONITORING"})),
      *     @OA\Parameter(name="status", in="query", required=false, @OA\Schema(type="string", enum={"BORRADOR", "FINALIZADA"})),
      *     @OA\Parameter(name="household_code", in="query", description="Código global del hogar", required=false, @OA\Schema(type="string", example="HOG-00000001")),
      *
@@ -101,6 +103,25 @@ class SurveyedController extends Controller
             $projectId = $request->integer('project_id');
             $query->whereHas('survey', function ($surveyQuery) use ($projectId) {
                 $surveyQuery->where('proyect_id', $projectId);
+            });
+        }
+
+        if ($request->filled('created_by')) {
+            $query->where('created_by', $request->integer('created_by'));
+        }
+
+        if ($request->filled('survey_kind')) {
+            $kind = $request->query('survey_kind');
+            $query->whereHas('survey', function ($surveyQuery) use ($kind) {
+                $calculatorPrefix = $kind === 'BASELINE' ? 'baseline.%' : 'monitoring.%';
+                $nameFragment = $kind === 'BASELINE' ? '%linea base%' : '%monitoreo%';
+
+                $surveyQuery->where(function ($kindQuery) use ($calculatorPrefix, $nameFragment) {
+                    $kindQuery
+                        ->whereHas('survey_questions', fn ($questionQuery) => $questionQuery
+                            ->where('calculator_key', 'like', $calculatorPrefix))
+                        ->orWhereRaw('LOWER(survey_name) LIKE ?', [$nameFragment]);
+                });
             });
         }
 
@@ -646,12 +667,18 @@ class SurveyedController extends Controller
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
      *
      *     @OA\Response(response=200, description="Encuesta eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Encuesta eliminado exitosamente"))),
+    *     @OA\Response(response=403, description="Solo Administrador y Administrador Moon pueden eliminar participaciones"),
      *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Encuesta No Encontrada"))),
-
      * )
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
+        if (! $request->user()?->isAdministrator()) {
+            return response()->json([
+                'message' => 'Solo Administrador y Administrador Moon pueden eliminar participaciones.',
+            ], 403);
+        }
+
         $survey = $this->surveyService->getSurveyedById($id);
 
         if (! $survey) {

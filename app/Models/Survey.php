@@ -9,6 +9,10 @@ class Survey extends Model
 {
     use SoftDeletes;
 
+    public const KIND_BASELINE = 'BASELINE';
+
+    public const KIND_MONITORING = 'MONITORING';
+
     public const STATUS_ACTIVE = 'ACTIVA';
 
     public const STATUS_INACTIVE = 'INACTIVA';
@@ -59,6 +63,27 @@ class Survey extends Model
         $days = (int) ($this->expected_days ?: config('surveying.default_expected_days', 7));
 
         return max(1, min($days, (int) config('surveying.max_expected_days', 31)));
+    }
+
+    public function calculatorKind(): ?string
+    {
+        if ($this->survey_questions()
+            ->where('calculator_key', 'like', 'baseline.%')
+            ->exists()) {
+            return self::KIND_BASELINE;
+        }
+
+        if ($this->survey_questions()
+            ->where('calculator_key', 'like', 'monitoring.%')
+            ->exists()) {
+            return self::KIND_MONITORING;
+        }
+
+        $name = mb_strtolower((string) $this->survey_name);
+
+        return str_contains($name, 'linea base')
+            ? self::KIND_BASELINE
+            : (str_contains($name, 'monitoreo') ? self::KIND_MONITORING : null);
     }
 
     /**

@@ -149,6 +149,66 @@ class SurveyedHistoryTest extends TestCase
         $this->getJson('/api/surveyed/'.$first->id)->assertUnauthorized();
     }
 
+    public function test_history_can_filter_by_registrar_and_kpt_kind(): void
+    {
+        $project = Proyect::create(['name' => 'Proyecto KPT filtros']);
+        $baseline = Survey::create([
+            'proyect_id' => $project->id,
+            'survey_name' => 'KPT línea base',
+            'survey_type' => 'PRE',
+            'status' => Survey::STATUS_ACTIVE,
+        ]);
+        $monitoring = Survey::create([
+            'proyect_id' => $project->id,
+            'survey_name' => 'KPT monitoreo',
+            'survey_type' => 'POST',
+            'status' => Survey::STATUS_ACTIVE,
+        ]);
+        $creator = User::create([
+            'number_document' => 'USR-KPT-FILTER',
+            'names' => 'Registrador KPT',
+            'username' => 'registrador-kpt',
+            'password' => 'password',
+            'rol_id' => \App\Models\Rol::where('name', 'Encuestador')->value('id'),
+            'status' => User::STATUS_ACTIVE,
+        ]);
+        $respondent = Respondent::create(['number_document' => 'DOC-KPT-FILTER', 'names' => 'Hogar KPT']);
+        Surveyed::create([
+            'respondent_id' => $respondent->id,
+            'survey_id' => $baseline->id,
+            'status' => Surveyed::STATUS_DRAFT,
+            'created_by' => $creator->id,
+        ]);
+        Surveyed::create([
+            'respondent_id' => $respondent->id,
+            'survey_id' => $monitoring->id,
+            'status' => Surveyed::STATUS_DRAFT,
+            'created_by' => $creator->id,
+        ]);
+        $this->authenticate();
+
+        $this->getJson('/api/surveyed?all=true&created_by='.$creator->id.'&survey_kind=BASELINE')
+            ->assertOk()
+            ->assertJsonCount(1)
+            ->assertJsonPath('0.created_by', $creator->id)
+            ->assertJsonPath('0.survey.survey_name', 'KPT línea base');
+    }
+
+    public function test_only_system_administrators_can_soft_delete_a_participation(): void
+    {
+        [$surveyed] = $this->createParticipationWithTwoDays();
+        $this->authenticate();
+
+        $this->deleteJson('/api/surveyed/'.$surveyed->id)
+            ->assertForbidden();
+        $this->assertDatabaseHas('surveyeds', ['id' => $surveyed->id, 'deleted_at' => null]);
+
+        $this->authenticateAs('Administrador Moon', 'history-admin-moon');
+        $this->deleteJson('/api/surveyed/'.$surveyed->id)
+            ->assertOk();
+        $this->assertSoftDeleted('surveyeds', ['id' => $surveyed->id]);
+    }
+
     private function createHistoryRecords(): array
     {
         $firstProject = Proyect::create(['name' => 'Proyecto uno']);
@@ -232,11 +292,16 @@ class SurveyedHistoryTest extends TestCase
 
     private function authenticate(): void
     {
+        $this->authenticateAs('Encuestador', 'history-test');
+    }
+
+    private function authenticateAs(string $roleName, string $username): void
+    {
         Sanctum::actingAs(User::create([
-            'number_document' => 'USR-HISTORY-001',
-            'username' => 'history-test',
+            'number_document' => 'USR-'.strtoupper($username),
+            'username' => $username,
             'password' => bcrypt('password'),
-            'rol_id' => \App\Models\Rol::where('name', 'Encuestador')->value('id'),
+            'rol_id' => \App\Models\Rol::where('name', $roleName)->value('id'),
             'status' => 'Activo',
         ]));
     }

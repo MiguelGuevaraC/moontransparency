@@ -3,6 +3,8 @@
 return [
     'contract_version' => '1.0',
     'methodology' => 'RECH v5.0',
+    'formula_version' => 'RECH-v5.0-2026-09',
+    'factor_source' => 'ECUACION DE REDUCCION DE EMISIONES DE CO2 V2-3.xlsx',
     'sample_limit' => 20,
     'precision_probability_two_tails' => 0.20,
     'precision_threshold' => 0.10,

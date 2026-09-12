@@ -41,6 +41,7 @@ class Surveyed extends Model
         'id' => '=',
         'respondent_id' => '=',
         'survey_id' => '=',
+        'created_by' => '=',
         'survey.proyect_id' => '=',
         'created_at' => 'between',
         'survey.survey_type' => '=',

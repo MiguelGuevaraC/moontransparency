@@ -17,13 +17,16 @@ Route::post('survey/{id}/clean-participations', [SurveyCleanupController::class,
 
 Route::get('calculator/co2/configuration', [Co2CalculatorController::class, 'configuration'])
     ->middleware('permission:calculator.view');
+Route::get('calculator/co2/history', [Co2CalculatorController::class, 'history'])
+    ->middleware('permission:calculator.view');
 Route::post('calculator/co2', [Co2CalculatorController::class, 'calculate'])
     ->middleware('permission:calculator.view');
 
 Route::get('surveyed', [SurveyedController::class, 'index'])->middleware('permission:participations.view');
-Route::get('surveyed/{id}/calculator', [SurveyedController::class, 'calculator'])->middleware('permission:participations.view');
+Route::get('surveyed/{id}/calculator', [SurveyedController::class, 'calculator'])->middleware('permission:calculator.view');
 Route::post('surveyed/{id}/reopen', [SurveyedController::class, 'reopen'])->middleware('permission:participations.reopen');
 Route::get('surveyed/{id}', [SurveyedController::class, 'show'])->middleware('permission:participations.view');
+Route::delete('surveyed/{id}', [SurveyedController::class, 'destroy'])->middleware('permission:participations.manage');
 Route::get('surveyedAll', [SurveyedController::class, 'indexAll'])->middleware('permission:participations.view');
 Route::get('surveyedExcel', [SurveyedExcelController::class, 'export'])->middleware('permission:participations.export');
 Route::post('surveyed/import-excel', [SurveyedExcelController::class, 'import'])->middleware('permission:participations.import');

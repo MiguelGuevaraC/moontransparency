@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Co2CalculationRequest;
+use App\Models\Co2Calculation;
 use App\Models\Proyect;
 use App\Models\Survey;
 use App\Services\Co2EmissionCalculator;
@@ -50,15 +51,11 @@ class Co2CalculatorController extends Controller
             ->orderBy('id')
             ->get()
             ->map(function (Survey $survey) {
-                $kind = $survey->survey_questions()
-                    ->where('calculator_key', 'like', 'baseline.%')
-                    ->exists() ? 'BASELINE' : 'MONITORING';
-
                 return [
                     'id' => $survey->id,
                     'code' => $survey->code,
                     'name' => $survey->survey_name,
-                    'kind' => $kind,
+                    'kind' => $survey->calculatorKind(),
                     'status' => $survey->status,
                     'post_survey_id' => $survey->post_survey_id,
                     'participations_count' => $survey->surveyeds_count,
@@ -73,6 +70,58 @@ class Co2CalculatorController extends Controller
             'surveys' => $surveys,
             'default_parameters' => $calculator->defaultParameters(),
         ]]);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/moontransparency/public/api/calculator/co2/history",
+     *     operationId="co2CalculationHistory",
+     *     summary="Consultar el historial de cálculos CO2",
+     *     tags={"CO2 Calculator"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(name="project_id", in="query", required=false, @OA\Schema(type="integer", minimum=1)),
+     *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", minimum=1, maximum=100)),
+     *     @OA\Response(response=200, description="Historial paginado de cálculos"),
+     *     @OA\Response(response=401, description="No autenticado"),
+     *     @OA\Response(response=403, description="Sin el permiso calculator.view"),
+     *     @OA\Response(response=422, description="Filtros inválidos")
+     * )
+     */
+    public function history(Request $request)
+    {
+        $validated = $request->validate([
+            'project_id' => ['nullable', 'integer', 'min:1', 'exists:proyects,id'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $calculations = Co2Calculation::query()
+            ->with(['project:id,name', 'baselineSurvey:id,survey_name', 'monitoringSurvey:id,survey_name', 'executedBy:id,names'])
+            ->when(isset($validated['project_id']), fn ($query) => $query->where('project_id', $validated['project_id']))
+            ->latest('id')
+            ->paginate($validated['per_page'] ?? 20);
+
+        return response()->json([
+            'data' => $calculations->getCollection()->map(fn (Co2Calculation $calculation) => [
+                'id' => $calculation->id,
+                'project' => $calculation->project,
+                'baseline_survey' => $calculation->baselineSurvey,
+                'monitoring_survey' => $calculation->monitoringSurvey,
+                'executed_by' => $calculation->executedBy,
+                'household_ids' => $calculation->household_ids,
+                'parameters' => $calculation->parameters,
+                'result' => $calculation->result,
+                'methodology' => $calculation->methodology,
+                'formula_version' => $calculation->formula_version,
+                'contract_version' => $calculation->contract_version,
+                'created_at' => $calculation->created_at?->toIso8601String(),
+            ]),
+            'meta' => [
+                'current_page' => $calculations->currentPage(),
+                'last_page' => $calculations->lastPage(),
+                'per_page' => $calculations->perPage(),
+                'total' => $calculations->total(),
+            ],
+        ]);
     }
 
     /**
@@ -119,8 +168,22 @@ class Co2CalculatorController extends Controller
             (int) ($validated['sample_limit'] ?? config('co2.sample_limit', 20))
         );
         $calculation = $calculator->calculate($dataset['families'], $validated['parameters'] ?? []);
+        $calculationRecord = Co2Calculation::create([
+            'project_id' => $dataset['project_id'],
+            'baseline_survey_id' => $validated['baseline_survey_id'],
+            'monitoring_survey_id' => $validated['monitoring_survey_id'] ?? $dataset['monitoring_survey']['id'] ?? null,
+            'executed_by' => $request->user()?->id,
+            'household_ids' => $validated['household_ids'] ?? null,
+            'parameters' => $calculation['parameters'],
+            'result' => $calculation,
+            'methodology' => config('co2.methodology'),
+            'formula_version' => config('co2.formula_version'),
+            'contract_version' => config('co2.contract_version'),
+        ]);
 
         return response()->json(['data' => [
+            'calculation_id' => $calculationRecord->id,
+            'calculated_at' => $calculationRecord->created_at?->toIso8601String(),
             'source' => [
                 'project_id' => $dataset['project_id'],
                 'baseline_survey' => $dataset['baseline_survey'],

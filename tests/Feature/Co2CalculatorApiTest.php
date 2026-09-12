@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Household;
+use App\Models\Co2Calculation;
 use App\Models\Proyect;
 use App\Models\Respondent;
 use App\Models\Rol;
@@ -30,10 +31,13 @@ class Co2CalculatorApiTest extends TestCase
             'baseline_survey_id' => $baseline->id,
             'monitoring_survey_id' => $monitoring->id,
         ])->assertOk()
+            ->assertJsonPath('data.calculation_id', 1)
             ->assertJsonPath('data.source.baseline_survey.id', $baseline->id)
             ->assertJsonPath('data.source.monitoring_survey.id', $monitoring->id)
             ->assertJsonPath('data.source.selected_households', 1)
             ->assertJsonPath('data.calculation.contract.methodology', 'RECH v5.0')
+            ->assertJsonPath('data.calculation.contract.formula_version', config('co2.formula_version'))
+            ->assertJsonPath('data.calculation.contract.factor_source', config('co2.factor_source'))
             ->assertJsonPath('data.calculation.status.calculation_ready', true)
             ->assertJsonPath('data.calculation.status.baseline_sample_size', 1)
             ->assertJsonPath('data.calculation.status.monitoring_sample_size', 1)
@@ -51,6 +55,22 @@ class Co2CalculatorApiTest extends TestCase
                 'leakage' => ['embodied', 'market', 'total_ley'],
                 'net_reduction_ery',
             ]]]]);
+
+        $this->assertDatabaseHas('co2_calculations', [
+            'id' => 1,
+            'project_id' => $project->id,
+            'baseline_survey_id' => $baseline->id,
+            'monitoring_survey_id' => $monitoring->id,
+            'executed_by' => auth()->id(),
+            'methodology' => 'RECH v5.0',
+            'formula_version' => config('co2.formula_version'),
+        ]);
+
+        $this->getJson('/api/calculator/co2/history?project_id='.$project->id)
+            ->assertOk()
+            ->assertJsonPath('data.0.id', 1)
+            ->assertJsonPath('data.0.project.id', $project->id)
+            ->assertJsonPath('data.0.formula_version', config('co2.formula_version'));
     }
 
     public function test_configuration_lists_only_surveys_with_calculator_mapping(): void
