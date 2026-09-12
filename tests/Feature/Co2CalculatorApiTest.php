@@ -37,6 +37,10 @@ class Co2CalculatorApiTest extends TestCase
             ->assertJsonPath('data.calculation.status.baseline_sample_size', 1)
             ->assertJsonPath('data.calculation.status.monitoring_sample_size', 1)
             ->assertJsonPath('data.calculation.families.monitoring.0.monitoring_participation_id', 2)
+            ->assertJsonPath('data.source.households.0.monitoring_scenario', 'MONITORING_COMBINED')
+            ->assertJsonPath('data.source.households.0.baseline_days.0.available_weight_kg', 20)
+            ->assertJsonPath('data.source.households.0.monitoring_components.moon_group_days.0.available_weight_kg', 20)
+            ->assertJsonPath('data.source.households.0.monitoring_components.traditional_days.0.available_weight_kg', 15)
             ->assertJsonPath('data.calculation.statistics.baseline.mean_kg_household_day', 14.5)
             ->assertJsonPath('data.calculation.statistics.monitoring.mean_kg_household_day', 14.2)
             ->assertJsonStructure(['data' => ['calculation' => ['emissions' => [

@@ -1469,7 +1469,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Cálculo RECH, muestras y trazabilidad por hogar"
+                        "description": "Cálculo RECH, parámetros, pesos originales, componentes Moon/tradicional y trazabilidad por hogar"
                     },
                     "401": {
                         "description": "No autenticado"

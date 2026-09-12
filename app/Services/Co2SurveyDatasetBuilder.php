@@ -73,6 +73,10 @@ class Co2SurveyDatasetBuilder
                     $this->membersByDay($monitoringData, $members),
                     $members
                 ),
+                'monitoring_components' => [
+                    'traditional_days' => $monitoringInput['baseline']['days'] ?? [],
+                    'moon_group_days' => $monitoringInput['project']['days'] ?? [],
+                ],
             ];
         })->values()->all();
 

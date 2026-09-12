@@ -99,7 +99,7 @@ class Co2CalculatorController extends Controller
      *         )
      *     )),
      *
-     *     @OA\Response(response=200, description="Cálculo RECH, muestras y trazabilidad por hogar"),
+     *     @OA\Response(response=200, description="Cálculo RECH, parámetros, pesos originales, componentes Moon/tradicional y trazabilidad por hogar"),
      *     @OA\Response(response=401, description="No autenticado"),
      *     @OA\Response(response=403, description="Sin el permiso participations.view"),
      *     @OA\Response(response=422, description="Encuestas incompatibles o parámetros inválidos")
@@ -128,6 +128,7 @@ class Co2CalculatorController extends Controller
                 'available_households' => $dataset['available_households'],
                 'selected_households' => $dataset['selected_households'],
                 'warnings' => $dataset['warnings'],
+                'households' => $dataset['families'],
             ],
             'calculation' => $calculation,
         ]]);
