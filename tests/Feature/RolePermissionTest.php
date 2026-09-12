@@ -115,6 +115,32 @@ class RolePermissionTest extends TestCase
         $this->postJson('/api/rol', ['name' => 'Rol no autorizado'])->assertForbidden();
     }
 
+    public function test_only_administrators_can_delete_participations(): void
+    {
+        $participationsManage = Permission::where('route', 'participations.manage')->firstOrFail();
+        $supervisorRole = Rol::create([
+            'name' => 'Supervisor',
+            'status' => Rol::STATUS_ACTIVE,
+        ]);
+        $supervisorRole->permissions()->attach($participationsManage->id, [
+            'name_permission' => $participationsManage->name,
+            'name_rol' => $supervisorRole->name,
+            'type' => $participationsManage->type,
+        ]);
+
+        foreach (['Encuestador', 'Supervisor'] as $roleName) {
+            $user = $roleName === 'Supervisor'
+                ? $this->createUser('supervisor-eliminacion', $supervisorRole)
+                : $this->userWithRole('encuestador-eliminacion', $roleName);
+
+            Sanctum::actingAs($user);
+
+            $this->deleteJson('/api/surveyed/999999')
+                ->assertForbidden()
+                ->assertJsonPath('message', 'Solo Administrador y Administrador Moon pueden eliminar participaciones.');
+        }
+    }
+
     public function test_login_returns_permission_codes_for_frontend_authorization(): void
     {
         $user = $this->userWithRole('login-permisos', 'Encuestador');
