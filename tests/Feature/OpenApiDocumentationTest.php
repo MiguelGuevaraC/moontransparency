@@ -24,6 +24,8 @@ class OpenApiDocumentationTest extends TestCase
             '/moontransparency/public/api/surveyed' => ['get'],
             '/moontransparency/public/api/surveyed/{id}' => ['get'],
             '/moontransparency/public/api/surveyed/{id}/calculator' => ['get'],
+            '/moontransparency/public/api/calculator/co2/configuration' => ['get'],
+            '/moontransparency/public/api/calculator/co2' => ['post'],
             '/moontransparency/public/api/surveyed/{id}/reopen' => ['post'],
             '/moontransparency/public/api/user' => ['get', 'post'],
             '/moontransparency/public/api/user/{id}' => ['get', 'put', 'delete'],

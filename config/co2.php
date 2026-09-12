@@ -1,0 +1,48 @@
+<?php
+
+return [
+    'contract_version' => '1.0',
+    'methodology' => 'RECH v5.0',
+    'sample_limit' => 20,
+    'precision_probability_two_tails' => 0.20,
+    'precision_threshold' => 0.10,
+    'adult_equivalent' => [
+        'children_0_14' => 0.5,
+        'women_over_14' => 0.8,
+        'men_15_59' => 1.0,
+        'men_over_59' => 0.8,
+    ],
+    'per_capita_cap_t_year' => 1.25,
+    'net_calorific_value_tj_t' => 0.0156,
+    'co2_emission_factor_t_tj' => 112.0,
+    'non_renewable_biomass_fraction' => 0.8,
+    'non_co2_emission_factor_t_tj' => 9.49,
+    'years' => 1.0,
+    'operational_groups' => [
+        ['quantity' => 1.0, 'operational' => true, 'months' => 12.0],
+        ['quantity' => 1.0, 'operational' => true, 'months' => 12.0],
+        ['quantity' => 1.0, 'operational' => true, 'months' => 6.0],
+    ],
+    'usage_cap' => 0.75,
+    'usage_groups' => [
+        ['quantity' => 50.0, 'percentage' => 0.9],
+        ['quantity' => 30.0, 'percentage' => 0.8],
+        ['quantity' => 20.0, 'percentage' => 0.7],
+    ],
+    'monitoring_year' => 2026,
+    'downward_adjustment_factors' => [
+        2026 => 0.02,
+        2027 => 0.04,
+    ],
+    'default_downward_adjustment_factor' => 0.02,
+    'number_of_stoves' => 3.0,
+    'manufacturing_emission_t_per_stove' => 0.0017,
+    'stove_lifetime_years' => 5.0,
+    'destruction_evidence' => false,
+    'market_leakage_percentage' => 0.02,
+    'monitoring_method' => 'MANUAL',
+    'hawthorne_factors' => [
+        'MANUAL' => 0.9,
+        'SENSORS' => 1.0,
+    ],
+];

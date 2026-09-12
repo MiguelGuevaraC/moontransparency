@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Co2CalculatorController;
 use App\Http\Controllers\SurveyCleanupController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\SurveyedController;
@@ -13,6 +14,11 @@ Route::put('survey/{id}', [SurveyController::class, 'update'])->middleware('perm
 Route::delete('survey/{id}', [SurveyController::class, 'destroy'])->middleware('permission:surveys.manage');
 Route::post('survey/{id}/clean-participations', [SurveyCleanupController::class, 'store'])
     ->middleware('permission:surveys.clean_participations');
+
+Route::get('calculator/co2/configuration', [Co2CalculatorController::class, 'configuration'])
+    ->middleware('permission:participations.view');
+Route::post('calculator/co2', [Co2CalculatorController::class, 'calculate'])
+    ->middleware('permission:participations.view');
 
 Route::get('surveyed', [SurveyedController::class, 'index'])->middleware('permission:participations.view');
 Route::get('surveyed/{id}/calculator', [SurveyedController::class, 'calculator'])->middleware('permission:participations.view');

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Household;
 use App\Models\Proyect;
 use App\Models\Rol;
 use App\Models\Survey;
@@ -20,16 +21,17 @@ class HouseholdIdentificationTest extends TestCase
         $survey = $this->createSurvey('Identificación');
 
         $created = $this->postJson('/api/response-survey', $this->payload($survey, 'DOC-PERSONA-01'))
-            ->assertOk()
-            ->assertJsonPath('data.household.code', 'HOG-00000001');
+            ->assertOk();
 
         $surveyedId = (int) $created->json('data.id');
         $householdId = (int) $created->json('data.household.id');
+        $householdCode = Household::formatCode($householdId);
 
-        $this->assertNotSame('DOC-PERSONA-01', $created->json('data.household.code'));
+        $this->assertSame($householdCode, $created->json('data.household.code'));
+        $this->assertNotSame('DOC-PERSONA-01', $householdCode);
         $this->assertDatabaseHas('households', [
             'id' => $householdId,
-            'code' => 'HOG-00000001',
+            'code' => $householdCode,
         ]);
         $this->assertDatabaseHas('surveyeds', [
             'id' => $surveyedId,
@@ -41,8 +43,8 @@ class HouseholdIdentificationTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.contract.version', '1.3')
             ->assertJsonPath('data.household.id', $householdId)
-            ->assertJsonPath('data.household.code', 'HOG-00000001')
-            ->assertJsonPath('data.household.identifier', 'HOG-00000001')
+            ->assertJsonPath('data.household.code', $householdCode)
+            ->assertJsonPath('data.household.identifier', $householdCode)
             ->assertJsonPath('data.household.source', 'HOUSEHOLD');
     }
 
