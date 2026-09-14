@@ -6,6 +6,7 @@ use App\Models\Proyect;
 use App\Models\Survey;
 use App\Models\Surveyed;
 use App\Models\SurveyedResponse;
+use App\Models\SurveyedResponseOption;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyQuestionOption;
 use DomainException;
@@ -73,14 +74,33 @@ class GeobosquesSurveyConfigurator
         if ((clone $participations)
             ->where(function ($query) {
                 $query->where('status', Surveyed::STATUS_FINALIZED)
-                    ->orWhereNotNull('completed_at');
+                    ->orWhereNotNull('completed_at')
+                    ->orWhereNotNull('latitude')
+                    ->orWhereNotNull('longitude');
             })
             ->exists()) {
             return true;
         }
 
-        return SurveyedResponse::withTrashed()
-            ->whereIn('surveyed_id', (clone $participations)->select('id'))
+        $responses = SurveyedResponse::withTrashed()
+            ->whereIn('surveyed_id', (clone $participations)->select('id'));
+
+        if ((clone $responses)
+            ->where(function ($query) {
+                $query->where(function ($textQuery) {
+                    $textQuery->whereNotNull('response_text')
+                        ->where('response_text', '<>', '');
+                })->orWhere(function ($fileQuery) {
+                    $fileQuery->whereNotNull('file_path')
+                        ->where('file_path', '<>', '');
+                });
+            })
+            ->exists()) {
+            return true;
+        }
+
+        return SurveyedResponseOption::withTrashed()
+            ->whereIn('surveyed_response_id', (clone $responses)->select('id'))
             ->exists();
     }
 

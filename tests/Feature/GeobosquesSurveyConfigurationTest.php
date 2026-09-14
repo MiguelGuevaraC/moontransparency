@@ -178,6 +178,11 @@ class GeobosquesSurveyConfigurationTest extends TestCase
             'surveyed_id' => $participation->id,
             'day_number' => 1,
         ]);
+        SurveyedResponse::create([
+            'surveyed_id' => $participation->id,
+            'survey_question_id' => $survey->survey_questions()->firstOrFail()->id,
+            'response_text' => null,
+        ]);
 
         $this->artisan('survey:configure-geobosques', ['project' => $project->id])
             ->expectsOutputToContain('Estado: ACTIVA (estado conservado)')
