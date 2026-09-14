@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Resources\SurveyResource;
 use App\Models\Proyect;
 use App\Models\SurveyQuestion;
 use App\Services\GeobosquesSurveyConfigurator;
@@ -101,6 +102,20 @@ class GeobosquesSurveyConfigurationTest extends TestCase
         $this->assertSame('Unidad: km.', $questions[2]->justification);
         $this->assertSame('Unidad: km.', $questions[4]->justification);
         $this->assertSame(9, $questions->sum(fn ($question) => $question->survey_questions_options->count()));
+
+        $resource = (new SurveyResource($survey))->resolve();
+
+        $this->assertTrue($resource['requires_coordinates']);
+        $this->assertSame('AFTER_QUESTIONS', $resource['coordinate_capture']['position']);
+        $this->assertTrue($resource['coordinate_capture']['required_on_finalize']);
+        $this->assertSame(
+            ['latitude', 'longitude'],
+            collect($resource['coordinate_capture']['fields'])->pluck('name')->all()
+        );
+        $this->assertSame(
+            ['Latitud', 'Longitud'],
+            collect($resource['coordinate_capture']['fields'])->pluck('label')->all()
+        );
     }
 
     public function test_configuration_is_idempotent_while_the_survey_remains_unpublished(): void

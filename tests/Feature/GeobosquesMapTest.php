@@ -20,6 +20,7 @@ class GeobosquesMapTest extends TestCase
 
         $this->assertTrue($map['available']);
         $this->assertSame('GEOBOSQUES_MINAM', $map['provider']);
+        $this->assertSame('Ver ubicación en GeoBosques', $map['link_label']);
         $this->assertSame(-6.39454, $map['latitude']);
         $this->assertSame(-79.822403, $map['longitude']);
         $this->assertSame(

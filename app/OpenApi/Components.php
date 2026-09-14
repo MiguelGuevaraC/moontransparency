@@ -55,12 +55,38 @@ namespace App\OpenApi;
  * )
  *
  * @OA\Schema(
+ *     schema="CoordinateCaptureField",
+ *     type="object",
+ *     required={"name", "label", "type", "minimum", "maximum", "step"},
+ *
+ *     @OA\Property(property="name", type="string", enum={"latitude", "longitude"}),
+ *     @OA\Property(property="label", type="string", example="Latitud"),
+ *     @OA\Property(property="type", type="string", enum={"number"}),
+ *     @OA\Property(property="minimum", type="number", example=-90),
+ *     @OA\Property(property="maximum", type="number", example=90),
+ *     @OA\Property(property="step", type="string", enum={"any"})
+ * )
+ *
+ * @OA\Schema(
+ *     schema="CoordinateCapture",
+ *     type="object",
+ *     required={"position", "title", "description", "required_on_finalize", "fields"},
+ *
+ *     @OA\Property(property="position", type="string", enum={"AFTER_QUESTIONS"}),
+ *     @OA\Property(property="title", type="string", example="Coordenadas del punto"),
+ *     @OA\Property(property="description", type="string"),
+ *     @OA\Property(property="required_on_finalize", type="boolean", example=true),
+ *     @OA\Property(property="fields", type="array", @OA\Items(ref="#/components/schemas/CoordinateCaptureField"))
+ * )
+ *
+ * @OA\Schema(
  *     schema="GeobosquesMap",
  *     type="object",
  *     required={"available", "provider", "marker_supported", "requires_connection", "load_strategy"},
  *
  *     @OA\Property(property="available", type="boolean", example=true),
  *     @OA\Property(property="provider", type="string", example="GEOBOSQUES_MINAM"),
+ *     @OA\Property(property="link_label", type="string", example="Ver ubicación en GeoBosques"),
  *     @OA\Property(property="latitude", type="number", format="double", nullable=true, minimum=-90, maximum=90),
  *     @OA\Property(property="longitude", type="number", format="double", nullable=true, minimum=-180, maximum=180),
  *     @OA\Property(property="viewer_url", type="string", format="uri", nullable=true),

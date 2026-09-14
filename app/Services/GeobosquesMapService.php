@@ -28,6 +28,7 @@ class GeobosquesMapService
         return [
             'available' => true,
             'provider' => config('geobosques.viewer.provider'),
+            'link_label' => 'Ver ubicación en GeoBosques',
             'latitude' => (float) $normalizedLatitude,
             'longitude' => (float) $normalizedLongitude,
             'viewer_url' => rtrim((string) config('geobosques.viewer.base_url'), '?').'?'.$markerParameter.'='.$normalizedLatitude.','.$normalizedLongitude,
@@ -48,6 +49,7 @@ class GeobosquesMapService
         return [
             'available' => false,
             'provider' => config('geobosques.viewer.provider'),
+            'link_label' => 'Ver ubicación en GeoBosques',
             'latitude' => null,
             'longitude' => null,
             'viewer_url' => null,

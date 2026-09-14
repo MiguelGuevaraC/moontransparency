@@ -8,6 +8,30 @@ return [
         'description' => 'Instrumento GeoBosques para registrar factores de presión y el estado de conservación del bosque.',
         'requires_coordinates' => true,
     ],
+    'coordinate_capture' => [
+        'position' => 'AFTER_QUESTIONS',
+        'title' => 'Coordenadas del punto',
+        'description' => 'Ingrese manualmente la latitud y la longitud del lugar encuestado.',
+        'required_on_finalize' => true,
+        'fields' => [
+            [
+                'name' => 'latitude',
+                'label' => 'Latitud',
+                'type' => 'number',
+                'minimum' => -90,
+                'maximum' => 90,
+                'step' => 'any',
+            ],
+            [
+                'name' => 'longitude',
+                'label' => 'Longitud',
+                'type' => 'number',
+                'minimum' => -180,
+                'maximum' => 180,
+                'step' => 'any',
+            ],
+        ],
+    ],
     'viewer' => [
         'provider' => env('GEOBOSQUES_PROVIDER', 'GEOBOSQUES_MINAM'),
         'base_url' => env('GEOBOSQUES_VIEWER_URL', 'https://geobosques.minam.gob.pe/geobosque/visor/index.php'),

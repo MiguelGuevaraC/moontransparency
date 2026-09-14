@@ -32,6 +32,8 @@ class SurveyedResource extends JsonResource
      *     @OA\Property(property="proyect_id", type="integer", example="101"),
      *     @OA\Property(property="survey_name", type="string", example="Encuesta de Energía Renovable"),
      *     @OA\Property(property="description", type="string", example="Encuesta para evaluar el uso de energía renovable en zonas rurales."),
+     *     @OA\Property(property="requires_coordinates", type="boolean", example=true),
+     *     @OA\Property(property="coordinate_capture", nullable=true, ref="#/components/schemas/CoordinateCapture"),
      *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-01-26T21:44:24"),
      * )
      */

@@ -8,6 +8,7 @@ class SurveyResource extends JsonResource
 {
     public function toArray($request)
     {
+        $requiresCoordinates = (bool) $this->requires_coordinates;
         // --- POST cuando soy PRE (usando ?->)
         $postSurveyObj = null;
         if ($this->survey_type === 'PRE') {
@@ -78,7 +79,10 @@ class SurveyResource extends JsonResource
             'kind' => $this->calculatorKind(),
             'description' => $this->description,
             'status' => $this->status,
-            'requires_coordinates' => (bool) $this->requires_coordinates,
+            'requires_coordinates' => $requiresCoordinates,
+            'coordinate_capture' => $requiresCoordinates
+                ? config('geobosques.coordinate_capture')
+                : null,
             'expected_days' => $this->expectedDays(),
 
             // estado y links

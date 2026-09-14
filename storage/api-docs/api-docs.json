@@ -9231,6 +9231,18 @@
                         "type": "string",
                         "example": "Encuesta para evaluar el uso de energía renovable en zonas rurales."
                     },
+                    "requires_coordinates": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "coordinate_capture": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/CoordinateCapture"
+                            }
+                        ],
+                        "nullable": true
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time",
@@ -9757,6 +9769,85 @@
                 },
                 "type": "object"
             },
+            "CoordinateCaptureField": {
+                "required": [
+                    "name",
+                    "label",
+                    "type",
+                    "minimum",
+                    "maximum",
+                    "step"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "enum": [
+                            "latitude",
+                            "longitude"
+                        ]
+                    },
+                    "label": {
+                        "type": "string",
+                        "example": "Latitud"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "number"
+                        ]
+                    },
+                    "minimum": {
+                        "type": "number",
+                        "example": -90
+                    },
+                    "maximum": {
+                        "type": "number",
+                        "example": 90
+                    },
+                    "step": {
+                        "type": "string",
+                        "enum": [
+                            "any"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "CoordinateCapture": {
+                "required": [
+                    "position",
+                    "title",
+                    "description",
+                    "required_on_finalize",
+                    "fields"
+                ],
+                "properties": {
+                    "position": {
+                        "type": "string",
+                        "enum": [
+                            "AFTER_QUESTIONS"
+                        ]
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Coordenadas del punto"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "required_on_finalize": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CoordinateCaptureField"
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "GeobosquesMap": {
                 "required": [
                     "available",
@@ -9773,6 +9864,10 @@
                     "provider": {
                         "type": "string",
                         "example": "GEOBOSQUES_MINAM"
+                    },
+                    "link_label": {
+                        "type": "string",
+                        "example": "Ver ubicación en GeoBosques"
                     },
                     "latitude": {
                         "type": "number",
