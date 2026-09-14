@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Household;
-use App\Models\Co2Calculation;
 use App\Models\Proyect;
 use App\Models\Respondent;
 use App\Models\Rol;
@@ -94,9 +93,36 @@ class Co2CalculatorApiTest extends TestCase
         $this->assertSame([$baseline->id, $monitoring->id], array_column($response->json('data.surveys'), 'id'));
     }
 
+    public function test_it_generates_a_signed_iframe_with_real_survey_data(): void
+    {
+        [$project, $baseline, $monitoring] = $this->createKptDataset();
+        $this->authenticate();
+
+        $response = $this->postJson('/api/calculator/co2/embed-link', [
+            'project_id' => $project->id,
+            'baseline_survey_id' => $baseline->id,
+            'monitoring_survey_id' => $monitoring->id,
+        ])->assertOk()
+            ->assertJsonPath('data.project_id', $project->id)
+            ->assertJsonPath('data.baseline_survey.id', $baseline->id)
+            ->assertJsonPath('data.monitoring_survey.id', $monitoring->id)
+            ->assertJsonPath('data.selected_households', 1)
+            ->assertJsonStructure(['data' => ['iframe_url', 'viewer_url', 'expires_at']]);
+
+        $this->get($response->json('data.iframe_url'))
+            ->assertOk()
+            ->assertSee('Datos cargados automáticamente desde las encuestas', false)
+            ->assertSee('const SURVEY_FAMILIES = [{"id":"HOG-00000001"', false)
+            ->assertSee('"pesoInicial":20', false)
+            ->assertSee('"pf":[5', false)
+            ->assertDontSee('const PRELOADED_FAMILIES', false)
+            ->assertDontSee('"id":"H-01"', false);
+    }
+
     public function test_calculation_requires_authentication(): void
     {
         $this->postJson('/api/calculator/co2', [])->assertUnauthorized();
+        $this->postJson('/api/calculator/co2/embed-link', [])->assertUnauthorized();
     }
 
     public function test_calculator_requires_its_specific_permission(): void
@@ -114,6 +140,9 @@ class Co2CalculatorApiTest extends TestCase
             ->assertForbidden()
             ->assertJsonPath('required_permission', 'calculator.view');
         $this->postJson('/api/calculator/co2', [])
+            ->assertForbidden()
+            ->assertJsonPath('required_permission', 'calculator.view');
+        $this->postJson('/api/calculator/co2/embed-link', [])
             ->assertForbidden()
             ->assertJsonPath('required_permission', 'calculator.view');
     }

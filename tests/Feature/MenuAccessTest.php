@@ -26,6 +26,7 @@ class MenuAccessTest extends TestCase
             ->assertJsonPath('data.12.code', 'calculator')
             ->assertJsonPath('data.12.path', '/calculadora')
             ->assertJsonPath('data.12.url', url('/calculadora'))
+            ->assertJsonPath('data.12.embed_link_endpoint', url('/api/calculator/co2/embed-link'))
             ->assertJsonPath('data.12.external', true);
 
         $this->assertArrayNotHasKey('permissions', $response->json('data.12'));
@@ -46,6 +47,7 @@ class MenuAccessTest extends TestCase
                 'name' => 'Calculadora',
                 'path' => '/calculadora',
                 'url' => url('/calculadora'),
+                'embed_link_endpoint' => url('/api/calculator/co2/embed-link'),
                 'external' => true,
             ]);
     }

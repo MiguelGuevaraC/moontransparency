@@ -56,17 +56,45 @@
   footer{text-align:center;color:var(--muted);font-size:11px;padding:20px;}
   .flexbetween{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
   details summary{cursor:pointer;color:var(--accent2);font-size:13px;margin:6px 0;}
+  .data-source{max-width:1100px;margin:14px auto 0;padding:12px 16px;border-radius:8px;border:1px solid var(--border);background:#fff;}
+  .data-source.loaded{border-left:5px solid #2b8a3e;}
+  .data-source.empty{border-left:5px solid var(--warn);}
+  .data-source strong{display:block;margin-bottom:4px;}
+  .data-source p{margin:3px 0;font-size:12px;color:var(--muted);}
+  .data-source ul{margin:6px 0 0;padding-left:20px;font-size:12px;color:var(--warn);}
 </style>
 </head>
 <body>
 <header>
   <h1>Calculadora de Emisiones de CO2 (Reduced Emissions from Cooking and Heating (RECH) v5.0 - Gold Standard)</h1>
 </header>
+<section class="data-source {{ ($calculatorContext['loaded'] ?? false) ? 'loaded' : 'empty' }}">
+  @if ($calculatorContext['loaded'] ?? false)
+    <strong>Datos cargados automáticamente desde las encuestas</strong>
+    <p>
+      Proyecto #{{ $calculatorContext['project_id'] }} ·
+      Línea base: {{ $calculatorContext['baseline_survey']['name'] }} ·
+      Monitoreo: {{ $calculatorContext['monitoring_survey']['name'] }} ·
+      Hogares cargados: {{ $calculatorContext['selected_households'] }}
+    </p>
+    @if (!empty($calculatorContext['warnings']))
+      <ul>
+        @foreach ($calculatorContext['warnings'] as $warning)
+          <li>{{ $warning }}</li>
+        @endforeach
+      </ul>
+    @endif
+  @else
+    <strong>Calculadora sin datos de encuesta</strong>
+    <p>{{ $calculatorContext['message'] ?? 'Solicite un enlace desde el panel administrativo.' }}</p>
+  @endif
+</section>
 <nav id="mainNav"></nav>
 <main id="mainContent"></main>
 
 <script>
-window.APP_CONFIG = {"maxFamilias": 20, "pesoInicialLBdefault": 20, "pesoInicialMejDefault": 20, "pesoInicialTradDefault": 15, "fChild": 0.5, "fWoman": 0.8, "fMan1559": 1.0, "fMan60plus": 0.8, "pcapTope": 1.25, "NCVbfuel": 0.0156, "EFbfCO2": 112, "fNRBby": 0.8, "EFbfNonCO2": 9.49, "nYears": 1, "nbpyRows": [{"id": "", "cantidad": 1, "operativa": true, "fechaInicio": "", "meses": 12}, {"id": "", "cantidad": 1, "operativa": true, "fechaInicio": "", "meses": 12}, {"id": "", "cantidad": 1, "operativa": true, "fechaInicio": "", "meses": 6}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}, {"id": "", "cantidad": 0, "operativa": false, "fechaInicio": "", "meses": 0}], "upyCap": 0.75, "upyRows": [{"rango": "0 - 1", "cantidad": 50, "porcentaje": 0.9}, {"rango": "1 - 2", "cantidad": 30, "porcentaje": 0.8}, {"rango": "2 - 3", "cantidad": 20, "porcentaje": 0.7}], "monitoringYear": 2026, "dafRows": [{"year": 2026, "pct": 0.02}, {"year": 2027, "pct": 0.04}], "dafDefault": 0.02, "numCocinas": 3, "emisionFabCocina": 0.0017, "aniosVidaCocina": 5, "evidenciaDestruccion": false, "leMarketPct": 0.02, "HEind": 0.9};
+window.APP_CONFIG = @json($calculatorConfig);
+window.CALCULATOR_CONTEXT = @json($calculatorContext);
 </script>
 <script>
 /* ============================================================
@@ -154,29 +182,34 @@ function newFamily(i){
     id:'', // ID del Hogar (obligatorio para que la familia cuente en los promedios)
     lb:{
       comp:{ni:emptyDay7(),mu:emptyDay7(),h1:emptyDay7(),h2:emptyDay7()},
-      pesoInicial: CFG.pesoInicialLBdefault,
+      pesoInicial: null,
       pf: emptyDay7(),
       carbon: emptyDay7()
     },
     mon:{
       comp:{ni:emptyDay7(),mu:emptyDay7(),h1:emptyDay7(),h2:emptyDay7()},
-      pesoInicialMej: CFG.pesoInicialMejDefault,
-      pesoInicialTrad: CFG.pesoInicialTradDefault,
+      pesoInicialMej: null,
+      pesoInicialTrad: null,
       pfMej: emptyDay7(), carbMej: emptyDay7(),
       pfTrad: emptyDay7(), carbTrad: emptyDay7()
     }
   };
 }
-const PRELOADED_FAMILIES = [{"id":"H-01","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":15,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[8,7,6,5,7,8,7],"carbTrad":[0.5,0.2,0.5,0.4,1.8,2,0.8]}},{"id":"H-02","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-03","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[10,5,2,2,9,1,9],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-04","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[10,5,6,2,8,1,7],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":15,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[8,7,6,5,7,8,7],"carbTrad":[0.5,0.2,0.5,0.4,1.8,2,0.8]}},{"id":"H-05","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[15,4,2,2,2,12,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":15,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[8,7,6,5,7,8,7],"carbTrad":[0.5,0.2,0.5,0.4,1.8,2,0.8]}},{"id":"H-06","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":15,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[8,7,6,5,7,8,7],"carbTrad":[0.5,0.2,0.5,0.4,1.8,2,0.8]}},{"id":"H-07","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[10,15,2,10,8,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-08","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,6,8,9,8,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-09","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-10","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-11","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,11,11,9,5,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-12","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-13","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,15,8,9,10,10,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-14","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-15","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,10,8,8,10,7,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-16","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-17","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-18","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,10,15,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-19","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}},{"id":"H-20","lb":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicial":20,"pf":[5,4,2,2,2,1,2],"carbon":[0.5,0.6,0.5,0.5,0.5,0.5,0.5]},"mon":{"comp":{"ni":[3,3,3,3,3,3,3],"mu":[0,0,0,0,0,0,0],"h1":[2,2,2,2,2,2,2],"h2":[0,0,0,0,0,0,0]},"pesoInicialMej":20,"pesoInicialTrad":0,"pfMej":[12,11,8,9,10,9,11],"carbMej":[0.3,0.2,0.15,0.3,0.2,0.15,0.15],"pfTrad":[null,null,null,null,null,null,null],"carbTrad":[null,null,null,null,null,null,null]}}];
+const SURVEY_FAMILIES = @json($calculatorFamilies);
+const INITIAL_FAMILIES = Array.from({length:N_FAM}, (_,i)=>
+  SURVEY_FAMILIES[i]
+    ? JSON.parse(JSON.stringify(SURVEY_FAMILIES[i]))
+    : newFamily(i)
+);
 let STATE = {
   config: JSON.parse(JSON.stringify(CFG)),
-  families: JSON.parse(JSON.stringify(PRELOADED_FAMILIES))
+  families: JSON.parse(JSON.stringify(INITIAL_FAMILIES))
 };
 
 /* ============================================================
    PERSISTENCIA LOCAL (localStorage)
    ============================================================ */
-const LS_KEY = 'co2calc_state_v3_parameter_tables_kpt_complete_v2';
+const LS_KEY = `co2calc_survey_${window.CALCULATOR_CONTEXT.fingerprint || 'empty'}`;
 function saveState(){
   try{ localStorage.setItem(LS_KEY, JSON.stringify(STATE)); }catch(e){ console.warn('No se pudo guardar en localStorage', e); }
 }
@@ -887,7 +920,7 @@ function renderAll(){
 }
 
 /* ---------- INIT ---------- */
-if(!loadState()) STATE.families = JSON.parse(JSON.stringify(PRELOADED_FAMILIES));
+if(!loadState()) STATE.families = JSON.parse(JSON.stringify(INITIAL_FAMILIES));
 renderAll();
 console.log('core loaded ok');
 </script>

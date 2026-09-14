@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CalculatorViewController;
 use App\Http\Controllers\GeobosquesMapController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::view('/calculadora', 'calculadora')->name('calculator');
+Route::get('/calculadora', [CalculatorViewController::class, 'index'])->name('calculator');
+Route::get('/calculadora/embed', [CalculatorViewController::class, 'embed'])
+    ->middleware('signed')
+    ->name('calculator.embed');
 Route::get('/mapa', [GeobosquesMapController::class, 'show'])
     ->name('geobosques.map');

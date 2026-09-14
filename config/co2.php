@@ -6,6 +6,14 @@ return [
     'formula_version' => 'RECH-v5.0-2026-09',
     'factor_source' => 'ECUACION DE REDUCCION DE EMISIONES DE CO2 V2-3.xlsx',
     'sample_limit' => 20,
+    'embed_link_ttl_minutes' => (int) env('CO2_CALCULATOR_LINK_TTL_MINUTES', 30),
+    'embed_allowed_origins' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env(
+            'CO2_CALCULATOR_EMBED_ORIGINS',
+            'https://moongroup-admin.vercel.app,https://www.moongroup.com.pe'
+        ))
+    ))),
     'precision_probability_two_tails' => 0.20,
     'precision_threshold' => 0.10,
     'adult_equivalent' => [

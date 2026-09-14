@@ -1355,6 +1355,76 @@
                 ]
             }
         },
+        "/moontransparency/public/api/calculator/co2/embed-link": {
+            "post": {
+                "tags": [
+                    "CO2 Calculator"
+                ],
+                "summary": "Generar un enlace temporal para la calculadora con datos reales",
+                "operationId": "createCo2CalculatorEmbedLink",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "project_id",
+                                    "baseline_survey_id"
+                                ],
+                                "properties": {
+                                    "project_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "baseline_survey_id": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "monitoring_survey_id": {
+                                        "type": "integer",
+                                        "example": 11,
+                                        "nullable": true
+                                    },
+                                    "household_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "maxItems": 20
+                                    },
+                                    "sample_limit": {
+                                        "type": "integer",
+                                        "maximum": 20,
+                                        "minimum": 1,
+                                        "example": 20
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "URL firmada y temporal para usar como iframe o abrir en una pestaña"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin el permiso calculator.view"
+                    },
+                    "422": {
+                        "description": "Encuestas incompatibles o parámetros inválidos"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/calculator/co2/configuration": {
             "get": {
                 "tags": [
@@ -8573,6 +8643,11 @@
                     "url": {
                         "type": "string",
                         "example": "https://backend.example.com/calculadora",
+                        "nullable": true
+                    },
+                    "embed_link_endpoint": {
+                        "type": "string",
+                        "example": "https://backend.example.com/api/calculator/co2/embed-link",
                         "nullable": true
                     },
                     "external": {

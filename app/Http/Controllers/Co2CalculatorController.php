@@ -3,15 +3,81 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Co2CalculationRequest;
+use App\Http\Requests\Co2CalculatorEmbedLinkRequest;
 use App\Models\Co2Calculation;
 use App\Models\Proyect;
 use App\Models\Survey;
 use App\Services\Co2EmissionCalculator;
 use App\Services\Co2SurveyDatasetBuilder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 
 class Co2CalculatorController extends Controller
 {
+    /**
+     * @OA\Post(
+     *     path="/moontransparency/public/api/calculator/co2/embed-link",
+     *     operationId="createCo2CalculatorEmbedLink",
+     *     summary="Generar un enlace temporal para la calculadora con datos reales",
+     *     tags={"CO2 Calculator"},
+     *     security={{"bearerAuth": {}}},
+     *
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"project_id", "baseline_survey_id"},
+     *
+     *         @OA\Property(property="project_id", type="integer", example=2),
+     *         @OA\Property(property="baseline_survey_id", type="integer", example=10),
+     *         @OA\Property(property="monitoring_survey_id", type="integer", nullable=true, example=11),
+     *         @OA\Property(property="household_ids", type="array", maxItems=20, @OA\Items(type="integer")),
+     *         @OA\Property(property="sample_limit", type="integer", minimum=1, maximum=20, example=20)
+     *     )),
+     *
+     *     @OA\Response(response=200, description="URL firmada y temporal para usar como iframe o abrir en una pestaña"),
+     *     @OA\Response(response=401, description="No autenticado"),
+     *     @OA\Response(response=403, description="Sin el permiso calculator.view"),
+     *     @OA\Response(response=422, description="Encuestas incompatibles o parámetros inválidos")
+     * )
+     */
+    public function embedLink(
+        Co2CalculatorEmbedLinkRequest $request,
+        Co2SurveyDatasetBuilder $datasetBuilder
+    ) {
+        $validated = $request->validated();
+        $limit = (int) ($validated['sample_limit'] ?? config('co2.sample_limit', 20));
+        $dataset = $datasetBuilder->build(
+            (int) $validated['project_id'],
+            (int) $validated['baseline_survey_id'],
+            isset($validated['monitoring_survey_id']) ? (int) $validated['monitoring_survey_id'] : null,
+            $validated['household_ids'] ?? [],
+            $limit
+        );
+        $expiresAt = now()->addMinutes(
+            max(1, min((int) config('co2.embed_link_ttl_minutes', 30), 120))
+        );
+        $parameters = [
+            'project_id' => $dataset['project_id'],
+            'baseline_survey_id' => $dataset['baseline_survey']['id'],
+            'monitoring_survey_id' => $dataset['monitoring_survey']['id'],
+            'sample_limit' => $limit,
+        ];
+        if (! empty($validated['household_ids'])) {
+            $parameters['household_ids'] = array_values($validated['household_ids']);
+        }
+        $iframeUrl = URL::temporarySignedRoute('calculator.embed', $expiresAt, $parameters);
+
+        return response()->json(['data' => [
+            'iframe_url' => $iframeUrl,
+            'viewer_url' => $iframeUrl,
+            'expires_at' => $expiresAt->toIso8601String(),
+            'project_id' => $dataset['project_id'],
+            'baseline_survey' => $dataset['baseline_survey'],
+            'monitoring_survey' => $dataset['monitoring_survey'],
+            'available_households' => $dataset['available_households'],
+            'selected_households' => $dataset['selected_households'],
+            'warnings' => $dataset['warnings'],
+        ]]);
+    }
+
     /**
      * @OA\Get(
      *     path="/moontransparency/public/api/calculator/co2/configuration",
@@ -79,8 +145,10 @@ class Co2CalculatorController extends Controller
      *     summary="Consultar el historial de cálculos CO2",
      *     tags={"CO2 Calculator"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="project_id", in="query", required=false, @OA\Schema(type="integer", minimum=1)),
      *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", minimum=1, maximum=100)),
+     *
      *     @OA\Response(response=200, description="Historial paginado de cálculos"),
      *     @OA\Response(response=401, description="No autenticado"),
      *     @OA\Response(response=403, description="Sin el permiso calculator.view"),
