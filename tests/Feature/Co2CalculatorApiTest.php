@@ -109,6 +109,7 @@ class Co2CalculatorApiTest extends TestCase
             ->assertJsonPath('data.selected_households', 1)
             ->assertJsonStructure(['data' => ['iframe_url', 'viewer_url', 'expires_at']]);
 
+        $this->assertStringStartsWith('http://localhost/calculadora/embed?', $response->json('data.iframe_url'));
         $this->get($response->json('data.iframe_url'))
             ->assertOk()
             ->assertSee('Datos cargados automáticamente desde las encuestas', false)

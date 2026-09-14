@@ -27,18 +27,33 @@ class MenuResource extends JsonResource
     public function toArray($request): array
     {
         $isBackendPage = $this->code === 'calculator';
+        $calculatorBaseUrl = $isBackendPage
+            ? $this->calculatorBaseUrl($request)
+            : null;
 
         return [
             'id' => $this->id,
             'code' => $this->code,
             'name' => $this->name,
             'path' => $this->path,
-            'url' => $isBackendPage ? url($this->path) : null,
-            'embed_link_endpoint' => $isBackendPage ? url('/api/calculator/co2/embed-link') : null,
+            'url' => $isBackendPage ? $calculatorBaseUrl.$this->path : null,
+            'embed_link_endpoint' => $isBackendPage
+                ? $calculatorBaseUrl.'/api/calculator/co2/embed-link'
+                : null,
             'external' => $isBackendPage,
             'icon' => $this->icon,
             'sort_order' => $this->sort_order,
             'status' => $this->status,
         ];
+    }
+
+    private function calculatorBaseUrl($request): string
+    {
+        $configuredUrl = (string) config('co2.calculator_public_url', '');
+        if ($configuredUrl !== '') {
+            return rtrim($configuredUrl, '/');
+        }
+
+        return rtrim($request->getSchemeAndHttpHost().$request->getBaseUrl(), '/');
     }
 }

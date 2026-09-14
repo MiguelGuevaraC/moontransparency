@@ -52,6 +52,26 @@ class MenuAccessTest extends TestCase
             ]);
     }
 
+    public function test_calculator_menu_uses_the_configured_public_subdirectory(): void
+    {
+        config()->set(
+            'co2.calculator_public_url',
+            'https://develop.garzasoft.com/moontransparency/public'
+        );
+        Sanctum::actingAs($this->userWithRole('admin-menu-public-url', 'Administrador'));
+
+        $this->getJson('/api/menu')
+            ->assertOk()
+            ->assertJsonPath(
+                'data.12.url',
+                'https://develop.garzasoft.com/moontransparency/public/calculadora'
+            )
+            ->assertJsonPath(
+                'data.12.embed_link_endpoint',
+                'https://develop.garzasoft.com/moontransparency/public/api/calculator/co2/embed-link'
+            );
+    }
+
     public function test_assigning_menus_to_a_role_synchronizes_its_internal_permissions(): void
     {
         Sanctum::actingAs($this->userWithRole('admin-menu-sync', 'Administrador'));

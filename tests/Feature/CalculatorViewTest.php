@@ -10,7 +10,10 @@ class CalculatorViewTest extends TestCase
     {
         $this->get('/calculadora')
             ->assertOk()
-            ->assertHeader('Content-Security-Policy')
+            ->assertHeader(
+                'Content-Security-Policy',
+                "frame-ancestors 'self' https://moongroup-admin.vercel.app https://www.moongroup.com.pe"
+            )
             ->assertSee('Reduced Emissions from Cooking and Heating (RECH) v5.0', false)
             ->assertSee('Calculadora sin datos de encuesta', false)
             ->assertSee('id="mainNav"', false)

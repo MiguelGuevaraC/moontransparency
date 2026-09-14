@@ -7,6 +7,7 @@ return [
     'factor_source' => 'ECUACION DE REDUCCION DE EMISIONES DE CO2 V2-3.xlsx',
     'sample_limit' => 20,
     'embed_link_ttl_minutes' => (int) env('CO2_CALCULATOR_LINK_TTL_MINUTES', 30),
+    'calculator_public_url' => rtrim((string) env('CO2_CALCULATOR_PUBLIC_URL', ''), '/'),
     'embed_allowed_origins' => array_values(array_filter(array_map(
         'trim',
         explode(',', (string) env(

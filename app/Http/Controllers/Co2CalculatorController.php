@@ -63,7 +63,17 @@ class Co2CalculatorController extends Controller
         if (! empty($validated['household_ids'])) {
             $parameters['household_ids'] = array_values($validated['household_ids']);
         }
-        $iframeUrl = URL::temporarySignedRoute('calculator.embed', $expiresAt, $parameters);
+        // La firma es relativa para que siga siendo válida cuando Laravel está
+        // publicado dentro de un subdirectorio, como /moontransparency/public.
+        $relativeUrl = URL::temporarySignedRoute(
+            'calculator.embed',
+            $expiresAt,
+            $parameters,
+            false
+        );
+        $publicBaseUrl = config('co2.calculator_public_url')
+            ?: $request->getSchemeAndHttpHost().$request->getBaseUrl();
+        $iframeUrl = rtrim($publicBaseUrl, '/').$relativeUrl;
 
         return response()->json(['data' => [
             'iframe_url' => $iframeUrl,
