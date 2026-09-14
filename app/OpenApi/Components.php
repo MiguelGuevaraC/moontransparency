@@ -57,9 +57,11 @@ namespace App\OpenApi;
  * @OA\Schema(
  *     schema="CoordinateCaptureField",
  *     type="object",
- *     required={"name", "label", "type", "minimum", "maximum", "step"},
+ *     required={"name", "calculator_key", "label", "type", "minimum", "maximum", "step"},
  *
  *     @OA\Property(property="name", type="string", enum={"latitude", "longitude"}),
+ *     @OA\Property(property="calculator_key", type="string", enum={"location.latitude", "location.longitude"}),
+ *     @OA\Property(property="survey_question_id", type="integer", nullable=true),
  *     @OA\Property(property="label", type="string", example="Latitud"),
  *     @OA\Property(property="type", type="string", enum={"number"}),
  *     @OA\Property(property="minimum", type="number", example=-90),
@@ -70,8 +72,9 @@ namespace App\OpenApi;
  * @OA\Schema(
  *     schema="CoordinateCapture",
  *     type="object",
- *     required={"position", "title", "description", "required_on_finalize", "fields"},
+ *     required={"source", "position", "title", "description", "required_on_finalize", "fields"},
  *
+ *     @OA\Property(property="source", type="string", enum={"SURVEY_QUESTIONS"}),
  *     @OA\Property(property="position", type="string", enum={"AFTER_QUESTIONS"}),
  *     @OA\Property(property="title", type="string", example="Coordenadas del punto"),
  *     @OA\Property(property="description", type="string"),

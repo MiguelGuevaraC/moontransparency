@@ -89,6 +89,7 @@ class SurveyedService
 
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
+            $this->synchronizeCoordinates($surveyed, $data);
 
             return $this->getSurveyedById($surveyed->id);
         });
@@ -124,6 +125,7 @@ class SurveyedService
 
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
+            $this->synchronizeCoordinates($surveyed, $data);
 
             return $this->getSurveyedById($surveyed->id);
         });
@@ -152,6 +154,7 @@ class SurveyedService
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
             $surveyed->update(['household_id' => $household->id] + $this->coordinateData($data));
+            $this->synchronizeCoordinates($surveyed, $data);
             $this->validateRequiredCoordinates($surveyed);
             $this->validateRequiredResponses($surveyed);
 
@@ -455,7 +458,11 @@ class SurveyedService
             $answer = $answers->get($question->id);
             $questionType = strtoupper((string) $question->question_type);
 
-            if ($questionType === 'OPCIONES') {
+            if ($question->calculator_key === 'location.latitude') {
+                $isAnswered = $surveyed->latitude !== null;
+            } elseif ($question->calculator_key === 'location.longitude') {
+                $isAnswered = $surveyed->longitude !== null;
+            } elseif ($questionType === 'OPCIONES') {
                 $isAnswered = $answer && $answer->surveyed_responses_options->isNotEmpty();
             } elseif ($questionType === 'FILE') {
                 $isAnswered = $answer && filled($answer->file_path);
@@ -485,6 +492,63 @@ class SurveyedService
                 'coordinates' => 'La latitud y la longitud son obligatorias para finalizar la encuesta GeoBosques.',
             ]);
         }
+    }
+
+    private function synchronizeCoordinates(Surveyed $surveyed, array $data): void
+    {
+        if (! $surveyed->survey()->where('requires_coordinates', true)->exists()) {
+            return;
+        }
+
+        $questions = SurveyQuestion::where('survey_id', $surveyed->survey_id)
+            ->whereIn('calculator_key', ['location.latitude', 'location.longitude'])
+            ->get()
+            ->keyBy('calculator_key');
+
+        if ($questions->isEmpty()) {
+            return;
+        }
+
+        $answers = SurveyedResponse::where('surveyed_id', $surveyed->id)
+            ->whereIn('survey_question_id', $questions->pluck('id'))
+            ->get()
+            ->keyBy('survey_question_id');
+
+        $latitude = array_key_exists('latitude', $data)
+            ? $data['latitude']
+            : $answers->get($questions->get('location.latitude')?->id)?->response_text;
+        $longitude = array_key_exists('longitude', $data)
+            ? $data['longitude']
+            : $answers->get($questions->get('location.longitude')?->id)?->response_text;
+
+        $latitude = filled($latitude) ? $latitude : null;
+        $longitude = filled($longitude) ? $longitude : null;
+
+        if ($latitude === null && $longitude === null) {
+            return;
+        }
+
+        if ($latitude === null || $longitude === null) {
+            throw ValidationException::withMessages([
+                'coordinates' => 'La latitud y la longitud deben enviarse juntas.',
+            ]);
+        }
+
+        $errors = [];
+        if (! is_numeric($latitude) || (float) $latitude < -90 || (float) $latitude > 90) {
+            $errors['latitude'] = 'La latitud debe ser numérica y estar entre -90 y 90.';
+        }
+        if (! is_numeric($longitude) || (float) $longitude < -180 || (float) $longitude > 180) {
+            $errors['longitude'] = 'La longitud debe ser numérica y estar entre -180 y 180.';
+        }
+        if ($errors) {
+            throw ValidationException::withMessages($errors);
+        }
+
+        $surveyed->update([
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+        ]);
     }
 
     private function coordinateData(array $data): array

@@ -9,6 +9,7 @@ return [
         'requires_coordinates' => true,
     ],
     'coordinate_capture' => [
+        'source' => 'SURVEY_QUESTIONS',
         'position' => 'AFTER_QUESTIONS',
         'title' => 'Coordenadas del punto',
         'description' => 'Ingrese manualmente la latitud y la longitud del lugar encuestado.',
@@ -16,6 +17,7 @@ return [
         'fields' => [
             [
                 'name' => 'latitude',
+                'calculator_key' => 'location.latitude',
                 'label' => 'Latitud',
                 'type' => 'number',
                 'minimum' => -90,
@@ -24,6 +26,7 @@ return [
             ],
             [
                 'name' => 'longitude',
+                'calculator_key' => 'location.longitude',
                 'label' => 'Longitud',
                 'type' => 'number',
                 'minimum' => -180,
@@ -133,6 +136,32 @@ return [
                 'Se observan algunos focos de deforestación, incendios o degradación por alguna otra actividad.',
                 'Se observan grandes focos de deforestación, incendios recurrentes o degradación por otra actividad.',
             ],
+        ],
+        [
+            'order' => 8,
+            'eje' => 'Coordenadas',
+            'question_text' => 'Latitud',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'calculator_key' => 'location.latitude',
+            'calculator_value_type' => 'number',
+            'calculator_unit' => 'degree',
+            'is_required' => true,
+            'justification' => 'Coordenada decimal entre -90 y 90.',
+            'options' => [],
+        ],
+        [
+            'order' => 9,
+            'eje' => 'Coordenadas',
+            'question_text' => 'Longitud',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'calculator_key' => 'location.longitude',
+            'calculator_value_type' => 'number',
+            'calculator_unit' => 'degree',
+            'is_required' => true,
+            'justification' => 'Coordenada decimal entre -180 y 180.',
+            'options' => [],
         ],
     ],
 ];

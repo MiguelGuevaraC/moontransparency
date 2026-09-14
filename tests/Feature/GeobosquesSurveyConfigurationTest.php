@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Http\Requests\SurveyQuestionRequest\StoreSurveyQuestionRequest;
+use App\Http\Requests\SurveyQuestionRequest\UpdateSurveyQuestionRequest;
 use App\Http\Resources\SurveyResource;
 use App\Models\Proyect;
 use App\Models\SurveyQuestion;
 use App\Services\GeobosquesSurveyConfigurator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
 class GeobosquesSurveyConfigurationTest extends TestCase
@@ -36,8 +39,8 @@ class GeobosquesSurveyConfigurationTest extends TestCase
             ->orderBy('order')
             ->get();
 
-        $this->assertCount(7, $questions);
-        $this->assertSame(range(1, 7), $questions->pluck('order')->map(fn ($order) => (int) $order)->all());
+        $this->assertCount(9, $questions);
+        $this->assertSame(range(1, 9), $questions->pluck('order')->map(fn ($order) => (int) $order)->all());
         $this->assertSame([
             'Ubicación',
             'Ubicación',
@@ -46,6 +49,8 @@ class GeobosquesSurveyConfigurationTest extends TestCase
             'Asentamientos humanos',
             'Aprovechamiento forestal',
             'Perturbación del bosque',
+            'Coordenadas',
+            'Coordenadas',
         ], $questions->pluck('eje')->all());
         $this->assertNotContains(false, $questions->pluck('is_required')->map(fn ($required) => (bool) $required)->all());
 
@@ -98,14 +103,19 @@ class GeobosquesSurveyConfigurationTest extends TestCase
                 'Se observan grandes focos de deforestación, incendios recurrentes o degradación por otra actividad.',
             ]
         );
+        $this->assertQuestion($questions[7], 'Latitud', 'LIBRE', 'NUMERICO', []);
+        $this->assertQuestion($questions[8], 'Longitud', 'LIBRE', 'NUMERICO', []);
 
         $this->assertSame('Unidad: km.', $questions[2]->justification);
         $this->assertSame('Unidad: km.', $questions[4]->justification);
+        $this->assertSame('location.latitude', $questions[7]->calculator_key);
+        $this->assertSame('location.longitude', $questions[8]->calculator_key);
         $this->assertSame(9, $questions->sum(fn ($question) => $question->survey_questions_options->count()));
 
         $resource = (new SurveyResource($survey))->resolve();
 
         $this->assertTrue($resource['requires_coordinates']);
+        $this->assertSame('SURVEY_QUESTIONS', $resource['coordinate_capture']['source']);
         $this->assertSame('AFTER_QUESTIONS', $resource['coordinate_capture']['position']);
         $this->assertTrue($resource['coordinate_capture']['required_on_finalize']);
         $this->assertSame(
@@ -115,6 +125,10 @@ class GeobosquesSurveyConfigurationTest extends TestCase
         $this->assertSame(
             ['Latitud', 'Longitud'],
             collect($resource['coordinate_capture']['fields'])->pluck('label')->all()
+        );
+        $this->assertSame(
+            [$questions[7]->id, $questions[8]->id],
+            collect($resource['coordinate_capture']['fields'])->pluck('survey_question_id')->all()
         );
     }
 
@@ -142,7 +156,7 @@ class GeobosquesSurveyConfigurationTest extends TestCase
                 ->all()
         );
         $this->assertDatabaseCount('surveys', 1);
-        $this->assertDatabaseCount('survey_questions', 7);
+        $this->assertDatabaseCount('survey_questions', 9);
         $this->assertDatabaseCount('survey_question_options', 9);
     }
 
@@ -158,6 +172,40 @@ class GeobosquesSurveyConfigurationTest extends TestCase
             ->assertFailed();
 
         $this->assertSame('ACTIVA', $survey->fresh()->status);
+    }
+
+    public function test_degree_is_valid_when_coordinate_questions_are_created_or_edited(): void
+    {
+        $project = Proyect::create(['name' => 'Proyecto GeoBosques']);
+        $survey = app(GeobosquesSurveyConfigurator::class)->configure($project);
+        $latitude = $survey->survey_questions()->where('calculator_key', 'location.latitude')->firstOrFail();
+        $payload = [
+            'survey_id' => $survey->id,
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'question_text' => 'Coordenada de prueba',
+            'calculator_key' => 'location.test',
+            'calculator_value_type' => 'number',
+            'calculator_unit' => 'degree',
+            'justification' => 'Coordenada decimal.',
+        ];
+        $storeRequest = StoreSurveyQuestionRequest::create('/api/surveyquestion', 'POST', $payload);
+
+        $this->assertFalse(Validator::make($payload, $storeRequest->rules())->fails());
+
+        $updatePayload = [
+            'id' => $latitude->id,
+            'survey_id' => $survey->id,
+            'calculator_key' => 'location.latitude',
+            'calculator_unit' => 'degree',
+        ];
+        $updateRequest = UpdateSurveyQuestionRequest::create(
+            '/api/surveyquestion/'.$latitude->id,
+            'PUT',
+            $updatePayload
+        );
+
+        $this->assertFalse(Validator::make($updatePayload, $updateRequest->rules())->fails());
     }
 
     private function assertQuestion(

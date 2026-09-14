@@ -9128,7 +9128,8 @@
                             "g",
                             "person",
                             "day",
-                            "km"
+                            "km",
+                            "degree"
                         ],
                         "nullable": true
                     },
@@ -9772,6 +9773,7 @@
             "CoordinateCaptureField": {
                 "required": [
                     "name",
+                    "calculator_key",
                     "label",
                     "type",
                     "minimum",
@@ -9785,6 +9787,17 @@
                             "latitude",
                             "longitude"
                         ]
+                    },
+                    "calculator_key": {
+                        "type": "string",
+                        "enum": [
+                            "location.latitude",
+                            "location.longitude"
+                        ]
+                    },
+                    "survey_question_id": {
+                        "type": "integer",
+                        "nullable": true
                     },
                     "label": {
                         "type": "string",
@@ -9815,6 +9828,7 @@
             },
             "CoordinateCapture": {
                 "required": [
+                    "source",
                     "position",
                     "title",
                     "description",
@@ -9822,6 +9836,12 @@
                     "fields"
                 ],
                 "properties": {
+                    "source": {
+                        "type": "string",
+                        "enum": [
+                            "SURVEY_QUESTIONS"
+                        ]
+                    },
                     "position": {
                         "type": "string",
                         "enum": [

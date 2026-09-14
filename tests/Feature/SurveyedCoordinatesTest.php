@@ -154,6 +154,135 @@ class SurveyedCoordinatesTest extends TestCase
             ->assertJsonPath('data.longitude', -75.114212);
     }
 
+    public function test_coordinate_questions_populate_the_participation_and_geobosques_link(): void
+    {
+        $survey = $this->createGeobosquesSurvey();
+        $latitudeQuestion = SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Latitud',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'calculator_key' => 'location.latitude',
+            'order' => 8,
+            'is_required' => true,
+        ]);
+        $longitudeQuestion = SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Longitud',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'calculator_key' => 'location.longitude',
+            'order' => 9,
+            'is_required' => true,
+        ]);
+        $payload = $this->payload($survey, [
+            'responses' => [
+                [
+                    'survey_question_id' => $latitudeQuestion->id,
+                    'response_text' => '-6.39454',
+                ],
+                [
+                    'survey_question_id' => $longitudeQuestion->id,
+                    'response_text' => '-79.822403',
+                ],
+            ],
+        ]);
+
+        $created = $this->postJson('/api/response-survey', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.latitude', -6.39454)
+            ->assertJsonPath('data.longitude', -79.822403)
+            ->assertJsonPath('data.geobosques_map.available', true);
+
+        $this->postJson('/api/response-survey/'.$created->json('data.id').'/finalize', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.status', Surveyed::STATUS_FINALIZED)
+            ->assertJsonPath(
+                'data.geobosques_map.viewer_url',
+                'https://geobosques.minam.gob.pe/geobosque/visor/index.php?xy=-6.39454,-79.822403'
+            );
+    }
+
+    public function test_top_level_coordinates_remain_compatible_with_required_coordinate_questions(): void
+    {
+        $survey = $this->createGeobosquesSurvey();
+        SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Latitud',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'calculator_key' => 'location.latitude',
+            'order' => 8,
+            'is_required' => true,
+        ]);
+        SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Longitud',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'calculator_key' => 'location.longitude',
+            'order' => 9,
+            'is_required' => true,
+        ]);
+        $payload = $this->payload($survey, [
+            'latitude' => -6.39454,
+            'longitude' => -79.822403,
+        ]);
+
+        $created = $this->postJson('/api/response-survey', $payload)->assertOk();
+
+        $this->postJson('/api/response-survey/'.$created->json('data.id').'/finalize', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.status', Surveyed::STATUS_FINALIZED);
+    }
+
+    public function test_coordinate_questions_reject_an_incomplete_or_invalid_pair(): void
+    {
+        $survey = $this->createGeobosquesSurvey();
+        $latitudeQuestion = SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Latitud',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'calculator_key' => 'location.latitude',
+            'order' => 8,
+            'is_required' => true,
+        ]);
+        $longitudeQuestion = SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Longitud',
+            'question_type' => 'LIBRE',
+            'type_field' => 'NUMERICO',
+            'calculator_key' => 'location.longitude',
+            'order' => 9,
+            'is_required' => true,
+        ]);
+
+        $this->postJson('/api/response-survey', $this->payload($survey, [
+            'responses' => [[
+                'survey_question_id' => $latitudeQuestion->id,
+                'response_text' => '-6.39454',
+            ]],
+        ]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('coordinates');
+
+        $this->postJson('/api/response-survey', $this->payload($survey, [
+            'responses' => [
+                [
+                    'survey_question_id' => $latitudeQuestion->id,
+                    'response_text' => '91',
+                ],
+                [
+                    'survey_question_id' => $longitudeQuestion->id,
+                    'response_text' => '-79.822403',
+                ],
+            ],
+        ]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('latitude');
+    }
+
     private function createGeobosquesSurvey(): Survey
     {
         $project = Proyect::create(['name' => 'Proyecto GeoBosques']);

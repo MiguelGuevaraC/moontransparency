@@ -14,7 +14,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="question_text", type="string", example="¿Qué fuentes de energía utiliza en su hogar?"),
  *     @OA\Property(property="calculator_key", type="string", nullable=true, example="baseline.initial_wood_kg"),
  *     @OA\Property(property="calculator_value_type", type="string", nullable=true, enum={"string", "number", "options", "file", "location", "date", "time"}),
- *     @OA\Property(property="calculator_unit", type="string", nullable=true, enum={"kg", "g", "person", "day", "km"}),
+ *     @OA\Property(property="calculator_unit", type="string", nullable=true, enum={"kg", "g", "person", "day", "km", "degree"}),
  *     @OA\Property(property="question_type", type="string", example="multiple_choice")
  * )
  *

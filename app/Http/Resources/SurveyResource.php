@@ -81,7 +81,7 @@ class SurveyResource extends JsonResource
             'status' => $this->status,
             'requires_coordinates' => $requiresCoordinates,
             'coordinate_capture' => $requiresCoordinates
-                ? config('geobosques.coordinate_capture')
+                ? $this->coordinateCapture()
                 : null,
             'expected_days' => $this->expectedDays(),
 
@@ -101,5 +101,25 @@ class SurveyResource extends JsonResource
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
+    }
+
+    private function coordinateCapture(): array
+    {
+        $capture = config('geobosques.coordinate_capture');
+        $questionsByKey = $this->survey_questions
+            ->whereNotNull('calculator_key')
+            ->keyBy('calculator_key');
+
+        $capture['fields'] = collect($capture['fields'])
+            ->map(function (array $field) use ($questionsByKey) {
+                $field['survey_question_id'] = $questionsByKey
+                    ->get($field['calculator_key'])?->id;
+
+                return $field;
+            })
+            ->values()
+            ->all();
+
+        return $capture;
     }
 }

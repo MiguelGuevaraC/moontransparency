@@ -53,7 +53,7 @@ class UpdateSurveyQuestionRequest extends UpdateRequest
                 }),
             ],
             'calculator_value_type' => ['nullable', Rule::in(['string', 'number', 'options', 'file', 'location', 'date', 'time'])],
-            'calculator_unit' => ['nullable', Rule::in(['kg', 'g', 'person', 'day', 'km'])],
+            'calculator_unit' => ['nullable', Rule::in(['kg', 'g', 'person', 'day', 'km', 'degree'])],
 
             // Opcional: orden dentro de la encuesta (no negativo)
             'order' => 'nullable|integer|min:0',

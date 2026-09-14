@@ -40,7 +40,7 @@ class StoreSurveyQuestionRequest extends StoreRequest
                 }),
             ],
             'calculator_value_type' => ['nullable', Rule::in(['string', 'number', 'options', 'file', 'location', 'date', 'time'])],
-            'calculator_unit' => ['nullable', Rule::in(['kg', 'g', 'person', 'day', 'km'])],
+            'calculator_unit' => ['nullable', Rule::in(['kg', 'g', 'person', 'day', 'km', 'degree'])],
 
             // NUEVOS: orden dentro de la encuesta y bandera si es requerido (true/false)
             'order' => 'nullable|integer|min:0',
