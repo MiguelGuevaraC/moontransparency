@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Proyect;
 use App\Models\Survey;
 use App\Models\Surveyed;
+use App\Models\SurveyedResponse;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyQuestionOption;
 use DomainException;
@@ -16,8 +17,8 @@ class GeobosquesSurveyConfigurator
     /**
      * Configura el instrumento versionado en config/geobosques.php.
      *
-     * Una encuesta nueva se crea inactiva. Si ya existe y todavía no tiene
-     * participaciones, se sincroniza conservando su estado de publicación.
+     * Una encuesta nueva se crea inactiva. Si ya existe y sus participaciones
+     * todavía no tienen respuestas, se sincroniza conservando su estado.
      */
     public function configure(Proyect $project): Survey
     {
@@ -29,9 +30,9 @@ class GeobosquesSurveyConfigurator
                 ->lockForUpdate()
                 ->first();
 
-            if ($survey && Surveyed::withTrashed()->where('survey_id', $survey->id)->exists()) {
+            if ($survey && $this->hasCollectedData($survey)) {
                 throw new DomainException(
-                    'La encuesta GeoBosques tiene participaciones; no se puede resincronizar automáticamente sin una migración controlada.'
+                    'La encuesta GeoBosques tiene respuestas o participaciones finalizadas; no se puede resincronizar automáticamente sin una migración controlada.'
                 );
             }
 
@@ -63,6 +64,24 @@ class GeobosquesSurveyConfigurator
                 'survey_questions.survey_questions_options' => fn ($query) => $query->orderBy('id'),
             ]);
         });
+    }
+
+    private function hasCollectedData(Survey $survey): bool
+    {
+        $participations = Surveyed::withTrashed()->where('survey_id', $survey->id);
+
+        if ((clone $participations)
+            ->where(function ($query) {
+                $query->where('status', Surveyed::STATUS_FINALIZED)
+                    ->orWhereNotNull('completed_at');
+            })
+            ->exists()) {
+            return true;
+        }
+
+        return SurveyedResponse::withTrashed()
+            ->whereIn('surveyed_id', (clone $participations)->select('id'))
+            ->exists();
     }
 
     public static function questions(): array
