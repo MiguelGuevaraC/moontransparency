@@ -17,8 +17,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('/calculadora', function () {
-    return view('calculadora');
-});
+Route::view('/calculadora', 'calculadora')->name('calculator');
 Route::get('/mapa', [GeobosquesMapController::class, 'show'])
     ->name('geobosques.map');

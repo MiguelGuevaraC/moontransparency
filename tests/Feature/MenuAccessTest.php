@@ -24,7 +24,9 @@ class MenuAccessTest extends TestCase
             ->assertJsonPath('data.0.code', 'projects')
             ->assertJsonPath('data.11.code', 'survey_history')
             ->assertJsonPath('data.12.code', 'calculator')
-            ->assertJsonPath('data.12.path', '/calculadora');
+            ->assertJsonPath('data.12.path', '/calculadora')
+            ->assertJsonPath('data.12.url', url('/calculadora'))
+            ->assertJsonPath('data.12.external', true);
 
         $this->assertArrayNotHasKey('permissions', $response->json('data.12'));
     }
@@ -43,6 +45,8 @@ class MenuAccessTest extends TestCase
                 'code' => 'calculator',
                 'name' => 'Calculadora',
                 'path' => '/calculadora',
+                'url' => url('/calculadora'),
+                'external' => true,
             ]);
     }
 

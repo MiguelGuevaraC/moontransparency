@@ -14,6 +14,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="code", type="string", example="calculator"),
  *     @OA\Property(property="name", type="string", example="Calculadora"),
  *     @OA\Property(property="path", type="string", example="/calculadora"),
+ *     @OA\Property(property="url", type="string", nullable=true, example="https://backend.example.com/calculadora"),
+ *     @OA\Property(property="external", type="boolean", example=true),
  *     @OA\Property(property="icon", type="string", nullable=true, example="calculate"),
  *     @OA\Property(property="sort_order", type="integer", example=130),
  *     @OA\Property(property="status", type="string", enum={"Activo", "Inactivo"})
@@ -23,11 +25,15 @@ class MenuResource extends JsonResource
 {
     public function toArray($request): array
     {
+        $isBackendPage = $this->code === 'calculator';
+
         return [
             'id' => $this->id,
             'code' => $this->code,
             'name' => $this->name,
             'path' => $this->path,
+            'url' => $isBackendPage ? url($this->path) : null,
+            'external' => $isBackendPage,
             'icon' => $this->icon,
             'sort_order' => $this->sort_order,
             'status' => $this->status,

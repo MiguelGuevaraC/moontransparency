@@ -8570,6 +8570,15 @@
                         "type": "string",
                         "example": "/calculadora"
                     },
+                    "url": {
+                        "type": "string",
+                        "example": "https://backend.example.com/calculadora",
+                        "nullable": true
+                    },
+                    "external": {
+                        "type": "boolean",
+                        "example": true
+                    },
                     "icon": {
                         "type": "string",
                         "example": "calculate",

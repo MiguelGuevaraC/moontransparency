@@ -6,15 +6,18 @@ use Tests\TestCase;
 
 class CalculatorViewTest extends TestCase
 {
-    public function test_calculator_can_authenticate_and_run_the_official_rech_api(): void
+    public function test_backend_serves_the_complete_delivered_rech_calculator(): void
     {
         $this->get('/calculadora')
             ->assertOk()
-            ->assertSee('Metodología RECH v5.0', false)
-            ->assertSee('id="loginButton"', false)
-            ->assertSee('/calculator/co2/configuration', false)
-            ->assertSee('/calculator/co2', false)
-            ->assertSee('Authorization', false)
-            ->assertSee('net_reduction_ery', false);
+            ->assertSee('Reduced Emissions from Cooking and Heating (RECH) v5.0', false)
+            ->assertSee('id="mainNav"', false)
+            ->assertSee('id="mainContent"', false)
+            ->assertSee('window.APP_CONFIG', false)
+            ->assertSee('const PRELOADED_FAMILIES', false)
+            ->assertSee('co2calc_state_v3_parameter_tables_kpt_complete_v2', false)
+            ->assertSee('ERy (Reducción Neta Final)', false)
+            ->assertDontSee('id="loginButton"', false)
+            ->assertDontSee('/calculator/co2', false);
     }
 }
