@@ -12,7 +12,7 @@ class ConfigureGeobosquesSurvey extends Command
     protected $signature = 'survey:configure-geobosques
                             {project : ID del proyecto al que pertenecerá la encuesta}';
 
-    protected $description = 'Configura como inactiva la encuesta dinámica de presión sobre el bosque';
+    protected $description = 'Crea o sincroniza la encuesta dinámica de presión sobre el bosque';
 
     public function handle(GeobosquesSurveyConfigurator $configurator): int
     {
@@ -33,7 +33,10 @@ class ConfigureGeobosquesSurvey extends Command
         }
 
         $this->info("Encuesta GeoBosques configurada con ID {$survey->id}.");
-        $this->line('Estado: INACTIVA (lista para publicarse desde el módulo dinámico).');
+        $stateDescription = $survey->status === 'ACTIVA'
+            ? 'ACTIVA (estado conservado).'
+            : 'INACTIVA (lista para publicarse desde el módulo dinámico).';
+        $this->line('Estado: '.$stateDescription);
         $this->line('Preguntas dinámicas: '.$survey->survey_questions->count().'.');
         $this->line('Los nueve campos visibles están configurados como obligatorios.');
 

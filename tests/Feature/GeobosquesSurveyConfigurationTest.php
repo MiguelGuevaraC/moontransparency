@@ -6,6 +6,7 @@ use App\Http\Requests\SurveyQuestionRequest\StoreSurveyQuestionRequest;
 use App\Http\Requests\SurveyQuestionRequest\UpdateSurveyQuestionRequest;
 use App\Http\Resources\SurveyResource;
 use App\Models\Proyect;
+use App\Models\Surveyed;
 use App\Models\SurveyQuestion;
 use App\Services\GeobosquesSurveyConfigurator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -160,18 +161,43 @@ class GeobosquesSurveyConfigurationTest extends TestCase
         $this->assertDatabaseCount('survey_question_options', 9);
     }
 
-    public function test_it_does_not_overwrite_a_published_survey(): void
+    public function test_it_adds_missing_coordinate_questions_to_an_active_survey_without_participations(): void
+    {
+        $project = Proyect::create(['name' => 'Proyecto GeoBosques']);
+        $configurator = app(GeobosquesSurveyConfigurator::class);
+        $survey = $configurator->configure($project);
+        $survey->survey_questions()->whereIn('order', [8, 9])->delete();
+        $survey->update(['status' => 'ACTIVA']);
+
+        $this->artisan('survey:configure-geobosques', ['project' => $project->id])
+            ->expectsOutputToContain('Estado: ACTIVA (estado conservado)')
+            ->expectsOutputToContain('Preguntas dinámicas: 9')
+            ->assertSuccessful();
+
+        $this->assertSame('ACTIVA', $survey->fresh()->status);
+        $this->assertSame(
+            ['Latitud', 'Longitud'],
+            $survey->survey_questions()->whereIn('order', [8, 9])->orderBy('order')->pluck('question_text')->all()
+        );
+    }
+
+    public function test_it_does_not_overwrite_a_survey_with_participations(): void
     {
         $project = Proyect::create(['name' => 'Proyecto GeoBosques']);
         $configurator = app(GeobosquesSurveyConfigurator::class);
         $survey = $configurator->configure($project);
         $survey->update(['status' => 'ACTIVA']);
+        Surveyed::create([
+            'survey_id' => $survey->id,
+            'status' => Surveyed::STATUS_DRAFT,
+        ]);
 
         $this->artisan('survey:configure-geobosques', ['project' => $project->id])
-            ->expectsOutputToContain('ya fue publicada')
+            ->expectsOutputToContain('tiene participaciones')
             ->assertFailed();
 
         $this->assertSame('ACTIVA', $survey->fresh()->status);
+        $this->assertCount(9, $survey->survey_questions);
     }
 
     public function test_degree_is_valid_when_coordinate_questions_are_created_or_edited(): void

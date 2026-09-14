@@ -16,8 +16,8 @@ class GeobosquesSurveyConfigurator
     /**
      * Configura el instrumento versionado en config/geobosques.php.
      *
-     * La encuesta permanece inactiva hasta que un usuario autorizado
-     * revise la configuración y la publique desde el módulo dinámico.
+     * Una encuesta nueva se crea inactiva. Si ya existe y todavía no tiene
+     * participaciones, se sincroniza conservando su estado de publicación.
      */
     public function configure(Proyect $project): Survey
     {
@@ -29,11 +29,13 @@ class GeobosquesSurveyConfigurator
                 ->lockForUpdate()
                 ->first();
 
-            if ($survey && ($survey->status === Survey::STATUS_ACTIVE || Surveyed::withTrashed()->where('survey_id', $survey->id)->exists())) {
+            if ($survey && Surveyed::withTrashed()->where('survey_id', $survey->id)->exists()) {
                 throw new DomainException(
-                    'La encuesta GeoBosques ya fue publicada o tiene participaciones; no se puede resincronizar automáticamente.'
+                    'La encuesta GeoBosques tiene participaciones; no se puede resincronizar automáticamente sin una migración controlada.'
                 );
             }
+
+            $status = $survey?->status ?? Survey::STATUS_INACTIVE;
 
             if (! $survey) {
                 $survey = new Survey();
@@ -47,7 +49,7 @@ class GeobosquesSurveyConfigurator
                 'survey_name' => $definition['name'],
                 'survey_type' => $definition['type'],
                 'description' => $definition['description'],
-                'status' => Survey::STATUS_INACTIVE,
+                'status' => $status,
                 'requires_coordinates' => $definition['requires_coordinates'],
                 'expected_days' => null,
                 'post_survey_id' => null,
