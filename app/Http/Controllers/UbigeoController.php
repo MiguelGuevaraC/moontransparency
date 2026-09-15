@@ -42,7 +42,7 @@ class UbigeoController extends Controller
      */
     public function indexDepartments(Request $request)
     {
-        if ($request->header('UUID') !== env('APP_UUID')) {
+        if ($request->header('UUID') !== config('app.uuid')) {
             return response()->json(['status' => 'unauthorized'], 401);
         }
 
@@ -88,7 +88,7 @@ class UbigeoController extends Controller
      */
     public function indexProvinces($departmentId, Request $request)
     {
-        if ($request->header('UUID') !== env('APP_UUID')) {
+        if ($request->header('UUID') !== config('app.uuid')) {
             return response()->json(['status' => 'unauthorized'], 401);
         }
         $provinces = Province::where('department_id', $departmentId)->get();
@@ -133,7 +133,7 @@ class UbigeoController extends Controller
      */
     public function indexDistricts($provinceId, Request $request)
     {
-        if ($request->header('UUID') !== env('APP_UUID')) {
+        if ($request->header('UUID') !== config('app.uuid')) {
             return response()->json(['status' => 'unauthorized'], 401);
         }
         $districts = District::where('province_id', $provinceId)->get();
@@ -172,7 +172,7 @@ class UbigeoController extends Controller
 public function ubigeos(Request $request)
 {
     // validación UUID
-    if ($request->header('UUID') !== env('APP_UUID')) {
+    if ($request->header('UUID') !== config('app.uuid')) {
         return response()->json(['status' => 'unauthorized'], 401);
     }
 

@@ -98,7 +98,7 @@ class SurveyController extends Controller
 
     public function show_web(Request $request, $id)
     {
-        if ($request->header('UUID') !== env('APP_UUID')) {
+        if ($request->header('UUID') !== config('app.uuid')) {
             return response()->json(['status' => 'unauthorized'], 401);
         }
         $survey = $this->surveyService->getSurveyById($id);

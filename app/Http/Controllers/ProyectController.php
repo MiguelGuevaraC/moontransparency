@@ -79,7 +79,7 @@ class ProyectController extends Controller
 
     public function list_web(IndexProyectRequest $request)
     {
-        if ($request->header('UUID') !== env('APP_UUID')) {
+        if ($request->header('UUID') !== config('app.uuid')) {
             return response()->json(['status' => 'unauthorized'], 401);
         }
         return $this->getFilteredResults(

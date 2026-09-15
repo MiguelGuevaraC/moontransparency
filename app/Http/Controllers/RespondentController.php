@@ -50,7 +50,7 @@ class RespondentController extends Controller
      */
     public function index_search(IndexRespondentRequest $request)
     {
-        if ($request->header('UUID') !== env('APP_UUID')) {
+        if ($request->header('UUID') !== config('app.uuid')) {
             return response()->json(['status' => 'unauthorized'], 401);
         }
 

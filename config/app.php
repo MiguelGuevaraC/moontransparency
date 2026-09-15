@@ -58,6 +58,8 @@ return [
 
     'asset_url' => env('ASSET_URL'),
 
+    'uuid' => env('APP_UUID'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

@@ -106,7 +106,7 @@ class GraficosApiController extends Controller
 
     public function dashboard_resumen(Request $request)
     {
-        if ($request->header('UUID') !== env('APP_UUID')) {
+        if ($request->header('UUID') !== config('app.uuid')) {
             return response()->json(['status' => 'unauthorized'], 401);
         }
         return response()->json([
@@ -146,7 +146,7 @@ class GraficosApiController extends Controller
 
     public function dashboard_by_project(Request $request,$id)
     {
-        if ($request->header('UUID') !== env('APP_UUID')) {
+        if ($request->header('UUID') !== config('app.uuid')) {
             return response()->json(['status' => 'unauthorized'], 401);
         }
         return response()->json([
