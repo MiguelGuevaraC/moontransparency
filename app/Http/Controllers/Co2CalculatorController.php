@@ -131,6 +131,8 @@ class Co2CalculatorController extends Controller
                 }))
             ->withCount(['surveyeds' => fn ($query) => $query
                 ->when($ownerUserId, fn ($ownedQuery) => $ownedQuery->where('created_by', $ownerUserId))])
+            ->orderByRaw('display_order IS NULL')
+            ->orderBy('display_order')
             ->orderBy('id')
             ->get()
             ->map(function (Survey $survey) {

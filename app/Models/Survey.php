@@ -25,6 +25,7 @@ class Survey extends Model
         'survey_type',
         'description',
         'status',
+        'display_order',
         'requires_coordinates',
         'expected_days',
         'post_survey_id',
@@ -37,6 +38,7 @@ class Survey extends Model
     protected $casts = [
         'requires_coordinates' => 'boolean',
         'expected_days' => 'integer',
+        'display_order' => 'integer',
     ];
 
     protected $hidden = [
@@ -53,6 +55,7 @@ class Survey extends Model
         'description' => 'like',
         'status' => '=',
         'survey_type' => '=',
+        'display_order' => '=',
         'post_survey_id' => '=',
         'created_at' => 'between',
 
@@ -89,9 +92,16 @@ class Survey extends Model
     /**
      * Campos de ordenación disponibles.
      */
-    const sorts = [
-        'survey_type' => 'desc',
-    ];
+    const sorts = ['display_order', 'id', 'survey_type', 'survey_name', 'created_at'];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Survey $survey) {
+            if ($survey->display_order === null) {
+                $survey->display_order = ((int) static::withTrashed()->max('display_order')) + 1;
+            }
+        });
+    }
 
     public function survey_questions()
     {

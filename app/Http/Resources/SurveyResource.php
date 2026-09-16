@@ -79,6 +79,7 @@ class SurveyResource extends JsonResource
             'kind' => $this->calculatorKind(),
             'description' => $this->description,
             'status' => $this->status,
+            'display_order' => $this->display_order,
             'requires_coordinates' => $requiresCoordinates,
             'coordinate_capture' => $requiresCoordinates
                 ? $this->coordinateCapture()

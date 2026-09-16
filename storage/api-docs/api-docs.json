@@ -9271,6 +9271,11 @@
                         "type": "string",
                         "example": "Encuesta para evaluar el uso de energía renovable en zonas rurales."
                     },
+                    "display_order": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 3
+                    },
                     "household_code": {
                         "type": "string",
                         "pattern": "^HOG-[0-9]{8,}$",
@@ -9315,6 +9320,11 @@
                     "description": {
                         "type": "string",
                         "example": "Encuesta para evaluar el uso de energía renovable en zonas rurales."
+                    },
+                    "display_order": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 3
                     },
                     "requires_coordinates": {
                         "type": "boolean",

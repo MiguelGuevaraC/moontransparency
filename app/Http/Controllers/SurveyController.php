@@ -46,7 +46,10 @@ class SurveyController extends Controller
                 $query->doesntHave('postSurvey'); // equivalente a whereNull('post_survey_id')
             }
         }
-        $query->orderBy('survey_type', 'desc');
+        $query
+            ->orderByRaw('display_order IS NULL')
+            ->orderBy('display_order')
+            ->orderBy('id');
         // pasa la query al método de filtrado/paginación
         return $this->getFilteredResults(
             $query,                    // <- aquí pasamos el Builder

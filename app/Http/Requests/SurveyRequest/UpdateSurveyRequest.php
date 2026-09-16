@@ -86,6 +86,7 @@ class UpdateSurveyRequest extends StoreRequest
             ],
             'description' => 'required|string|max:1000',
             'status' => 'nullable|string|in:ACTIVA,INACTIVA',
+            'display_order' => 'nullable|integer|min:1|max:999999',
             'requires_coordinates' => 'nullable|boolean',
             'expected_days' => 'nullable|integer|min:1|max:'.config('surveying.max_expected_days', 31),
             'survey_type' => 'required|string|in:PRE,POST',
@@ -258,6 +259,8 @@ class UpdateSurveyRequest extends StoreRequest
             // otros
             'is_consentimiento.boolean' => 'is_consentimiento debe ser booleano (true/false).',
             'survey_name.unique' => 'Ya existe una encuesta con ese nombre en el proyecto.',
+            'display_order.integer' => 'El orden de la encuesta debe ser un número entero.',
+            'display_order.min' => 'El orden de la encuesta debe ser mayor o igual a 1.',
         ];
     }
 }

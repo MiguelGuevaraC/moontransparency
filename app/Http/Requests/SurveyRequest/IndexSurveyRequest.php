@@ -28,6 +28,7 @@ class IndexSurveyRequest extends IndexRequest
             'proyect_id'  => 'nullable|string',
             'survey_name' => 'nullable|string',
             'description' => 'nullable|string',
+            'display_order' => 'nullable|integer|min:1',
         ];
     }
 }
