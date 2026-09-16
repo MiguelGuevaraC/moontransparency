@@ -15,7 +15,8 @@ class Co2SurveyDatasetBuilder
         int $baselineSurveyId,
         ?int $monitoringSurveyId,
         array $householdIds = [],
-        int $limit = 20
+        int $limit = 20,
+        ?int $ownerUserId = null
     ): array {
         $baselineSurvey = Survey::withTrashed()->find($baselineSurveyId);
         $monitoringSurveyId = $monitoringSurveyId ?: $baselineSurvey?->post_survey_id;
@@ -25,6 +26,7 @@ class Co2SurveyDatasetBuilder
 
         $participations = Surveyed::query()
             ->whereIn('survey_id', [$baselineSurvey->id, $monitoringSurvey->id])
+            ->when($ownerUserId, fn ($query) => $query->where('created_by', $ownerUserId))
             ->when($householdIds, fn ($query) => $query->whereIn('household_id', $householdIds))
             ->with($this->relations())
             ->orderBy('id')

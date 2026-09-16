@@ -97,9 +97,24 @@ class User extends Authenticatable
 
     public function isAdministrator(): bool
     {
-        $roleName = Str::lower(Str::ascii(trim((string) $this->rol?->name)));
+        $roleName = $this->normalizedRoleName();
 
         return in_array($roleName, ['administrador', 'administrador moon'], true);
+    }
+
+    public function isSupervisor(): bool
+    {
+        return $this->normalizedRoleName() === 'supervisor';
+    }
+
+    public function isSurveyor(): bool
+    {
+        return $this->normalizedRoleName() === 'encuestador';
+    }
+
+    private function normalizedRoleName(): string
+    {
+        return Str::lower(Str::ascii(trim((string) $this->rol?->name)));
     }
 
     public function hasPermission(string $permission): bool

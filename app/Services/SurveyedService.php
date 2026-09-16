@@ -16,6 +16,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class SurveyedService
@@ -27,9 +28,11 @@ class SurveyedService
         $this->commonService = $commonService;
     }
 
-    public function getSurveyedById(int $id): ?Surveyed
+    public function getSurveyedById(int $id, ?User $actor = null): ?Surveyed
     {
-        return Surveyed::with([
+        return Surveyed::query()
+            ->visibleTo($actor)
+            ->with([
             'respondent',
             'household',
             'createdBy.rol',
@@ -43,24 +46,29 @@ class SurveyedService
             'measurements.surveyed_responses.survey_question.survey_questions_options',
             'measurements.surveyed_responses.surveyed_responses_options.survey_question_options',
             'measurements.surveyed_responses.measurement',
-        ])->find($id);
+            ])->find($id);
     }
 
-    public function createSurveyed(array $data)
+    public function createSurveyed(array $data, ?User $actor = null)
     {
-        return DB::transaction(function () use ($data) {
+        $actor ??= auth('sanctum')->user() ?? auth()->user();
+
+        return DB::transaction(function () use ($data, $actor) {
             $person = Respondent::firstOrCreate(
                 ['number_document' => $data['number_document']],
                 $this->respondentData($data)
             );
             $person = Respondent::lockForUpdate()->findOrFail($person->id);
 
-            $authenticatedUserId = $this->authenticatedUserId();
+            $authenticatedUserId = $actor?->id ?? $this->authenticatedUserId();
             $participationKey = [
                 'respondent_id' => $person->id,
                 'survey_id' => $data['survey_id'],
             ];
             $surveyed = Surveyed::where($participationKey)->lockForUpdate()->first();
+            if ($surveyed) {
+                $this->assertEditableBy($surveyed, $actor);
+            }
             if (! $surveyed) {
                 $surveyed = Surveyed::create($participationKey + array_filter([
                     'status' => Surveyed::STATUS_DRAFT,
@@ -95,14 +103,18 @@ class SurveyedService
         });
     }
 
-    public function updateSurveyedById(int $id, array $data): ?Surveyed
+    public function updateSurveyedById(int $id, array $data, ?User $actor = null): ?Surveyed
     {
-        return DB::transaction(function () use ($id, $data) {
+        $actor ??= auth('sanctum')->user() ?? auth()->user();
+
+        return DB::transaction(function () use ($id, $data, $actor) {
             $surveyed = Surveyed::lockForUpdate()->find($id);
 
             if (! $surveyed) {
                 return null;
             }
+
+            $this->assertEditableBy($surveyed, $actor);
 
             if ($surveyed->status === Surveyed::STATUS_FINALIZED) {
                 throw new ConflictHttpException(
@@ -120,7 +132,7 @@ class SurveyedService
             $surveyed->update(array_filter([
                 'status' => Surveyed::STATUS_DRAFT,
                 'household_id' => $household->id,
-                'updated_by' => $this->authenticatedUserId(),
+                'updated_by' => $actor?->id ?? $this->authenticatedUserId(),
             ], static fn ($value) => $value !== null) + $this->coordinateData($data));
 
             $measurement = $this->resolveMeasurement($surveyed, $data);
@@ -131,14 +143,18 @@ class SurveyedService
         });
     }
 
-    public function finalizeSurveyedById(int $id, array $data): ?Surveyed
+    public function finalizeSurveyedById(int $id, array $data, ?User $actor = null): ?Surveyed
     {
-        return DB::transaction(function () use ($id, $data) {
+        $actor ??= auth('sanctum')->user() ?? auth()->user();
+
+        return DB::transaction(function () use ($id, $data, $actor) {
             $surveyed = Surveyed::lockForUpdate()->find($id);
 
             if (! $surveyed) {
                 return null;
             }
+
+            $this->assertEditableBy($surveyed, $actor);
 
             if ($surveyed->status === Surveyed::STATUS_FINALIZED) {
                 return $this->getSurveyedById($surveyed->id);
@@ -162,7 +178,7 @@ class SurveyedService
                 'status' => Surveyed::STATUS_FINALIZED,
                 'completed_at' => now(),
             ] + array_filter([
-                'updated_by' => $this->authenticatedUserId(),
+                'updated_by' => $actor?->id ?? $this->authenticatedUserId(),
             ], static fn ($value) => $value !== null));
 
             return $this->getSurveyedById($surveyed->id);
@@ -626,6 +642,15 @@ class SurveyedService
     public function destroyById($id)
     {
         return Surveyed::find($id)?->delete() ?? false;
+    }
+
+    private function assertEditableBy(Surveyed $surveyed, ?User $actor): void
+    {
+        if (! $surveyed->isEditableBy($actor)) {
+            throw new AccessDeniedHttpException(
+                'No puede modificar una participación creada por otro encuestador.'
+            );
+        }
     }
 
     private function authenticatedUserId(): ?int

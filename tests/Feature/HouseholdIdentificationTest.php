@@ -19,6 +19,7 @@ class HouseholdIdentificationTest extends TestCase
     public function test_backend_generates_a_global_household_code_separate_from_the_document(): void
     {
         $survey = $this->createSurvey('Identificación');
+        $this->authenticateRole('Administrador', 'household-admin');
 
         $created = $this->postJson('/api/response-survey', $this->payload($survey, 'DOC-PERSONA-01'))
             ->assertOk();
@@ -38,7 +39,6 @@ class HouseholdIdentificationTest extends TestCase
             'household_id' => $householdId,
         ]);
 
-        $this->authenticateSurveyor();
         $this->getJson("/api/surveyed/{$surveyedId}/calculator")
             ->assertOk()
             ->assertJsonPath('data.contract.version', '1.3')
@@ -135,12 +135,11 @@ class HouseholdIdentificationTest extends TestCase
     public function test_history_can_be_filtered_by_the_global_household_code(): void
     {
         $survey = $this->createSurvey('Historial por hogar');
+        $this->authenticateSurveyor();
         $first = $this->postJson('/api/response-survey', $this->payload($survey, 'DOC-PERSONA-09'))
             ->assertOk();
         $this->postJson('/api/response-survey', $this->payload($survey, 'DOC-PERSONA-10'))
             ->assertOk();
-        $this->authenticateSurveyor();
-
         $this->getJson('/api/surveyed?all=true&household_code='.$first->json('data.household.code'))
             ->assertOk()
             ->assertJsonCount(1)
@@ -172,12 +171,17 @@ class HouseholdIdentificationTest extends TestCase
 
     private function authenticateSurveyor(): void
     {
+        $this->authenticateRole('Encuestador', 'household-test');
+    }
+
+    private function authenticateRole(string $roleName, string $username): void
+    {
         Sanctum::actingAs(User::create([
-            'number_document' => 'USR-HOUSEHOLD-001',
-            'username' => 'household-test',
+            'number_document' => 'USR-'.strtoupper($username),
+            'username' => $username,
             'password' => 'Password!2026',
             'status' => User::STATUS_ACTIVE,
-            'rol_id' => Rol::where('name', 'Encuestador')->firstOrFail()->id,
+            'rol_id' => Rol::where('name', $roleName)->firstOrFail()->id,
         ]));
     }
 }

@@ -54,7 +54,7 @@ class OfflineSyncController extends Controller
         $result = $this->offlineSyncService->synchronize(
             $payload,
             $request->file('attachments', []),
-            $request->user()
+            $request->user('sanctum') ?? $request->user()
         );
 
         return response()->json($result['payload'], $result['http_status']);

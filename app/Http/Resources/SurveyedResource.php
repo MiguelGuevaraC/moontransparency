@@ -40,6 +40,7 @@ class SurveyedResource extends JsonResource
     public function toArray($request)
     {
         $status = $this->status ?? Surveyed::STATUS_DRAFT;
+        $actor = $request->user('sanctum') ?? $request->user();
         $geobosquesMap = app(GeobosquesMapService::class)->build(
             $this->latitude,
             $this->longitude
@@ -68,7 +69,7 @@ class SurveyedResource extends JsonResource
             'proyect_name' => $this?->survey?->proyect?->name ?? null,
             'survey_id' => $this->survey_id ?? null,
             'status' => $status,
-            'can_edit' => $status === Surveyed::STATUS_DRAFT,
+            'can_edit' => $status === Surveyed::STATUS_DRAFT && $this->resource->isEditableBy($actor),
             'completed_at' => $this->completed_at,
             'latitude' => $this->latitude !== null ? (float) $this->latitude : null,
             'longitude' => $this->longitude !== null ? (float) $this->longitude : null,

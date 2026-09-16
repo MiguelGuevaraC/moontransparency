@@ -38,6 +38,7 @@ class CalculatorViewController extends Controller
             'household_ids' => ['nullable', 'array', 'max:'.config('co2.sample_limit', 20)],
             'household_ids.*' => ['integer', 'distinct'],
             'sample_limit' => ['nullable', 'integer', 'min:1', 'max:'.config('co2.sample_limit', 20)],
+            'owner_user_id' => ['nullable', 'integer', 'min:1'],
         ]);
         $limit = (int) ($validated['sample_limit'] ?? config('co2.sample_limit', 20));
         $dataset = $datasetBuilder->build(
@@ -45,7 +46,8 @@ class CalculatorViewController extends Controller
             (int) $validated['baseline_survey_id'],
             isset($validated['monitoring_survey_id']) ? (int) $validated['monitoring_survey_id'] : null,
             $validated['household_ids'] ?? [],
-            $limit
+            $limit,
+            isset($validated['owner_user_id']) ? (int) $validated['owner_user_id'] : null
         );
         $families = $mapper->families($dataset['families'], $limit);
         $fingerprint = hash('sha256', json_encode([

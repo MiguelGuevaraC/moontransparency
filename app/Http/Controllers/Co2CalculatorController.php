@@ -44,12 +44,14 @@ class Co2CalculatorController extends Controller
     ) {
         $validated = $request->validated();
         $limit = (int) ($validated['sample_limit'] ?? config('co2.sample_limit', 20));
+        $ownerUserId = $request->user()?->isSurveyor() ? (int) $request->user()->id : null;
         $dataset = $datasetBuilder->build(
             (int) $validated['project_id'],
             (int) $validated['baseline_survey_id'],
             isset($validated['monitoring_survey_id']) ? (int) $validated['monitoring_survey_id'] : null,
             $validated['household_ids'] ?? [],
-            $limit
+            $limit,
+            $ownerUserId
         );
         $expiresAt = now()->addMinutes(
             max(1, min((int) config('co2.embed_link_ttl_minutes', 30), 120))
@@ -62,6 +64,9 @@ class Co2CalculatorController extends Controller
         ];
         if (! empty($validated['household_ids'])) {
             $parameters['household_ids'] = array_values($validated['household_ids']);
+        }
+        if ($ownerUserId !== null) {
+            $parameters['owner_user_id'] = $ownerUserId;
         }
         // La firma es relativa para que siga siendo válida cuando Laravel está
         // publicado dentro de un subdirectorio, como /moontransparency/public.
@@ -115,6 +120,7 @@ class Co2CalculatorController extends Controller
             return response()->json(['message' => 'Proyecto no encontrado.'], 404);
         }
 
+        $ownerUserId = $request->user()?->isSurveyor() ? (int) $request->user()->id : null;
         $surveys = Survey::query()
             ->where('proyect_id', $project->id)
             ->whereHas('survey_questions', fn ($query) => $query
@@ -123,7 +129,8 @@ class Co2CalculatorController extends Controller
                     $keys->where('calculator_key', 'like', 'baseline.%')
                         ->orWhere('calculator_key', 'like', 'monitoring.%');
                 }))
-            ->withCount('surveyeds')
+            ->withCount(['surveyeds' => fn ($query) => $query
+                ->when($ownerUserId, fn ($ownedQuery) => $ownedQuery->where('created_by', $ownerUserId))])
             ->orderBy('id')
             ->get()
             ->map(function (Survey $survey) {
@@ -175,6 +182,7 @@ class Co2CalculatorController extends Controller
         $calculations = Co2Calculation::query()
             ->with(['project:id,name', 'baselineSurvey:id,survey_name', 'monitoringSurvey:id,survey_name', 'executedBy:id,names'])
             ->when(isset($validated['project_id']), fn ($query) => $query->where('project_id', $validated['project_id']))
+            ->when($request->user()?->isSurveyor(), fn ($query) => $query->where('executed_by', $request->user()->id))
             ->latest('id')
             ->paginate($validated['per_page'] ?? 20);
 
@@ -238,12 +246,14 @@ class Co2CalculatorController extends Controller
         Co2EmissionCalculator $calculator
     ) {
         $validated = $request->validated();
+        $ownerUserId = $request->user()?->isSurveyor() ? (int) $request->user()->id : null;
         $dataset = $datasetBuilder->build(
             (int) $validated['project_id'],
             (int) $validated['baseline_survey_id'],
             isset($validated['monitoring_survey_id']) ? (int) $validated['monitoring_survey_id'] : null,
             $validated['household_ids'] ?? [],
-            (int) ($validated['sample_limit'] ?? config('co2.sample_limit', 20))
+            (int) ($validated['sample_limit'] ?? config('co2.sample_limit', 20)),
+            $ownerUserId
         );
         $calculation = $calculator->calculate($dataset['families'], $validated['parameters'] ?? []);
         $calculationRecord = Co2Calculation::create([

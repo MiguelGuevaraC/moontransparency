@@ -55,7 +55,9 @@ class SurveyedController extends Controller
      */
     public function index(IndexSurveyedRequest $request)
     {
-        $query = Surveyed::query()->with([
+        $query = Surveyed::query()
+            ->visibleTo($request->user())
+            ->with([
             'respondent',
             'household',
             'createdBy.rol',
@@ -154,6 +156,7 @@ class SurveyedController extends Controller
     public function indexAll(IndexSurveyedRequest $request)
     {
         $query = Surveyed::query()
+                ->visibleTo($request->user())
                 ->join('respondents', 'respondents.id', '=', 'surveyeds.respondent_id')
                 ->join('surveys', 'surveys.id', '=', 'surveyeds.survey_id')
                 ->join('proyects', 'proyects.id', '=', 'surveys.proyect_id')
@@ -450,7 +453,8 @@ class SurveyedController extends Controller
         // agregamos todos los archivos (mantienen la misma estructura anidada que envía el cliente)
         $validated['_files'] = $request->allFiles();
 
-        $surveyed = $this->surveyService->createSurveyed($validated);
+        $actor = $request->user('sanctum') ?? $request->user();
+        $surveyed = $this->surveyService->createSurveyed($validated, $actor);
 
         return new SurveyedResource($surveyed);
     }
@@ -472,9 +476,9 @@ class SurveyedController extends Controller
      *     @OA\Response(response=404, description="Participación no encontrada", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
      * )
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $surveyed = $this->surveyService->getSurveyedById((int) $id);
+        $surveyed = $this->surveyService->getSurveyedById((int) $id, $request->user());
 
         if (! $surveyed) {
             return response()->json([
@@ -511,9 +515,9 @@ class SurveyedController extends Controller
      *     @OA\Response(response=404, description="Participación no encontrada")
      * )
      */
-    public function calculator($id)
+    public function calculator(Request $request, $id)
     {
-        $surveyed = $this->surveyService->getSurveyedById((int) $id);
+        $surveyed = $this->surveyService->getSurveyedById((int) $id, $request->user());
 
         if (! $surveyed) {
             return response()->json([
@@ -559,7 +563,8 @@ class SurveyedController extends Controller
         // agregamos todos los archivos (mantienen la misma estructura anidada que envía el cliente)
         $validated['_files'] = $request->allFiles();
 
-        $surveyed = $this->surveyService->updateSurveyedById((int) $id, $validated);
+        $actor = $request->user('sanctum') ?? $request->user();
+        $surveyed = $this->surveyService->updateSurveyedById((int) $id, $validated, $actor);
 
         if (! $surveyed) {
             return response()->json([
@@ -593,7 +598,8 @@ class SurveyedController extends Controller
         $validated = $request->validated();
         $validated['_files'] = $request->allFiles();
 
-        $surveyed = $this->surveyService->finalizeSurveyedById((int) $id, $validated);
+        $actor = $request->user('sanctum') ?? $request->user();
+        $surveyed = $this->surveyService->finalizeSurveyedById((int) $id, $validated, $actor);
 
         if (! $surveyed) {
             return response()->json([

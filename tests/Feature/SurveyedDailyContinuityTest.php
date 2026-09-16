@@ -21,6 +21,13 @@ class SurveyedDailyContinuityTest extends TestCase
     {
         [$survey, $dayQuestion, $dayOptions, $weightQuestion, $notesQuestion] = $this->createDailySurvey();
         $surveyedId = null;
+        Sanctum::actingAs(User::create([
+            'number_document' => 'USR-DAYS-001',
+            'username' => 'days-test',
+            'password' => bcrypt('password'),
+            'rol_id' => \App\Models\Rol::where('name', 'Encuestador')->value('id'),
+            'status' => 'Activo',
+        ]));
 
         foreach (range(1, 7) as $day) {
             $payload = $this->payload(
@@ -67,14 +74,6 @@ class SurveyedDailyContinuityTest extends TestCase
                 'response_text' => (string) (20 - $day),
             ]);
         }
-
-        Sanctum::actingAs(User::create([
-            'number_document' => 'USR-DAYS-001',
-            'username' => 'days-test',
-            'password' => bcrypt('password'),
-            'rol_id' => \App\Models\Rol::where('name', 'Encuestador')->value('id'),
-            'status' => 'Activo',
-        ]));
 
         $detail = $this->getJson("/api/surveyed/$surveyedId")
             ->assertOk()

@@ -14,7 +14,10 @@ class SurveyedExcelController extends Controller
 
     public function export(IndexSurveyedRequest $request)
     {
-        $rows = $this->excelService->exportRows($request->input('response_text'));
+        $rows = $this->excelService->exportRows(
+            $request->input('response_text'),
+            $request->user()
+        );
 
         return response($this->excelService->toHtml($rows), 200)
             ->header('Content-Type', 'application/vnd.ms-excel; charset=UTF-8')

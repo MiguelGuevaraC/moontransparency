@@ -118,13 +118,6 @@ class SurveyedDraftTest extends TestCase
     public function test_an_authenticated_user_can_retrieve_a_draft_to_continue_it(): void
     {
         [$survey, $question] = $this->createSurveyWithTwoRequiredQuestions();
-        $created = $this->postJson('/api/response-survey', $this->payload($survey, [
-            [
-                'survey_question_id' => $question->id,
-                'response_text' => 'Información parcial',
-            ],
-        ]))->assertOk();
-
         $user = User::create([
             'number_document' => 'USR-001',
             'username' => 'admin-test',
@@ -133,6 +126,13 @@ class SurveyedDraftTest extends TestCase
             'rol_id' => \App\Models\Rol::where('name', 'Encuestador')->value('id'),
         ]);
         Sanctum::actingAs($user);
+
+        $created = $this->postJson('/api/response-survey', $this->payload($survey, [
+            [
+                'survey_question_id' => $question->id,
+                'response_text' => 'Información parcial',
+            ],
+        ]))->assertOk();
 
         $this->getJson('/api/surveyed/'.$created->json('data.id'))
             ->assertOk()

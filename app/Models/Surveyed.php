@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -101,5 +102,39 @@ class Surveyed extends Model
         return $this->hasMany(SurveyedReopening::class)
             ->orderByDesc('created_at')
             ->orderByDesc('id');
+    }
+
+    public function scopeVisibleTo(Builder $query, ?User $user): Builder
+    {
+        if ($user?->isSurveyor()) {
+            $query->where($query->qualifyColumn('created_by'), $user->id);
+        }
+
+        return $query;
+    }
+
+    public function isOwnedBy(?User $user): bool
+    {
+        return $user !== null
+            && $this->created_by !== null
+            && (int) $this->created_by === (int) $user->id;
+    }
+
+    public function isVisibleTo(?User $user): bool
+    {
+        return ! $user?->isSurveyor() || $this->isOwnedBy($user);
+    }
+
+    public function isEditableBy(?User $user): bool
+    {
+        if ($user === null) {
+            return $this->created_by === null;
+        }
+
+        if ($user->isAdministrator() || $user->isSupervisor()) {
+            return true;
+        }
+
+        return $this->isOwnedBy($user);
     }
 }

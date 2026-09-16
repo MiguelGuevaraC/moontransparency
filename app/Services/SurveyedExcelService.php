@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\SurveyedResponse;
 use App\Models\SurveyedResponseOption;
 use App\Models\SurveyQuestionOption;
+use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -13,7 +14,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class SurveyedExcelService
 {
-    public function exportRows(?string $responseText = null)
+    public function exportRows(?string $responseText = null, ?User $actor = null)
     {
         return DB::table('surveyeds')
             ->join('respondents', 'respondents.id', '=', 'surveyeds.respondent_id')
@@ -37,6 +38,7 @@ class SurveyedExcelService
             ->whereNull('proyects.deleted_at')
             ->whereNull('surveyed_responses.deleted_at')
             ->whereNull('survey_questions.deleted_at')
+            ->when($actor?->isSurveyor(), fn ($query) => $query->where('surveyeds.created_by', $actor->id))
             ->when($responseText, fn ($query, $value) => $query->whereRaw(
                 'UPPER(surveyed_responses.response_text) LIKE UPPER(?)',
                 ['%'.$value.'%']

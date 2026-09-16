@@ -197,7 +197,7 @@ class SurveyedHistoryTest extends TestCase
     public function test_only_system_administrators_can_soft_delete_a_participation(): void
     {
         [$surveyed] = $this->createParticipationWithTwoDays();
-        $this->authenticate();
+        $this->authenticateAs('Encuestador', 'history-delete-surveyor');
 
         $this->deleteJson('/api/surveyed/'.$surveyed->id)
             ->assertForbidden();
@@ -292,7 +292,7 @@ class SurveyedHistoryTest extends TestCase
 
     private function authenticate(): void
     {
-        $this->authenticateAs('Encuestador', 'history-test');
+        $this->authenticateAs('Administrador', 'history-test');
     }
 
     private function authenticateAs(string $roleName, string $username): void

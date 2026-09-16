@@ -28,6 +28,8 @@ Route::get('surveyed', [SurveyedController::class, 'index'])->middleware('permis
 Route::get('surveyed/{id}/calculator', [SurveyedController::class, 'calculator'])->middleware('permission:calculator.view');
 Route::post('surveyed/{id}/reopen', [SurveyedController::class, 'reopen'])->middleware('permission:participations.reopen');
 Route::get('surveyed/{id}', [SurveyedController::class, 'show'])->middleware('permission:participations.view');
+Route::put('surveyed/{id}', [SurveyedController::class, 'update'])->middleware('permission:participations.manage');
+Route::post('surveyed/{id}/finalize', [SurveyedController::class, 'finalize'])->middleware('permission:participations.manage');
 Route::delete('surveyed/{id}', [SurveyedController::class, 'destroy'])->middleware('permission:participations.manage');
 Route::get('surveyedAll', [SurveyedController::class, 'indexAll'])->middleware('permission:participations.view');
 Route::get('surveyedExcel', [SurveyedExcelController::class, 'export'])->middleware('permission:participations.export');

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Throwable;
 
 class OfflineSyncService
@@ -49,7 +50,8 @@ class OfflineSyncService
                         $item,
                         $payload['device_id'],
                         $attachments,
-                        $index
+                        $index,
+                        $actor
                     ),
                     3
                 );
@@ -57,6 +59,8 @@ class OfflineSyncService
                 $results[] = $this->itemError($item, 422, 'VALIDATION_ERROR', $exception->getMessage(), $exception->errors());
             } catch (ConflictHttpException $exception) {
                 $results[] = $this->itemError($item, 409, 'CONFLICT', $exception->getMessage());
+            } catch (AccessDeniedHttpException $exception) {
+                $results[] = $this->itemError($item, 403, 'FORBIDDEN', $exception->getMessage());
             } catch (ModelNotFoundException) {
                 $results[] = $this->itemError($item, 422, 'RELATED_RESOURCE_NOT_FOUND', 'Uno de los recursos relacionados no existe.');
             } catch (QueryException $exception) {
@@ -115,6 +119,10 @@ class OfflineSyncService
                 throw $exception;
             }
 
+            if ((int) ($batch->user_id ?? 0) !== (int) ($actor?->id ?? 0)) {
+                throw new AccessDeniedHttpException('El lote pertenece a otro usuario.');
+            }
+
             if (! hash_equals($batch->request_hash, $requestHash)) {
                 throw new ConflictHttpException(
                     'El batch_id ya fue utilizado con un payload o archivos diferentes.'
@@ -142,7 +150,8 @@ class OfflineSyncService
         array $item,
         string $deviceId,
         array $attachments,
-        int $itemIndex
+        int $itemIndex,
+        ?User $actor
     ): array {
         $clientUpdatedAt = CarbonImmutable::parse($item['client_updated_at']);
         $itemHash = $this->itemHash($item, $attachments);
@@ -161,6 +170,9 @@ class OfflineSyncService
             $surveyed = $this->surveyedService->getSurveyedById((int) $mapping->surveyed_id);
             if (! $surveyed) {
                 throw new ConflictHttpException('La participación sincronizada ya no está disponible.');
+            }
+            if (! $surveyed->isEditableBy($actor)) {
+                throw new AccessDeniedHttpException('La participación pertenece a otro encuestador.');
             }
 
             return $this->itemSuccess($item, $mapping, $surveyed, true);
@@ -184,6 +196,10 @@ class OfflineSyncService
             );
         }
 
+        if ($surveyed && ! $surveyed->isEditableBy($actor)) {
+            throw new AccessDeniedHttpException('La participación pertenece a otro encuestador.');
+        }
+
         if ($surveyed?->status === Surveyed::STATUS_FINALIZED) {
             if ($item['action'] !== 'FINALIZE') {
                 throw new ConflictHttpException(
@@ -203,8 +219,8 @@ class OfflineSyncService
         }
 
         $surveyed = $surveyed
-            ? $this->surveyedService->updateSurveyedById($surveyed->id, $baseData)
-            : $this->surveyedService->createSurveyed($baseData);
+            ? $this->surveyedService->updateSurveyedById($surveyed->id, $baseData, $actor)
+            : $this->surveyedService->createSurveyed($baseData, $actor);
 
         $mapping = $mapping ?: OfflineSyncParticipation::create([
             'client_participation_id' => $item['client_participation_id'],
@@ -215,11 +231,11 @@ class OfflineSyncService
         ]);
 
         foreach ($item['measurements'] ?? [] as $measurement) {
-            $this->synchronizeMeasurement($mapping, $surveyed, $baseData, $measurement, $attachments);
+            $this->synchronizeMeasurement($mapping, $surveyed, $baseData, $measurement, $attachments, $actor);
         }
 
         if ($item['action'] === 'FINALIZE') {
-            $surveyed = $this->surveyedService->finalizeSurveyedById($surveyed->id, $baseData);
+            $surveyed = $this->surveyedService->finalizeSurveyedById($surveyed->id, $baseData, $actor);
         } else {
             $surveyed = $this->surveyedService->getSurveyedById($surveyed->id);
         }
@@ -237,7 +253,8 @@ class OfflineSyncService
         Surveyed $surveyed,
         array $baseData,
         array $measurement,
-        array $attachments
+        array $attachments,
+        ?User $actor
     ): void {
         $clientMapping = OfflineSyncMeasurement::where(
             'client_measurement_id',
@@ -269,7 +286,7 @@ class OfflineSyncService
         $this->surveyedService->updateSurveyedById($surveyed->id, array_merge($baseData, [
             'day_number' => $measurement['day_number'],
             'responses' => $this->prepareResponses($measurement['responses'] ?? [], $attachments),
-        ]));
+        ]), $actor);
         $serverMeasurement = SurveyedMeasurement::where('surveyed_id', $surveyed->id)
             ->where('day_number', $measurement['day_number'])
             ->firstOrFail();
