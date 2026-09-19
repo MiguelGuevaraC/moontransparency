@@ -1,13 +1,15 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SurveyRequest\IndexSurveyRequest;
+use App\Http\Requests\SurveyRequest\PublicSurveyIndexRequest;
 use App\Http\Requests\SurveyRequest\StoreSurveyRequest;
 use App\Http\Requests\SurveyRequest\UpdateSurveyRequest;
+use App\Http\Resources\PublicSurveyResource;
 use App\Http\Resources\SurveyResource;
 use App\Models\Survey;
 use App\Services\SurveyService;
-use Illuminate\Http\Request;
 
 class SurveyController extends Controller
 {
@@ -24,16 +26,17 @@ class SurveyController extends Controller
      *     summary="Obtener información de Surveys con filtros y ordenamiento",
      *     tags={"Survey"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="from", in="query", description="Fecha de inicio", required=false, @OA\Schema(type="string", format="date")),
      *     @OA\Parameter(name="to", in="query", description="Fecha de fin", required=false, @OA\Schema(type="string", format="date")),
      *     @OA\Parameter(name="proyect_id", in="query", description="ID del proyecto", required=false, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="survey_name", in="query", description="Nombre de la encuesta", required=false, @OA\Schema(type="string")),
      *     @OA\Parameter(name="description", in="query", description="Descripción de la encuesta", required=false, @OA\Schema(type="string")),
+     *
      *     @OA\Response(response=200, description="Lista de Surveys", @OA\JsonContent(ref="#/components/schemas/Survey")),
      *     @OA\Response(response=422, description="Validación fallida", @OA\JsonContent(@OA\Property(property="error", type="string")))
      * )
      */
-
     public function index(IndexSurveyRequest $request)
     {
         $query = Survey::query();
@@ -66,18 +69,18 @@ class SurveyController extends Controller
      *     summary="Obtener detalles de un Survey por ID",
      *     tags={"Survey"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="id", in="path", description="ID del Survey", required=true, @OA\Schema(type="integer", example=1)),
+     *
      *     @OA\Response(response=200, description="Encuesta encontrado", @OA\JsonContent(ref="#/components/schemas/Survey")),
      *     @OA\Response(response=404, description="Encuesta No Encontrada", @OA\JsonContent(type="object", @OA\Property(property="error", type="string", example="Encuesta No Encontrada")))
      * )
      */
-
     public function show($id)
     {
-
         $survey = $this->surveyService->getSurveyById($id);
 
-        if (!$survey) {
+        if (! $survey) {
             return response()->json([
                 'error' => 'Encuesta No Encontrada',
             ], 404);
@@ -88,25 +91,23 @@ class SurveyController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/moontransparency/public/api/survey-web/{id}",
+     *     path="/moontransparency/public/api/survey-show/{id}",
      *     summary="Mostrar encuesta activa (show_web)",
      *     tags={"Survey"},
+     *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="UUID", in="header", required=true, @OA\Schema(type="string")),
+     *
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/Survey")),
-     *     @OA\Response(response=401, description="No autorizado", @OA\JsonContent(@OA\Property(property="status", type="string", example="unauthorized"))),
+     *     @OA\Response(response=401, description="UUID ausente o inválido"),
      *     @OA\Response(response=404, description="Encuesta no activa o no encontrada", @OA\JsonContent(@OA\Property(property="error", type="string", example="Esta Encuesta no se encuentra Activa")))
      * )
      */
-
-    public function show_web(Request $request, $id)
+    public function show_web($id)
     {
-        if ($request->header('UUID') !== config('app.uuid')) {
-            return response()->json(['status' => 'unauthorized'], 401);
-        }
         $survey = $this->surveyService->getSurveyById($id);
 
-        if (!$survey) {
+        if (! $survey) {
             return response()->json([
                 'error' => 'Encuesta No Encontrada',
             ], 404);
@@ -122,18 +123,68 @@ class SurveyController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/moontransparency/public/api/surveys-public",
+     *     operationId="listPublicSurveys",
+     *     summary="Listar encuestas activas sin iniciar sesión",
+     *     tags={"Survey"},
+     *
+     *     @OA\Parameter(name="UUID", in="header", required=true, description="Clave de acceso de la web pública", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="project_id", in="query", required=false, @OA\Schema(type="integer", minimum=1)),
+     *     @OA\Parameter(name="survey_name", in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="survey_type", in="query", required=false, @OA\Schema(type="string", enum={"PRE", "POST"})),
+     *     @OA\Parameter(name="all", in="query", required=false, @OA\Schema(type="string", enum={"true", "false"})),
+     *     @OA\Parameter(name="page", in="query", required=false, @OA\Schema(type="integer", minimum=1)),
+     *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", minimum=1, maximum=100)),
+     *
+     *     @OA\Response(response=200, description="Listado ordenado de encuestas activas"),
+     *     @OA\Response(response=401, description="UUID ausente o inválido"),
+     *     @OA\Response(response=422, description="Filtros inválidos")
+     * )
+     */
+    public function publicIndex(PublicSurveyIndexRequest $request)
+    {
+        $validated = $request->validated();
+        $query = Survey::query()
+            ->where('status', Survey::STATUS_ACTIVE)
+            ->with('proyect:id,name')
+            ->withCount('survey_questions')
+            ->when(isset($validated['project_id']), fn ($builder) => $builder
+                ->where('proyect_id', $validated['project_id']))
+            ->when(isset($validated['survey_name']), fn ($builder) => $builder
+                ->where('survey_name', 'like', '%'.$validated['survey_name'].'%'))
+            ->when(isset($validated['survey_type']), fn ($builder) => $builder
+                ->where('survey_type', $validated['survey_type']))
+            ->orderByRaw('display_order IS NULL')
+            ->orderBy('display_order')
+            ->orderBy('id');
+
+        if (($validated['all'] ?? 'false') === 'true') {
+            return PublicSurveyResource::collection($query->get());
+        }
+
+        return PublicSurveyResource::collection(
+            $query->paginate((int) ($validated['per_page'] ?? 15))
+        );
+    }
+
+    /**
      * @OA\Post(
      *     path="/moontransparency/public/api/survey",
      *     summary="Crear Survey",
      *     tags={"Survey"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
+     *
      *             @OA\Schema(ref="#/components/schemas/SurveyRequest")
      *         )
      *     ),
+     *
      *     @OA\Response(response=200, description="Encuesta creada exitosamente", @OA\JsonContent(ref="#/components/schemas/Survey")),
      *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
      * )
@@ -141,6 +192,7 @@ class SurveyController extends Controller
     public function store(StoreSurveyRequest $request)
     {
         $survey = $this->surveyService->createSurvey($request->validated());
+
         return new SurveyResource($survey);
     }
 
@@ -150,34 +202,38 @@ class SurveyController extends Controller
      *     summary="Actualizar un Survey",
      *     tags={"Survey"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
+     *
      *             @OA\Schema(ref="#/components/schemas/SurveyRequest")
      *         )
      *     ),
+     *
      *     @OA\Response(response=200, description="Encuesta actualizado exitosamente", @OA\JsonContent(ref="#/components/schemas/Survey")),
      *     @OA\Response(response=422, description="Error de validación", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error de validación"))),
      *     @OA\Response(response=404, description="Encuesta No Encontrada", @OA\JsonContent(@OA\Property(property="error", type="string", example="Encuesta No Encontrada"))),
      *     @OA\Response(response=500, description="Error interno", @OA\JsonContent(@OA\Property(property="error", type="string", example="Error interno del servidor")))
      * )
      */
-
     public function update(UpdateSurveyRequest $request, $id)
     {
-
         $validatedData = $request->validated();
 
         $survey = $this->surveyService->getSurveyById($id);
-        if (!$survey) {
+        if (! $survey) {
             return response()->json([
                 'error' => 'Encuesta No Encontrada',
             ], 404);
         }
 
         $updatedCompany = $this->surveyService->updateSurvey($survey, $validatedData);
+
         return new SurveyResource($updatedCompany);
     }
 
@@ -187,19 +243,19 @@ class SurveyController extends Controller
      *     summary="Eliminar un Survey por ID",
      *     tags={"Survey"},
      *     security={{"bearerAuth": {}}},
+     *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
+     *
      *     @OA\Response(response=200, description="Encuesta eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Encuesta eliminado exitosamente"))),
      *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Encuesta No Encontrada"))),
 
      * )
      */
-
     public function destroy($id)
     {
-
         $survey = $this->surveyService->getSurveyById($id);
 
-        if (!$survey) {
+        if (! $survey) {
             return response()->json([
                 'error' => 'Encuesta No Encontrada.',
             ], 404);
@@ -215,5 +271,4 @@ class SurveyController extends Controller
             'message' => 'Esta Encuesta es eliminada exitosamente',
         ], 200);
     }
-
 }

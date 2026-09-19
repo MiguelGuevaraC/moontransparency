@@ -5635,13 +5635,13 @@
                 ]
             }
         },
-        "/moontransparency/public/api/survey-web/{id}": {
+        "/moontransparency/public/api/survey-show/{id}": {
             "get": {
                 "tags": [
                     "Survey"
                 ],
                 "summary": "Mostrar encuesta activa (show_web)",
-                "operationId": "213b7ae1c0235965ef48f6f0e1e28374",
+                "operationId": "5585ec905969eb413a9abf63d209d0c3",
                 "parameters": [
                     {
                         "name": "id",
@@ -5672,20 +5672,7 @@
                         }
                     },
                     "401": {
-                        "description": "No autorizado",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "UUID ausente o inválido"
                     },
                     "404": {
                         "description": "Encuesta no activa o no encontrada",
@@ -5702,6 +5689,97 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/moontransparency/public/api/surveys-public": {
+            "get": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Listar encuestas activas sin iniciar sesión",
+                "operationId": "listPublicSurveys",
+                "parameters": [
+                    {
+                        "name": "UUID",
+                        "in": "header",
+                        "description": "Clave de acceso de la web pública",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "project_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "survey_name",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "survey_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "PRE",
+                                "POST"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "all",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "true",
+                                "false"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado ordenado de encuestas activas"
+                    },
+                    "401": {
+                        "description": "UUID ausente o inválido"
+                    },
+                    "422": {
+                        "description": "Filtros inválidos"
                     }
                 }
             }

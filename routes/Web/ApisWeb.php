@@ -25,7 +25,10 @@ Route::get('calculator/co2/surveys', [Co2CalculatorController::class, 'publicSur
 Route::post('calculator/co2/embed-link', [Co2CalculatorController::class, 'embedLink'])
     ->middleware('public.uuid');
 
-Route::get('survey-show/{id}', [SurveyController::class, 'show_web']);
+Route::get('surveys-public', [SurveyController::class, 'publicIndex'])
+    ->middleware('public.uuid');
+Route::get('survey-show/{id}', [SurveyController::class, 'show_web'])
+    ->middleware('public.uuid');
 Route::post('response-survey', [SurveyedController::class, 'store']);
 Route::post('response-survey/{id}/finalize', [SurveyedController::class, 'finalize']);
 Route::post('response-survey/{id}', [SurveyedController::class, 'update']);

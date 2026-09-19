@@ -28,6 +28,7 @@ class OpenApiDocumentationTest extends TestCase
             '/moontransparency/public/api/calculator/co2/surveys' => ['get'],
             '/moontransparency/public/api/calculator/co2/embed-link' => ['post'],
             '/moontransparency/public/api/platform/public' => ['get'],
+            '/moontransparency/public/api/surveys-public' => ['get'],
             '/moontransparency/public/api/calculator/co2/history' => ['get'],
             '/moontransparency/public/api/calculator/co2' => ['post'],
             '/moontransparency/public/api/surveyed/{id}/reopen' => ['post'],
