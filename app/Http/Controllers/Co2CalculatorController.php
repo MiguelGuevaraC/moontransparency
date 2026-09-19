@@ -8,6 +8,7 @@ use App\Models\Co2Calculation;
 use App\Models\Proyect;
 use App\Models\Survey;
 use App\Services\Co2EmissionCalculator;
+use App\Services\Co2PublicPortalSelection;
 use App\Services\Co2SurveyDatasetBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
@@ -23,12 +24,8 @@ class Co2CalculatorController extends Controller
      *
      *     @OA\Parameter(name="UUID", in="header", required=true, description="Clave de acceso de la web pública", @OA\Schema(type="string")),
      *
-     *     @OA\RequestBody(required=true, @OA\JsonContent(
-     *         required={"project_id", "baseline_survey_id"},
+     *     @OA\RequestBody(required=false, @OA\JsonContent(
      *
-     *         @OA\Property(property="project_id", type="integer", example=2),
-     *         @OA\Property(property="baseline_survey_id", type="integer", example=10),
-     *         @OA\Property(property="monitoring_survey_id", type="integer", nullable=true, example=11),
      *         @OA\Property(property="household_ids", type="array", maxItems=20, @OA\Items(type="integer")),
      *         @OA\Property(property="sample_limit", type="integer", minimum=1, maximum=20, example=20)
      *     )),
@@ -40,15 +37,17 @@ class Co2CalculatorController extends Controller
      */
     public function embedLink(
         Co2CalculatorEmbedLinkRequest $request,
-        Co2SurveyDatasetBuilder $datasetBuilder
+        Co2SurveyDatasetBuilder $datasetBuilder,
+        Co2PublicPortalSelection $portalSelection
     ) {
         $validated = $request->validated();
+        $fixedSelection = $portalSelection->resolve();
         $limit = (int) ($validated['sample_limit'] ?? config('co2.sample_limit', 20));
         $ownerUserId = $request->user()?->isSurveyor() ? (int) $request->user()->id : null;
         $dataset = $datasetBuilder->build(
-            (int) $validated['project_id'],
-            (int) $validated['baseline_survey_id'],
-            isset($validated['monitoring_survey_id']) ? (int) $validated['monitoring_survey_id'] : null,
+            $fixedSelection['project_id'],
+            $fixedSelection['baseline_survey_id'],
+            $fixedSelection['monitoring_survey_id'],
             $validated['household_ids'] ?? [],
             $limit,
             $ownerUserId
@@ -90,6 +89,7 @@ class Co2CalculatorController extends Controller
             'available_households' => $dataset['available_households'],
             'selected_households' => $dataset['selected_households'],
             'warnings' => $dataset['warnings'],
+            'selection_mode' => 'fixed',
         ]]);
     }
 

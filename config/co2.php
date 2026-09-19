@@ -8,6 +8,14 @@ return [
     'sample_limit' => 20,
     'embed_link_ttl_minutes' => (int) env('CO2_CALCULATOR_LINK_TTL_MINUTES', 30),
     'calculator_public_url' => rtrim((string) env('CO2_CALCULATOR_PUBLIC_URL', ''), '/'),
+    'public_portal' => [
+        'project_id' => env('CO2_PUBLIC_PROJECT_ID'),
+        'baseline_survey_id' => env('CO2_PUBLIC_BASELINE_SURVEY_ID'),
+        'monitoring_survey_id' => env('CO2_PUBLIC_MONITORING_SURVEY_ID'),
+        'project_name' => env('CO2_PUBLIC_PROJECT_NAME', 'Cocina Sostenible de Doble Hornilla'),
+        'baseline_survey_name' => env('CO2_PUBLIC_BASELINE_SURVEY_NAME', 'KPT línea base'),
+        'monitoring_survey_name' => env('CO2_PUBLIC_MONITORING_SURVEY_NAME', 'KPT monitoreo'),
+    ],
     'embed_allowed_origins' => array_values(array_filter(array_map(
         'trim',
         explode(',', (string) env(

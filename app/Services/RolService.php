@@ -13,6 +13,11 @@ class RolService
 {
     public const REQUIRED_ROLES = ['Administrador', 'Administrador Moon', 'Encuestador'];
 
+    private const SURVEYOR_FORBIDDEN_PERMISSIONS = [
+        'participations.import',
+        'participations.export',
+    ];
+
     public function getRolById(int $id): ?Rol
     {
         return Rol::with(['permissions', 'menus'])->find($id);
@@ -99,6 +104,8 @@ class RolService
             $permissions = Permission::query()
                 ->whereIn('id', $permissionIds)
                 ->where('status', Permission::STATUS_ACTIVE)
+                ->when($this->isSurveyor($role), fn ($query) => $query
+                    ->whereNotIn('route', self::SURVEYOR_FORBIDDEN_PERMISSIONS))
                 ->get();
 
             Permission_rol::where('rol_id', $role->id)->delete();
@@ -116,6 +123,8 @@ class RolService
             Permission::query()
                 ->whereIn('id', $permissionIds)
                 ->where('status', Permission::STATUS_ACTIVE)
+                ->when($this->isSurveyor($role), fn ($query) => $query
+                    ->whereNotIn('route', self::SURVEYOR_FORBIDDEN_PERMISSIONS))
                 ->get()
                 ->each(fn (Permission $permission) => $this->restoreAssignment($role, $permission));
 
@@ -150,6 +159,13 @@ class RolService
                 ->distinct()
                 ->pluck('permission_id');
 
+            if ($this->isSurveyor($role)) {
+                $forbiddenPermissionIds = Permission::query()
+                    ->whereIn('route', self::SURVEYOR_FORBIDDEN_PERMISSIONS)
+                    ->pluck('id');
+                $selectedPermissionIds = $selectedPermissionIds->diff($forbiddenPermissionIds)->values();
+            }
+
             Permission_rol::query()
                 ->where('rol_id', $role->id)
                 ->whereIn('permission_id', $managedPermissionIds)
@@ -168,6 +184,16 @@ class RolService
 
     private function restoreAssignment(Rol $role, Permission $permission): void
     {
+        if ($this->isSurveyor($role)
+            && in_array($permission->route, self::SURVEYOR_FORBIDDEN_PERMISSIONS, true)) {
+            Permission_rol::query()
+                ->where('rol_id', $role->id)
+                ->where('permission_id', $permission->id)
+                ->delete();
+
+            return;
+        }
+
         $assignment = Permission_rol::withTrashed()
             ->where('rol_id', $role->id)
             ->where('permission_id', $permission->id)
@@ -189,5 +215,10 @@ class RolService
             'rol_id' => $role->id,
             'permission_id' => $permission->id,
         ]);
+    }
+
+    private function isSurveyor(Rol $role): bool
+    {
+        return $role->name === 'Encuestador';
     }
 }

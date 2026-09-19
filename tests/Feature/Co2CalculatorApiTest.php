@@ -99,15 +99,13 @@ class Co2CalculatorApiTest extends TestCase
         config(['app.uuid' => 'moon-public-calculator-key']);
 
         $response = $this->withHeader('UUID', 'moon-public-calculator-key')
-            ->postJson('/api/calculator/co2/embed-link', [
-                'project_id' => $project->id,
-                'baseline_survey_id' => $baseline->id,
-                'monitoring_survey_id' => $monitoring->id,
-            ])->assertOk()
+            ->postJson('/api/calculator/co2/embed-link', [])
+            ->assertOk()
             ->assertJsonPath('data.project_id', $project->id)
             ->assertJsonPath('data.baseline_survey.id', $baseline->id)
             ->assertJsonPath('data.monitoring_survey.id', $monitoring->id)
             ->assertJsonPath('data.selected_households', 1)
+            ->assertJsonPath('data.selection_mode', 'fixed')
             ->assertJsonStructure(['data' => ['iframe_url', 'viewer_url', 'expires_at']]);
 
         $this->assertStringStartsWith('http://localhost/calculadora/embed?', $response->json('data.iframe_url'));
@@ -200,7 +198,7 @@ class Co2CalculatorApiTest extends TestCase
 
     private function createKptDataset(): array
     {
-        $project = Proyect::create(['name' => 'Proyecto RECH']);
+        $project = Proyect::create(['name' => 'Cocina Sostenible de Doble Hornilla']);
         $baseline = Survey::create([
             'proyect_id' => $project->id,
             'survey_name' => 'KPT línea base',

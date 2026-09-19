@@ -6,6 +6,7 @@ use App\Http\Controllers\Co2CalculatorController;
 use App\Http\Controllers\ContactSenderController;
 use App\Http\Controllers\OfflineSyncController;
 use App\Http\Controllers\ProyectController;
+use App\Http\Controllers\PublicPlatformController;
 use App\Http\Controllers\RespondentController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\SurveyedController;
@@ -15,6 +16,9 @@ Route::post('contact-send-web', [ContactSenderController::class, 'store']);
 Route::get('proyects-web', [ProyectController::class, 'list_web']);
 Route::get('ally-web', [AllyController::class, 'list_web']);
 Route::get('activity-web', [ActivityController::class, 'list_web']);
+
+Route::get('platform/public', [PublicPlatformController::class, 'show'])
+    ->middleware('public.uuid');
 
 Route::get('calculator/co2/surveys', [Co2CalculatorController::class, 'publicSurveys'])
     ->middleware('public.uuid');

@@ -20,16 +20,16 @@ class MenuAccessTest extends TestCase
 
         $response = $this->getJson('/api/menu')
             ->assertOk()
-            ->assertJsonCount(13, 'data')
-            ->assertJsonPath('data.0.code', 'projects')
-            ->assertJsonPath('data.11.code', 'survey_history')
-            ->assertJsonPath('data.12.code', 'calculator')
-            ->assertJsonPath('data.12.path', '/calculadora')
-            ->assertJsonPath('data.12.url', url('/calculadora'))
-            ->assertJsonPath('data.12.embed_link_endpoint', url('/api/calculator/co2/embed-link'))
-            ->assertJsonPath('data.12.external', true);
+            ->assertJsonCount(5, 'data')
+            ->assertJsonPath('data.0.code', 'home')
+            ->assertJsonPath('data.0.name', 'Inicio')
+            ->assertJsonPath('data.1.code', 'users_roles')
+            ->assertJsonPath('data.1.name', 'Usuarios y roles')
+            ->assertJsonPath('data.4.code', 'survey_history')
+            ->assertJsonMissing(['code' => 'calculator'])
+            ->assertJsonMissing(['code' => 'allies']);
 
-        $this->assertArrayNotHasKey('permissions', $response->json('data.12'));
+        $this->assertArrayNotHasKey('permissions', $response->json('data.4'));
     }
 
     public function test_login_returns_the_role_menus_for_dynamic_navigation(): void
@@ -41,35 +41,37 @@ class MenuAccessTest extends TestCase
             'password' => 'Password!2026',
         ])
             ->assertOk()
-            ->assertJsonPath('user.menu_codes.12', 'calculator')
+            ->assertJsonPath('user.menu_codes.0', 'home')
+            ->assertJsonPath('user.menu_codes.1', 'users_roles')
             ->assertJsonFragment([
-                'code' => 'calculator',
-                'name' => 'Calculadora',
-                'path' => '/calculadora',
-                'url' => url('/calculadora'),
-                'embed_link_endpoint' => url('/api/calculator/co2/embed-link'),
-                'external' => true,
-            ]);
+                'code' => 'survey_history',
+                'name' => 'Historial de Encuestas',
+            ])
+            ->assertJsonMissing(['code' => 'calculator']);
     }
 
-    public function test_calculator_menu_uses_the_configured_public_subdirectory(): void
+    public function test_public_platform_exposes_the_new_name_and_technological_tools(): void
     {
-        config()->set(
-            'co2.calculator_public_url',
-            'https://develop.garzasoft.com/moontransparency/public'
-        );
-        Sanctum::actingAs($this->userWithRole('admin-menu-public-url', 'Administrador'));
+        config([
+            'app.uuid' => 'public-platform-key',
+            'co2.calculator_public_url' => 'https://develop.garzasoft.com/moontransparency/public',
+            'platform.sustainability_dashboard_url' => 'https://app.powerbi.com/dashboard',
+        ]);
 
-        $this->getJson('/api/menu')
+        $this->withHeader('UUID', 'public-platform-key')
+            ->getJson('/api/platform/public')
             ->assertOk()
+            ->assertJsonPath('data.name', 'Portal de Impacto Moon Group')
             ->assertJsonPath(
-                'data.12.url',
-                'https://develop.garzasoft.com/moontransparency/public/calculadora'
+                'data.navigation.2.children.0.url',
+                'https://app.powerbi.com/dashboard'
             )
             ->assertJsonPath(
-                'data.12.embed_link_endpoint',
+                'data.navigation.2.children.1.embed_link_endpoint',
                 'https://develop.garzasoft.com/moontransparency/public/api/calculator/co2/embed-link'
-            );
+            )
+            ->assertJsonMissing(['code' => 'allies'])
+            ->assertJsonMissing(['code' => 'surveys']);
     }
 
     public function test_assigning_menus_to_a_role_synchronizes_its_internal_permissions(): void
@@ -77,31 +79,51 @@ class MenuAccessTest extends TestCase
         Sanctum::actingAs($this->userWithRole('admin-menu-sync', 'Administrador'));
         $role = Rol::create(['name' => 'Analista', 'status' => Rol::STATUS_ACTIVE]);
         $history = Menu::where('code', 'survey_history')->firstOrFail();
-        $calculator = Menu::where('code', 'calculator')->firstOrFail();
+        $usersRoles = Menu::where('code', 'users_roles')->firstOrFail();
 
         $this->putJson("/api/rol/{$role->id}/menus", [
-            'menus' => [$history->id, $calculator->id],
+            'menus' => [$usersRoles->id, $history->id],
         ])
             ->assertOk()
-            ->assertJsonPath('data.menu_codes.0', 'survey_history')
-            ->assertJsonPath('data.menu_codes.1', 'calculator')
-            ->assertJsonFragment(['calculator.view']);
+            ->assertJsonPath('data.menu_codes.0', 'users_roles')
+            ->assertJsonPath('data.menu_codes.1', 'survey_history')
+            ->assertJsonFragment(['users.view'])
+            ->assertJsonFragment(['roles.view']);
 
         $this->assertDatabaseHas('menu_rols', ['rol_id' => $role->id, 'menu_id' => $history->id]);
-        $this->assertDatabaseHas('menu_rols', ['rol_id' => $role->id, 'menu_id' => $calculator->id]);
+        $this->assertDatabaseHas('menu_rols', ['rol_id' => $role->id, 'menu_id' => $usersRoles->id]);
         $this->assertTrue($role->fresh()->permissions()->where('route', 'participations.view')->exists());
-        $this->assertTrue($role->fresh()->permissions()->where('route', 'calculator.view')->exists());
+        $this->assertTrue($role->fresh()->permissions()->where('route', 'roles.view')->exists());
 
         $this->putJson("/api/rol/{$role->id}/menus", [
             'menus' => [$history->id],
-        ])->assertOk()->assertJsonMissing(['calculator.view']);
+        ])->assertOk()->assertJsonMissing(['roles.view']);
 
-        $this->assertDatabaseMissing('menu_rols', ['rol_id' => $role->id, 'menu_id' => $calculator->id]);
-        $calculatorPermission = Permission::where('route', 'calculator.view')->firstOrFail();
+        $this->assertDatabaseMissing('menu_rols', ['rol_id' => $role->id, 'menu_id' => $usersRoles->id]);
+        $rolesPermission = Permission::where('route', 'roles.view')->firstOrFail();
         $this->assertSoftDeleted('permission_rols', [
             'rol_id' => $role->id,
-            'permission_id' => $calculatorPermission->id,
+            'permission_id' => $rolesPermission->id,
         ]);
+    }
+
+    public function test_surveyor_cannot_receive_excel_permissions_through_menu_assignment(): void
+    {
+        Sanctum::actingAs($this->userWithRole('admin-menu-surveyor', 'Administrador'));
+        $surveyor = Rol::where('name', 'Encuestador')->firstOrFail();
+        $history = Menu::where('code', 'survey_history')->firstOrFail();
+
+        $this->putJson("/api/rol/{$surveyor->id}/menus", [
+            'menus' => [$history->id],
+        ])->assertOk()
+            ->assertJsonFragment(['participations.view'])
+            ->assertJsonMissing(['participations.import'])
+            ->assertJsonMissing(['participations.export']);
+
+        $this->assertFalse($surveyor->fresh()->permissions()->whereIn('route', [
+            'participations.import',
+            'participations.export',
+        ])->exists());
     }
 
     public function test_menu_assignment_rejects_unknown_menu_ids(): void

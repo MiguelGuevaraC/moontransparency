@@ -14,6 +14,12 @@ class SurveyedExcelController extends Controller
 
     public function export(IndexSurveyedRequest $request)
     {
+        abort_if(
+            $request->user()?->isSurveyor(),
+            403,
+            'Los encuestadores no pueden descargar el historial en Excel.'
+        );
+
         $rows = $this->excelService->exportRows(
             $request->input('response_text'),
             $request->user()
@@ -26,6 +32,12 @@ class SurveyedExcelController extends Controller
 
     public function import(Request $request)
     {
+        abort_if(
+            $request->user()?->isSurveyor(),
+            403,
+            'Los encuestadores no pueden importar encuestas desde Excel.'
+        );
+
         $request->validate([
             'file' => ['required', 'file', 'mimes:xls,xlsx'],
         ]);

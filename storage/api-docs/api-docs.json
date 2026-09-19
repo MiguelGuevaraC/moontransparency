@@ -1374,28 +1374,11 @@
                     }
                 ],
                 "requestBody": {
-                    "required": true,
+                    "required": false,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "project_id",
-                                    "baseline_survey_id"
-                                ],
                                 "properties": {
-                                    "project_id": {
-                                        "type": "integer",
-                                        "example": 2
-                                    },
-                                    "baseline_survey_id": {
-                                        "type": "integer",
-                                        "example": 10
-                                    },
-                                    "monitoring_survey_id": {
-                                        "type": "integer",
-                                        "example": 11,
-                                        "nullable": true
-                                    },
                                     "household_ids": {
                                         "type": "array",
                                         "items": {
@@ -4191,6 +4174,34 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/moontransparency/public/api/platform/public": {
+            "get": {
+                "tags": [
+                    "Portal publico"
+                ],
+                "summary": "Obtener la identidad y navegacion del Portal de Impacto Moon Group",
+                "operationId": "publicPlatformConfiguration",
+                "parameters": [
+                    {
+                        "name": "UUID",
+                        "in": "header",
+                        "description": "Clave de acceso de la web publica",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Navegacion publica y herramientas tecnologicas"
+                    },
+                    "401": {
+                        "description": "UUID ausente o invalido"
+                    }
+                }
             }
         },
         "/moontransparency/public/api/respondent-search": {
@@ -10815,6 +10826,10 @@
         {
             "name": "Proyect",
             "description": "Proyect"
+        },
+        {
+            "name": "Portal publico",
+            "description": "Portal publico"
         },
         {
             "name": "Respondent",

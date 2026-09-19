@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Permission;
 use App\Models\Proyect;
 use App\Models\Respondent;
 use App\Models\Rol;
@@ -13,6 +14,7 @@ use App\Models\SurveyQuestion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -77,6 +79,35 @@ class SurveyedExcelCompatibilityTest extends TestCase
             'id' => $response->id,
             'response_text' => 'sin cambios',
         ]);
+    }
+
+    public function test_surveyor_cannot_import_or_export_even_with_legacy_permissions(): void
+    {
+        $role = Rol::where('name', 'Encuestador')->firstOrFail();
+        foreach (['participations.import', 'participations.export'] as $code) {
+            $permission = Permission::where('route', $code)->firstOrFail();
+            DB::table('permission_rols')->updateOrInsert(
+                ['rol_id' => $role->id, 'permission_id' => $permission->id],
+                [
+                    'name_permission' => $permission->name,
+                    'name_rol' => $role->name,
+                    'type' => $permission->type,
+                    'deleted_at' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        }
+        Sanctum::actingAs(User::create([
+            'number_document' => 'DOC-SURVEYOR-EXCEL',
+            'username' => 'surveyor-excel',
+            'password' => 'Password!2026',
+            'status' => User::STATUS_ACTIVE,
+            'rol_id' => $role->id,
+        ]));
+
+        $this->get('/api/surveyedExcel')->assertForbidden();
+        $this->postJson('/api/surveyed/import-excel', [])->assertForbidden();
     }
 
     private function createParticipation(string $value): SurveyedResponse
