@@ -18,9 +18,10 @@ class Co2CalculatorController extends Controller
      * @OA\Post(
      *     path="/moontransparency/public/api/calculator/co2/embed-link",
      *     operationId="createCo2CalculatorEmbedLink",
-     *     summary="Generar un enlace temporal para la calculadora con datos reales",
+     *     summary="Generar para la web de Moon Group un enlace temporal de la calculadora",
      *     tags={"CO2 Calculator"},
-     *     security={{"bearerAuth": {}}},
+     *
+     *     @OA\Parameter(name="UUID", in="header", required=true, description="Clave de acceso de la web pública", @OA\Schema(type="string")),
      *
      *     @OA\RequestBody(required=true, @OA\JsonContent(
      *         required={"project_id", "baseline_survey_id"},
@@ -33,8 +34,7 @@ class Co2CalculatorController extends Controller
      *     )),
      *
      *     @OA\Response(response=200, description="URL firmada y temporal para usar como iframe o abrir en una pestaña"),
-     *     @OA\Response(response=401, description="No autenticado"),
-     *     @OA\Response(response=403, description="Sin el permiso calculator.view"),
+     *     @OA\Response(response=401, description="UUID ausente o inválido"),
      *     @OA\Response(response=422, description="Encuestas incompatibles o parámetros inválidos")
      * )
      */
@@ -91,6 +91,55 @@ class Co2CalculatorController extends Controller
             'selected_households' => $dataset['selected_households'],
             'warnings' => $dataset['warnings'],
         ]]);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/moontransparency/public/api/calculator/co2/surveys",
+     *     operationId="listPublicCo2CalculatorSurveys",
+     *     summary="Listar encuestas activas compatibles con la calculadora CO2",
+     *     tags={"CO2 Calculator"},
+     *
+     *     @OA\Parameter(name="UUID", in="header", required=true, description="Clave de acceso de la web pública", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="project_id", in="query", required=true, @OA\Schema(type="integer", minimum=1)),
+     *
+     *     @OA\Response(response=200, description="Encuestas de línea base y monitoreo disponibles"),
+     *     @OA\Response(response=401, description="UUID ausente o inválido"),
+     *     @OA\Response(response=422, description="Proyecto inválido")
+     * )
+     */
+    public function publicSurveys(Request $request)
+    {
+        $validated = $request->validate([
+            'project_id' => ['required', 'integer', 'min:1', 'exists:proyects,id'],
+        ]);
+
+        $surveys = Survey::query()
+            ->where('proyect_id', $validated['project_id'])
+            ->where('status', Survey::STATUS_ACTIVE)
+            ->whereHas('survey_questions', fn ($query) => $query
+                ->whereNotNull('calculator_key')
+                ->where(function ($keys) {
+                    $keys->where('calculator_key', 'like', 'baseline.%')
+                        ->orWhere('calculator_key', 'like', 'monitoring.%');
+                }))
+            ->orderByRaw('display_order IS NULL')
+            ->orderBy('display_order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (Survey $survey) => [
+                'id' => $survey->id,
+                'code' => $survey->code,
+                'project_id' => $survey->proyect_id,
+                'name' => $survey->survey_name,
+                'type' => $survey->survey_type,
+                'kind' => $survey->calculatorKind(),
+                'display_order' => $survey->display_order,
+                'post_survey_id' => $survey->post_survey_id,
+            ])
+            ->values();
+
+        return response()->json(['data' => $surveys]);
     }
 
     /**

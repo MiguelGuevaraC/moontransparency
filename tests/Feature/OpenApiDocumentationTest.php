@@ -25,6 +25,8 @@ class OpenApiDocumentationTest extends TestCase
             '/moontransparency/public/api/surveyed/{id}/calculator' => ['get'],
             '/moontransparency/public/api/surveyed/{id}' => ['get', 'delete'],
             '/moontransparency/public/api/calculator/co2/configuration' => ['get'],
+            '/moontransparency/public/api/calculator/co2/surveys' => ['get'],
+            '/moontransparency/public/api/calculator/co2/embed-link' => ['post'],
             '/moontransparency/public/api/calculator/co2/history' => ['get'],
             '/moontransparency/public/api/calculator/co2' => ['post'],
             '/moontransparency/public/api/surveyed/{id}/reopen' => ['post'],
@@ -51,6 +53,10 @@ class OpenApiDocumentationTest extends TestCase
         $this->assertArrayNotHasKey(
             'security',
             $document['paths']['/moontransparency/public/api/response-survey']['post']
+        );
+        $this->assertArrayNotHasKey(
+            'security',
+            $document['paths']['/moontransparency/public/api/calculator/co2/embed-link']['post']
         );
         $this->assertSame(
             [['bearerAuth' => []]],

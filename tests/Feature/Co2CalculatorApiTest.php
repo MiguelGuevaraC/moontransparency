@@ -96,13 +96,14 @@ class Co2CalculatorApiTest extends TestCase
     public function test_it_generates_a_signed_iframe_with_real_survey_data(): void
     {
         [$project, $baseline, $monitoring] = $this->createKptDataset();
-        $this->authenticate();
+        config(['app.uuid' => 'moon-public-calculator-key']);
 
-        $response = $this->postJson('/api/calculator/co2/embed-link', [
-            'project_id' => $project->id,
-            'baseline_survey_id' => $baseline->id,
-            'monitoring_survey_id' => $monitoring->id,
-        ])->assertOk()
+        $response = $this->withHeader('UUID', 'moon-public-calculator-key')
+            ->postJson('/api/calculator/co2/embed-link', [
+                'project_id' => $project->id,
+                'baseline_survey_id' => $baseline->id,
+                'monitoring_survey_id' => $monitoring->id,
+            ])->assertOk()
             ->assertJsonPath('data.project_id', $project->id)
             ->assertJsonPath('data.baseline_survey.id', $baseline->id)
             ->assertJsonPath('data.monitoring_survey.id', $monitoring->id)
@@ -123,7 +124,59 @@ class Co2CalculatorApiTest extends TestCase
     public function test_calculation_requires_authentication(): void
     {
         $this->postJson('/api/calculator/co2', [])->assertUnauthorized();
-        $this->postJson('/api/calculator/co2/embed-link', [])->assertUnauthorized();
+    }
+
+    public function test_public_calculator_endpoints_require_the_web_uuid(): void
+    {
+        config(['app.uuid' => 'moon-public-calculator-key']);
+
+        $this->getJson('/api/calculator/co2/surveys?project_id=1')
+            ->assertUnauthorized()
+            ->assertJsonPath('message', 'UUID de acceso público inválido.');
+        $this->withHeader('UUID', 'incorrect-key')
+            ->postJson('/api/calculator/co2/embed-link', [])
+            ->assertUnauthorized();
+    }
+
+    public function test_public_survey_api_only_lists_active_calculator_surveys(): void
+    {
+        [$project, $baseline, $monitoring] = $this->createKptDataset();
+        config(['app.uuid' => 'moon-public-calculator-key']);
+        $baseline->update(['display_order' => 20]);
+        $monitoring->update(['display_order' => 10]);
+
+        Survey::create([
+            'proyect_id' => $project->id,
+            'survey_name' => 'Encuesta sin mapeo',
+            'survey_type' => 'PRE',
+            'status' => Survey::STATUS_ACTIVE,
+            'display_order' => 1,
+        ]);
+        $inactive = Survey::create([
+            'proyect_id' => $project->id,
+            'survey_name' => 'KPT inactiva',
+            'survey_type' => 'PRE',
+            'status' => Survey::STATUS_INACTIVE,
+            'display_order' => 2,
+        ]);
+        SurveyQuestion::create([
+            'survey_id' => $inactive->id,
+            'question' => 'Peso inicial',
+            'question_type' => 'LIBRE',
+            'required' => 'SI',
+            'calculator_key' => 'baseline.initial_wood_kg',
+        ]);
+
+        $this->withHeader('UUID', 'moon-public-calculator-key')
+            ->getJson('/api/calculator/co2/surveys?project_id='.$project->id)
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.id', $monitoring->id)
+            ->assertJsonPath('data.0.kind', Survey::KIND_MONITORING)
+            ->assertJsonPath('data.1.id', $baseline->id)
+            ->assertJsonPath('data.1.kind', Survey::KIND_BASELINE)
+            ->assertJsonMissing(['name' => 'Encuesta sin mapeo'])
+            ->assertJsonMissing(['name' => 'KPT inactiva']);
     }
 
     public function test_calculator_requires_its_specific_permission(): void
@@ -141,9 +194,6 @@ class Co2CalculatorApiTest extends TestCase
             ->assertForbidden()
             ->assertJsonPath('required_permission', 'calculator.view');
         $this->postJson('/api/calculator/co2', [])
-            ->assertForbidden()
-            ->assertJsonPath('required_permission', 'calculator.view');
-        $this->postJson('/api/calculator/co2/embed-link', [])
             ->assertForbidden()
             ->assertJsonPath('required_permission', 'calculator.view');
     }
