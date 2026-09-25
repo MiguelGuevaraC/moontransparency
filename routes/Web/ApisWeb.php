@@ -4,6 +4,7 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AllyController;
 use App\Http\Controllers\Co2CalculatorController;
 use App\Http\Controllers\ContactSenderController;
+use App\Http\Controllers\HouseholdOptionController;
 use App\Http\Controllers\OfflineSyncController;
 use App\Http\Controllers\ProyectController;
 use App\Http\Controllers\PublicPlatformController;
@@ -29,6 +30,9 @@ Route::get('surveys-public', [SurveyController::class, 'publicIndex'])
     ->middleware('public.uuid');
 Route::get('survey-show/{id}', [SurveyController::class, 'show_web'])
     ->middleware('public.uuid');
+Route::get('survey-show/{survey}/household-options', [HouseholdOptionController::class, 'index'])
+    ->middleware('public.uuid')
+    ->name('public.surveys.household-options');
 Route::post('response-survey', [SurveyedController::class, 'store']);
 Route::post('response-survey/{id}/finalize', [SurveyedController::class, 'finalize']);
 Route::post('response-survey/{id}', [SurveyedController::class, 'update']);

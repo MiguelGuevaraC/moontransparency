@@ -85,7 +85,7 @@ class HouseholdIdentificationTest extends TestCase
         $this->assertDatabaseCount('surveyeds', 2);
     }
 
-    public function test_unknown_or_malformed_household_codes_are_rejected(): void
+    public function test_unknown_household_codes_are_rejected_for_surveys_without_an_identifier_question(): void
     {
         $survey = $this->createSurvey('Validación de hogar');
 
@@ -103,7 +103,7 @@ class HouseholdIdentificationTest extends TestCase
             'CASA-1'
         ))
             ->assertUnprocessable()
-            ->assertJsonPath('message', 'El ID del hogar debe tener el formato HOG-00000001.');
+            ->assertJsonPath('message', 'El ID del hogar indicado no existe.');
 
         $this->assertDatabaseCount('households', 0);
         $this->assertDatabaseCount('surveyeds', 0);

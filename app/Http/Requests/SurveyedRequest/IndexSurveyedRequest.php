@@ -2,7 +2,6 @@
 namespace App\Http\Requests\SurveyedRequest;
 
 use App\Http\Requests\IndexRequest;
-use App\Models\Household;
 
 class IndexSurveyedRequest extends IndexRequest
 {
@@ -30,7 +29,7 @@ class IndexSurveyedRequest extends IndexRequest
             'number_document' => 'nullable|string|max:20',
             'respondent_id' => 'nullable|integer|min:1',
             'created_by' => 'nullable|integer|min:1',
-            'household_code' => ['nullable', 'string', 'max:64', 'regex:'.Household::codePattern()],
+            'household_code' => ['nullable', 'string', 'max:64'],
             'survey_id' => 'nullable|integer|min:1',
             'project_id' => 'nullable|integer|min:1',
             'survey.proyect_id' => 'nullable|string',

@@ -85,6 +85,7 @@ class SurveyResource extends JsonResource
                 ? $this->coordinateCapture()
                 : null,
             'expected_days' => $this->expectedDays(),
+            'household_identifier' => $this->householdIdentifierConfiguration(),
 
             // estado y links
             'is_complete' => $isComplete,
@@ -122,5 +123,36 @@ class SurveyResource extends JsonResource
             ->all();
 
         return $capture;
+    }
+
+    private function householdIdentifierConfiguration(): ?array
+    {
+        $question = $this->survey_questions
+            ->firstWhere('calculator_key', 'household.identifier');
+
+        if (! $question) {
+            return null;
+        }
+
+        $isMonitoring = $this->survey_type === 'POST';
+        $preSurvey = $isMonitoring ? $this->preSurvey : null;
+
+        return [
+            'survey_question_id' => $question->id,
+            'required' => true,
+            'mode' => $isMonitoring ? 'SEARCHABLE_SELECT' : 'FREE_TEXT',
+            'uniqueness' => 'GLOBAL',
+            'max_length' => 64,
+            'linked_pre_survey' => $preSurvey ? [
+                'id' => $preSurvey->id,
+                'survey_name' => $preSurvey->survey_name,
+            ] : null,
+            'options_endpoint' => $isMonitoring
+                ? url('/api/survey-show/'.$this->id.'/household-options')
+                : null,
+            'authenticated_options_endpoint' => $isMonitoring
+                ? url('/api/survey/'.$this->id.'/household-options')
+                : null,
+        ];
     }
 }

@@ -16,7 +16,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="survey_name", type="string", example="Encuesta de Energía Renovable"),
  *     @OA\Property(property="description", type="string", example="Encuesta para evaluar el uso de energía renovable en zonas rurales."),
  *     @OA\Property(property="display_order", type="integer", minimum=1, example=3),
- *     @OA\Property(property="household_code", type="string", nullable=true, pattern="^HOG-[0-9]{8,}$", example="HOG-00000001"),
+ *     @OA\Property(property="household_code", type="string", nullable=true, maxLength=64, example="HOG-000123"),
  *     @OA\Property(property="latitude", type="number", format="double", nullable=true, minimum=-90, maximum=90, example=-6.39454),
  *     @OA\Property(property="longitude", type="number", format="double", nullable=true, minimum=-180, maximum=180, example=-79.822403),
  * )

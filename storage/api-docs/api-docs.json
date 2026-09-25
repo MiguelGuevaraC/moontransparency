@@ -2623,6 +2623,74 @@
                 ]
             }
         },
+        "/moontransparency/public/api/survey-show/{survey}/household-options": {
+            "get": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Buscar hogares elegibles de la línea base vinculada",
+                "description": "Devuelve hogares con PRE finalizada que todavía no fueron utilizados en esta encuesta POST.",
+                "operationId": "eligibleMonitoringHouseholds",
+                "parameters": [
+                    {
+                        "name": "survey",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "UUID",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 64
+                        }
+                    },
+                    {
+                        "name": "surveyed_id",
+                        "in": "query",
+                        "description": "Incluye la selección actual al editar un borrador.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hogares elegibles paginados"
+                    },
+                    "401": {
+                        "description": "UUID ausente o inválido"
+                    },
+                    "422": {
+                        "description": "La encuesta no es POST o no tiene PRE vinculada"
+                    }
+                }
+            }
+        },
         "/api/images-list": {
             "get": {
                 "tags": [
@@ -9572,8 +9640,8 @@
                     },
                     "household_code": {
                         "type": "string",
-                        "pattern": "^HOG-[0-9]{8,}$",
-                        "example": "HOG-00000001",
+                        "maxLength": 64,
+                        "example": "HOG-000123",
                         "nullable": true
                     },
                     "latitude": {
@@ -10117,8 +10185,8 @@
                     },
                     "household_code": {
                         "type": "string",
-                        "pattern": "^HOG-[0-9]{8,}$",
-                        "example": "HOG-00000001",
+                        "maxLength": 64,
+                        "example": "HOG-000123",
                         "nullable": true
                     },
                     "survey_id": {
@@ -10560,7 +10628,8 @@
                     },
                     "household_code": {
                         "type": "string",
-                        "pattern": "^HOG-[0-9]{8,}$",
+                        "maxLength": 64,
+                        "example": "HOG-000123",
                         "nullable": true
                     },
                     "survey_id": {
@@ -11050,6 +11119,10 @@
             "description": "Dashboard"
         },
         {
+            "name": "Survey",
+            "description": "Survey"
+        },
+        {
             "name": "Imagenes",
             "description": "Imagenes"
         },
@@ -11080,10 +11153,6 @@
         {
             "name": "Respondent",
             "description": "Respondent"
-        },
-        {
-            "name": "Survey",
-            "description": "Survey"
         },
         {
             "name": "Ubigeo",

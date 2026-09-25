@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Co2CalculatorController;
+use App\Http\Controllers\HouseholdOptionController;
 use App\Http\Controllers\SurveyCleanupController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\SurveyedController;
@@ -9,6 +10,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('survey', [SurveyController::class, 'index'])->middleware('permission:surveys.view');
 Route::get('survey/{id}', [SurveyController::class, 'show'])->middleware('permission:surveys.view');
+Route::get('survey/{survey}/household-options', [HouseholdOptionController::class, 'index'])
+    ->middleware('permission:participations.manage')
+    ->name('surveys.household-options');
 Route::post('survey', [SurveyController::class, 'store'])->middleware('permission:surveys.manage');
 Route::put('survey/{id}', [SurveyController::class, 'update'])->middleware('permission:surveys.manage');
 Route::delete('survey/{id}', [SurveyController::class, 'destroy'])->middleware('permission:surveys.manage');

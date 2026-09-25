@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Household;
 use App\Models\Respondent;
+use App\Models\Survey;
 use App\Models\Surveyed;
 use App\Models\SurveyedMeasurement;
 use App\Models\SurveyedReopening;
@@ -12,6 +13,7 @@ use App\Models\SurveyedResponseOption;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyQuestionOption;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -58,6 +60,7 @@ class SurveyedService
         $actor ??= auth('sanctum')->user() ?? auth()->user();
 
         return DB::transaction(function () use ($data, $actor) {
+            $data = $this->synchronizeHouseholdCode($data);
             $person = Respondent::firstOrCreate(
                 ['number_document' => $data['number_document']],
                 $this->respondentData($data)
@@ -85,7 +88,8 @@ class SurveyedService
             }
 
             $surveyedChanges = [];
-            $surveyedChanges['household_id'] = $this->resolveHousehold($surveyed, $person, $data)->id;
+            $household = $this->resolveHousehold($surveyed, $person, $data);
+            $surveyedChanges['household_id'] = $household?->id;
             if (! $surveyed->status) {
                 $surveyedChanges['status'] = Surveyed::STATUS_DRAFT;
             }
@@ -102,6 +106,7 @@ class SurveyedService
 
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
+            $this->synchronizeHouseholdResponses($surveyed, $person, $household);
             $this->synchronizeCoordinates($surveyed, $data);
 
             $this->surveyAlertService->notifyAdministrators($surveyed, $actor, $action);
@@ -129,6 +134,8 @@ class SurveyedService
                 );
             }
 
+            $data = $this->synchronizeHouseholdCode($data);
+
             $person = $this->validateSurveyedIdentity($surveyed, $data);
 
             $person->fill($this->respondentData($data));
@@ -138,12 +145,13 @@ class SurveyedService
 
             $surveyed->update(array_filter([
                 'status' => Surveyed::STATUS_DRAFT,
-                'household_id' => $household->id,
+                'household_id' => $household?->id,
                 'updated_by' => $actor?->id ?? $this->authenticatedUserId(),
             ], static fn ($value) => $value !== null) + $this->coordinateData($data));
 
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
+            $this->synchronizeHouseholdResponses($surveyed, $person, $household);
             $this->synchronizeCoordinates($surveyed, $data);
 
             $this->surveyAlertService->notifyAdministrators($surveyed, $actor, 'UPDATED');
@@ -169,6 +177,8 @@ class SurveyedService
                 return $this->getSurveyedById($surveyed->id);
             }
 
+            $data = $this->synchronizeHouseholdCode($data);
+
             $person = $this->validateSurveyedIdentity($surveyed, $data);
 
             $person->fill($this->respondentData($data));
@@ -178,10 +188,12 @@ class SurveyedService
 
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
-            $surveyed->update(['household_id' => $household->id] + $this->coordinateData($data));
+            $this->synchronizeHouseholdResponses($surveyed, $person, $household);
+            $surveyed->update(['household_id' => $household?->id] + $this->coordinateData($data));
             $this->synchronizeCoordinates($surveyed, $data);
             $this->validateRequiredCoordinates($surveyed);
             $this->validateRequiredResponses($surveyed);
+            $this->validateHouseholdSelection($surveyed);
 
             $surveyed->update([
                 'status' => Surveyed::STATUS_FINALIZED,
@@ -259,8 +271,9 @@ class SurveyedService
         ], static fn ($value) => $value !== null);
     }
 
-    private function resolveHousehold(Surveyed $surveyed, Respondent $person, array $data): Household
+    private function resolveHousehold(Surveyed $surveyed, Respondent $person, array $data): ?Household
     {
+        $survey = Survey::with('preSurvey')->findOrFail($surveyed->survey_id);
         $currentHousehold = $surveyed->household_id
             ? Household::find($surveyed->household_id)
             : null;
@@ -268,8 +281,31 @@ class SurveyedService
             ? trim((string) $data['household_code'])
             : null;
 
+        if ($this->usesHouseholdIdentifier($survey)) {
+            if ($survey->survey_type === 'POST') {
+                return $this->resolveMonitoringHousehold(
+                    $survey,
+                    $surveyed,
+                    $currentHousehold,
+                    $requestedCode
+                );
+            }
+
+            return $this->resolveBaselineHousehold(
+                $surveyed,
+                $currentHousehold,
+                $requestedCode
+            );
+        }
+
         if ($requestedCode !== null && $requestedCode !== '') {
-            $requestedHousehold = Household::where('code', $requestedCode)->firstOrFail();
+            $requestedHousehold = $this->householdByCode($requestedCode);
+
+            if (! $requestedHousehold) {
+                throw ValidationException::withMessages([
+                    'household_code' => 'El ID del hogar indicado no existe.',
+                ]);
+            }
 
             if ($currentHousehold && $currentHousehold->id !== $requestedHousehold->id) {
                 throw ValidationException::withMessages([
@@ -305,6 +341,229 @@ class SurveyedService
         ]);
 
         return $household;
+    }
+
+    private function synchronizeHouseholdCode(array $data): array
+    {
+        $surveyId = $data['survey_id'] ?? null;
+        if (! $surveyId) {
+            return $data;
+        }
+
+        $questionIds = SurveyQuestion::where('survey_id', $surveyId)
+            ->where('calculator_key', 'household.identifier')
+            ->pluck('id')
+            ->map(static fn ($id) => (int) $id)
+            ->all();
+
+        if (! $questionIds) {
+            return $data;
+        }
+
+        $topLevelCode = array_key_exists('household_code', $data)
+            ? $this->normalizeHouseholdCode($data['household_code'])
+            : null;
+        $responseCodes = collect($data['responses'] ?? [])
+            ->filter(fn (array $response) => in_array(
+                (int) ($response['survey_question_id'] ?? 0),
+                $questionIds,
+                true
+            ))
+            ->map(fn (array $response) => $this->normalizeHouseholdCode(
+                $response['response_text'] ?? null
+            ))
+            ->filter(static fn ($code) => $code !== null)
+            ->unique()
+            ->values();
+
+        if (($topLevelCode !== null && mb_strlen($topLevelCode) > 64)
+            || $responseCodes->contains(fn (string $code) => mb_strlen($code) > 64)) {
+            throw ValidationException::withMessages([
+                'household_code' => 'El ID del hogar no debe superar los 64 caracteres.',
+            ]);
+        }
+
+        if ($responseCodes->count() > 1) {
+            throw ValidationException::withMessages([
+                'household_code' => 'Las respuestas contienen más de un ID de hogar.',
+            ]);
+        }
+
+        $responseCode = $responseCodes->first();
+        if ($topLevelCode !== null && $responseCode !== null && $topLevelCode !== $responseCode) {
+            throw ValidationException::withMessages([
+                'household_code' => 'El ID del hogar no coincide con la respuesta de la encuesta.',
+            ]);
+        }
+
+        $code = $topLevelCode ?? $responseCode;
+        if ($code !== null) {
+            $data['household_code'] = $code;
+            foreach ($data['responses'] ?? [] as $index => $response) {
+                if (in_array((int) ($response['survey_question_id'] ?? 0), $questionIds, true)) {
+                    $data['responses'][$index]['response_text'] = $code;
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    private function resolveBaselineHousehold(
+        Surveyed $surveyed,
+        ?Household $currentHousehold,
+        ?string $requestedCode
+    ): ?Household
+    {
+        if ($requestedCode === null) {
+            return $currentHousehold;
+        }
+
+        $existing = $this->householdByCode($requestedCode);
+        if ($existing && $existing->id !== $currentHousehold?->id) {
+            throw ValidationException::withMessages([
+                'household_code' => 'El ID del hogar ya está registrado y debe ser único globalmente.',
+            ]);
+        }
+
+        if ($currentHousehold) {
+            if ($currentHousehold->code !== $requestedCode) {
+                try {
+                    $currentHousehold->update(['code' => $requestedCode]);
+                } catch (QueryException) {
+                    throw ValidationException::withMessages([
+                        'household_code' => 'El ID del hogar ya está registrado y debe ser único globalmente.',
+                    ]);
+                }
+            }
+
+            return $currentHousehold->fresh();
+        }
+
+        try {
+            return Household::create(['code' => $requestedCode]);
+        } catch (QueryException) {
+            throw ValidationException::withMessages([
+                'household_code' => 'El ID del hogar ya está registrado y debe ser único globalmente.',
+            ]);
+        }
+    }
+
+    private function resolveMonitoringHousehold(
+        Survey $survey,
+        Surveyed $surveyed,
+        ?Household $currentHousehold,
+        ?string $requestedCode
+    ): ?Household
+    {
+        if ($requestedCode === null && ! $currentHousehold) {
+            return null;
+        }
+
+        $preSurvey = $survey->preSurvey;
+        if (! $preSurvey) {
+            throw ValidationException::withMessages([
+                'household_code' => 'La encuesta de monitoreo no tiene una encuesta de línea base vinculada.',
+            ]);
+        }
+
+        $household = $requestedCode !== null
+            ? $this->householdByCode($requestedCode, true)
+            : Household::whereKey($currentHousehold->id)->lockForUpdate()->first();
+        $isEligible = $household && Surveyed::where('survey_id', $preSurvey->id)
+            ->where('status', Surveyed::STATUS_FINALIZED)
+            ->where('household_id', $household->id)
+            ->exists();
+
+        if (! $isEligible) {
+            throw ValidationException::withMessages([
+                'household_code' => 'El ID del hogar no pertenece a una línea base finalizada vinculada.',
+            ]);
+        }
+
+        $alreadyUsed = Surveyed::where('survey_id', $survey->id)
+            ->where('household_id', $household->id)
+            ->where('id', '<>', $surveyed->id)
+            ->exists();
+
+        if ($alreadyUsed) {
+            throw ValidationException::withMessages([
+                'household_code' => 'El ID del hogar ya fue utilizado en esta encuesta de monitoreo.',
+            ]);
+        }
+
+        return $household;
+    }
+
+    private function validateHouseholdSelection(Surveyed $surveyed): void
+    {
+        $survey = Survey::find($surveyed->survey_id);
+        if ($survey && $this->usesHouseholdIdentifier($survey) && ! $surveyed->household_id) {
+            throw ValidationException::withMessages([
+                'household_code' => 'El ID del hogar es obligatorio para finalizar la encuesta.',
+            ]);
+        }
+    }
+
+    private function synchronizeHouseholdResponses(
+        Surveyed $surveyed,
+        Respondent $person,
+        ?Household $household
+    ): void
+    {
+        if (! $household) {
+            return;
+        }
+
+        $questions = SurveyQuestion::where('survey_id', $surveyed->survey_id)
+            ->where('calculator_key', 'household.identifier')
+            ->get();
+
+        foreach ($questions as $question) {
+            $answers = SurveyedResponse::where('surveyed_id', $surveyed->id)
+                ->where('survey_question_id', $question->id)
+                ->get();
+
+            if ($answers->isEmpty()) {
+                SurveyedResponse::create([
+                    'respondent_id' => $person->id,
+                    'surveyed_id' => $surveyed->id,
+                    'survey_question_id' => $question->id,
+                    'response_text' => $household->code,
+                ]);
+
+                continue;
+            }
+
+            foreach ($answers as $answer) {
+                $answer->update(['response_text' => $household->code]);
+            }
+        }
+    }
+
+    private function usesHouseholdIdentifier(Survey $survey): bool
+    {
+        return $survey->survey_questions()
+            ->where('calculator_key', 'household.identifier')
+            ->exists();
+    }
+
+    private function householdByCode(string $code, bool $lock = false): ?Household
+    {
+        $query = Household::whereRaw('LOWER(code) = ?', [mb_strtolower($code)]);
+
+        return ($lock ? $query->lockForUpdate() : $query)->first();
+    }
+
+    private function normalizeHouseholdCode(mixed $code): ?string
+    {
+        if ($code === null) {
+            return null;
+        }
+
+        $normalized = trim((string) $code);
+
+        return $normalized === '' ? null : $normalized;
     }
 
     private function resolveMeasurement(Surveyed $surveyed, array $data): ?SurveyedMeasurement

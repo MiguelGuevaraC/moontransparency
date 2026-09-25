@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Household;
 use App\Models\OfflineSyncBatch;
 use App\Models\OfflineSyncMeasurement;
 use App\Models\OfflineSyncParticipation;
@@ -306,15 +305,6 @@ class OfflineSyncService
         if (! Survey::whereKey($item['survey_id'])->exists()) {
             throw ValidationException::withMessages([
                 "items.$itemIndex.survey_id" => 'La encuesta indicada no existe.',
-            ]);
-        }
-
-        if (
-            ! empty($item['household_code'])
-            && ! Household::where('code', $item['household_code'])->exists()
-        ) {
-            throw ValidationException::withMessages([
-                "items.$itemIndex.household_code" => 'El ID del hogar indicado no existe.',
             ]);
         }
     }
