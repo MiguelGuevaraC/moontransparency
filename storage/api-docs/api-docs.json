@@ -498,6 +498,122 @@
                 ]
             }
         },
+        "/moontransparency/public/api/alerts": {
+            "get": {
+                "tags": [
+                    "Alerts"
+                ],
+                "summary": "Listar alertas del panel administrativo",
+                "operationId": "listPanelAlerts",
+                "parameters": [
+                    {
+                        "name": "unread",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Alertas paginadas y total sin leer"
+                    },
+                    "403": {
+                        "description": "Solo administradores"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/alerts/unread-count": {
+            "get": {
+                "tags": [
+                    "Alerts"
+                ],
+                "summary": "Consultar cantidad de alertas sin leer",
+                "operationId": "countUnreadPanelAlerts",
+                "responses": {
+                    "200": {
+                        "description": "Cantidad de alertas sin leer"
+                    },
+                    "403": {
+                        "description": "Solo administradores"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/alerts/{id}/read": {
+            "patch": {
+                "tags": [
+                    "Alerts"
+                ],
+                "summary": "Marcar una alerta como leída",
+                "operationId": "markPanelAlertAsRead",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Alerta marcada como leída"
+                    },
+                    "404": {
+                        "description": "Alerta no encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/moontransparency/public/api/alerts/read-all": {
+            "patch": {
+                "tags": [
+                    "Alerts"
+                ],
+                "summary": "Marcar todas las alertas como leídas",
+                "operationId": "markAllPanelAlertsAsRead",
+                "responses": {
+                    "200": {
+                        "description": "Todas las alertas quedaron leídas"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/ally": {
             "get": {
                 "tags": [
@@ -5924,6 +6040,28 @@
                 ]
             }
         },
+        "/moontransparency/public/api/surveyquestion-field-types": {
+            "get": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Listar tipos de respuesta disponibles para el editor de encuestas",
+                "operationId": "listSurveyQuestionFieldTypes",
+                "responses": {
+                    "200": {
+                        "description": "Incluye NUMERICO y DECIMAL como tipos distintos"
+                    },
+                    "403": {
+                        "description": "Sin permiso surveys.view"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/surveyquestion/{id}": {
             "get": {
                 "tags": [
@@ -9351,7 +9489,23 @@
                     },
                     "question_type": {
                         "type": "string",
-                        "example": "multiple_choice"
+                        "enum": [
+                            "LIBRE",
+                            "OPCIONES",
+                            "UBICACION",
+                            "FILE"
+                        ]
+                    },
+                    "type_field": {
+                        "type": "string",
+                        "enum": [
+                            "NUMERICO",
+                            "DECIMAL",
+                            "FECHA",
+                            "LARGO",
+                            "CORTO"
+                        ],
+                        "example": "DECIMAL"
                     }
                 },
                 "type": "object"
@@ -9374,7 +9528,15 @@
                     },
                     "question_type": {
                         "type": "string",
-                        "example": "multiple_choice"
+                        "example": "LIBRE"
+                    },
+                    "type_field": {
+                        "type": "string",
+                        "example": "DECIMAL"
+                    },
+                    "accepts_decimals": {
+                        "type": "boolean",
+                        "example": true
                     },
                     "created_at": {
                         "type": "string",
@@ -9903,6 +10065,7 @@
                         "nullable": true
                     },
                     "response_text": {
+                        "description": "NUMERICO admite enteros; DECIMAL admite punto o coma y se normaliza con punto.",
                         "type": "string",
                         "maxLength": 1000,
                         "example": "12.5",
@@ -10303,6 +10466,7 @@
                         "nullable": true
                     },
                     "response_text": {
+                        "description": "NUMERICO admite enteros; DECIMAL admite punto o coma y se normaliza con punto.",
                         "type": "string",
                         "maxLength": 1000,
                         "example": "12.5",
@@ -10856,6 +11020,10 @@
         {
             "name": "Activity",
             "description": "Activity"
+        },
+        {
+            "name": "Alerts",
+            "description": "Alerts"
         },
         {
             "name": "Ally",
