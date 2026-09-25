@@ -7,10 +7,14 @@ use App\Http\Requests\SurveyRequest\PublicSurveyIndexRequest;
 use App\Http\Requests\SurveyRequest\StoreSurveyRequest;
 use App\Http\Requests\SurveyRequest\UpdateSurveyRequest;
 use App\Http\Resources\PublicSurveyResource;
+use App\Http\Resources\SurveyChangeLogResource;
 use App\Http\Resources\SurveyPreviewResource;
 use App\Http\Resources\SurveyResource;
 use App\Models\Survey;
+use App\Models\SurveyChangeLog;
 use App\Services\SurveyService;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class SurveyController extends Controller
 {
@@ -111,6 +115,49 @@ class SurveyController extends Controller
         return new SurveyPreviewResource(
             $this->surveyService->getSurveyPreviewById((int) $id)
         );
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/moontransparency/public/api/survey/{id}/history",
+     *     operationId="surveyChangeHistory",
+     *     summary="Consultar el historial de cambios de una encuesta",
+     *     description="Incluye cambios de la encuesta, sus preguntas y opciones, con valores anteriores y nuevos.",
+     *     tags={"Survey"},
+     *     security={{"bearerAuth": {}}},
+     *
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", minimum=1)),
+     *     @OA\Parameter(name="action", in="query", required=false, @OA\Schema(type="string", enum={"CREATED", "UPDATED", "DELETED"})),
+     *     @OA\Parameter(name="entity_type", in="query", required=false, @OA\Schema(type="string", enum={"SURVEY", "QUESTION", "OPTION"})),
+     *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", minimum=1, maximum=100, default=25)),
+     *
+     *     @OA\Response(response=200, description="Historial paginado", @OA\JsonContent(type="object", @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/SurveyChangeLog")))),
+     *     @OA\Response(response=403, description="Sin permiso surveys.view"),
+     *     @OA\Response(response=404, description="Encuesta no encontrada")
+     * )
+     */
+    public function history(Request $request, $id)
+    {
+        Survey::findOrFail((int) $id);
+        $validated = $request->validate([
+            'action' => ['nullable', Rule::in([
+                SurveyChangeLog::ACTION_CREATED,
+                SurveyChangeLog::ACTION_UPDATED,
+                SurveyChangeLog::ACTION_DELETED,
+            ])],
+            'entity_type' => ['nullable', Rule::in(['SURVEY', 'QUESTION', 'OPTION'])],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $history = SurveyChangeLog::query()
+            ->where('survey_id', (int) $id)
+            ->when($validated['action'] ?? null, fn ($query, $action) => $query->where('action', $action))
+            ->when($validated['entity_type'] ?? null, fn ($query, $entityType) => $query->where('entity_type', $entityType))
+            ->with('user')
+            ->latest('id')
+            ->paginate((int) ($validated['per_page'] ?? 25));
+
+        return SurveyChangeLogResource::collection($history);
     }
 
     /**
