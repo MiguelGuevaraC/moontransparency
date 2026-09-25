@@ -154,6 +154,7 @@ return [
                     'section_title' => 'Medición diaria',
                 ]),
                 $question('baseline.observations', 13, 'Observaciones', 'LARGO', 'MEASUREMENT', [
+                    'legacy_question_texts' => ['Observaciones del día de medición'],
                     'applicable_days' => $days,
                     'section_key' => 'baseline.daily',
                     'section_title' => 'Medición diaria',
@@ -297,6 +298,7 @@ return [
                     'section_title' => 'Caso 2: solo cocina mejorada Moon Group',
                 ]),
                 $question('monitoring.observations', 21, 'Observaciones', 'LARGO', 'MEASUREMENT', [
+                    'legacy_question_texts' => ['Observaciones del día de medición'],
                     'applicable_days' => $days,
                     'section_key' => 'monitoring.daily',
                     'section_title' => 'Medición diaria',

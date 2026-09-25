@@ -4,7 +4,9 @@ namespace App\Console\Commands;
 
 use App\Models\Proyect;
 use App\Models\Survey;
+use App\Models\Surveyed;
 use App\Models\User;
+use App\Services\KptCo2FinalizedMigrationService;
 use App\Services\KptCo2SurveyConfigurator;
 use App\Services\SurveyCleanupService;
 use DomainException;
@@ -17,14 +19,16 @@ class SyncKptCo2Surveys extends Command
                             {project : ID del proyecto}
                             {--apply : Ejecuta la sincronización; sin esta opción solo muestra el plan}
                             {--clean-drafts : Respalda y elimina los borradores incompatibles antes de sincronizar}
+                            {--migrate-finalized : Respalda y transforma las participaciones finalizadas sin eliminarlas}
                             {--actor= : ID del administrador responsable de la limpieza}
-                            {--confirmation= : Debe ser SYNC_KPT_CO2 cuando se use --clean-drafts}';
+                            {--confirmation= : Debe ser SYNC_KPT_CO2 para limpiar o migrar datos}';
 
     protected $description = 'Sincroniza KPT línea base y monitoreo con el instrumento CO2 versionado';
 
     public function handle(
         KptCo2SurveyConfigurator $configurator,
-        SurveyCleanupService $cleanupService
+        SurveyCleanupService $cleanupService,
+        KptCo2FinalizedMigrationService $finalizedMigrationService
     ): int {
         $project = Proyect::find($this->argument('project'));
         if (! $project) {
@@ -47,28 +51,28 @@ class SyncKptCo2Surveys extends Command
             ])->all()
         );
 
-        if (collect($plan)->sum('finalized') > 0) {
-            $this->error('Hay participaciones finalizadas. La sincronización se detuvo para no perder información histórica.');
-
-            return self::FAILURE;
-        }
-
         if (! $this->option('apply')) {
             $this->info('Vista previa completada. No se modificó la base de datos.');
-            $this->line('Para ejecutar: agregue --apply. Si existen borradores, agregue también --clean-drafts, --actor y --confirmation=SYNC_KPT_CO2.');
+            $this->line('Para ejecutar: use --apply; agregue --clean-drafts si hay borradores y --migrate-finalized si hay finalizadas. Las operaciones con datos requieren --actor y --confirmation=SYNC_KPT_CO2.');
 
             return self::SUCCESS;
         }
 
-        $hasParticipations = collect($plan)->sum('participations') > 0;
-        if ($hasParticipations && ! $this->option('clean-drafts')) {
+        $hasDrafts = collect($plan)->sum('drafts') > 0;
+        $hasFinalized = collect($plan)->sum('finalized') > 0;
+        if ($hasDrafts && ! $this->option('clean-drafts')) {
             $this->error('Existen borradores incompatibles. Repita con --clean-drafts para respaldarlos y limpiarlos.');
+
+            return self::FAILURE;
+        }
+        if ($hasFinalized && ! $this->option('migrate-finalized')) {
+            $this->error('Existen participaciones finalizadas. Repita con --migrate-finalized para respaldarlas y transformarlas sin eliminarlas.');
 
             return self::FAILURE;
         }
 
         $actor = null;
-        if ($hasParticipations) {
+        if ($hasDrafts || $hasFinalized) {
             if ($this->option('confirmation') !== config('kpt_co2.confirmation')) {
                 $this->error('La confirmación no coincide. Use --confirmation=SYNC_KPT_CO2.');
 
@@ -85,9 +89,9 @@ class SyncKptCo2Surveys extends Command
 
         try {
             $audits = [];
-            if ($hasParticipations) {
+            if ($hasDrafts) {
                 foreach ($configurator->findConfiguredSurveys($project) as $survey) {
-                    if (! $survey->surveyeds()->exists()) {
+                    if (! $survey->surveyeds()->where('status', Surveyed::STATUS_DRAFT)->exists()) {
                         continue;
                     }
 
@@ -95,12 +99,16 @@ class SyncKptCo2Surveys extends Command
                         $survey->id,
                         $actor,
                         'Sincronización controlada del instrumento KPT CO2 '.config('kpt_co2.version'),
-                        config('kpt_co2.confirmation')
+                        config('kpt_co2.confirmation'),
+                        [Surveyed::STATUS_DRAFT]
                     );
                 }
             }
 
-            $surveys = $configurator->configure($project);
+            $migration = $hasFinalized
+                ? $finalizedMigrationService->migrate($project, $actor, $configurator)
+                : null;
+            $surveys = $migration['surveys'] ?? $configurator->configure($project);
         } catch (DomainException $exception) {
             $this->error($exception->getMessage());
 
@@ -114,6 +122,16 @@ class SyncKptCo2Surveys extends Command
 
         foreach (array_filter($audits) as $audit) {
             $this->line("Respaldo encuesta {$audit->survey_id}: {$audit->backup_path}");
+        }
+        if ($migration) {
+            $this->line('Respaldo finalizadas: '.$migration['audit']->backup_path);
+            $this->table(
+                ['Resultado de migración', 'Cantidad'],
+                collect($migration['counts'])->map(fn ($count, $label) => [$label, $count])->values()->all()
+            );
+            foreach ($migration['warnings'] as $warning) {
+                $this->warn($warning);
+            }
         }
 
         $this->info('Encuestas KPT CO2 sincronizadas correctamente.');

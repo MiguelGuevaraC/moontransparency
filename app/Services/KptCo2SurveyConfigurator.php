@@ -43,12 +43,12 @@ class KptCo2SurveyConfigurator
         })->values()->all();
     }
 
-    public function configure(Proyect $project): array
+    public function configure(Proyect $project, bool $allowParticipations = false): array
     {
-        return DB::transaction(function () use ($project) {
+        return DB::transaction(function () use ($project, $allowParticipations) {
             $definitions = $this->definitions();
-            $baseline = $this->synchronizeSurvey($project, $definitions['baseline']);
-            $monitoring = $this->synchronizeSurvey($project, $definitions['monitoring']);
+            $baseline = $this->synchronizeSurvey($project, $definitions['baseline'], $allowParticipations);
+            $monitoring = $this->synchronizeSurvey($project, $definitions['monitoring'], $allowParticipations);
 
             $baseline->update(['post_survey_id' => $monitoring->id]);
             if ($monitoring->post_survey_id !== null) {
@@ -71,11 +71,14 @@ class KptCo2SurveyConfigurator
             ->all();
     }
 
-    private function synchronizeSurvey(Proyect $project, array $definition): Survey
-    {
+    private function synchronizeSurvey(
+        Proyect $project,
+        array $definition,
+        bool $allowParticipations = false
+    ): Survey {
         $survey = $this->findSurvey($project, $definition, true);
 
-        if ($survey && DB::table('surveyeds')
+        if (! $allowParticipations && $survey && DB::table('surveyeds')
             ->where('survey_id', $survey->id)
             ->whereNull('deleted_at')
             ->exists()) {
@@ -132,9 +135,11 @@ class KptCo2SurveyConfigurator
 
         foreach ($definitions as $definition) {
             $options = $definition['options'] ?? [];
+            $legacyQuestionTexts = $definition['legacy_question_texts'] ?? [];
             unset($definition['options']);
+            unset($definition['legacy_question_texts']);
 
-            $question = $this->matchingQuestion($existing, $definition);
+            $question = $this->matchingQuestion($existing, $definition, $legacyQuestionTexts);
             if (! $question) {
                 $question = new SurveyQuestion();
             } elseif ($question->trashed()) {
@@ -152,8 +157,11 @@ class KptCo2SurveyConfigurator
         }
     }
 
-    private function matchingQuestion($existing, array $definition): ?SurveyQuestion
-    {
+    private function matchingQuestion(
+        $existing,
+        array $definition,
+        array $legacyQuestionTexts = []
+    ): ?SurveyQuestion {
         $question = $existing->firstWhere('instrument_key', $definition['instrument_key']);
 
         if (! $question && ! empty($definition['calculator_key'])) {
@@ -161,9 +169,14 @@ class KptCo2SurveyConfigurator
         }
 
         if (! $question) {
-            $normalizedText = $this->normalize($definition['question_text']);
+            $normalizedTexts = collect([
+                $definition['question_text'],
+                ...$legacyQuestionTexts,
+            ])->map(fn ($text) => $this->normalize($text));
             $question = $existing->first(
-                fn (SurveyQuestion $candidate) => $this->normalize($candidate->question_text) === $normalizedText
+                fn (SurveyQuestion $candidate) => $normalizedTexts->contains(
+                    $this->normalize($candidate->question_text)
+                )
             );
         }
 

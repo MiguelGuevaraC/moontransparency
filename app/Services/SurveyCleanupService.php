@@ -15,15 +15,20 @@ class SurveyCleanupService
 {
     private const BACKUP_DISK = 'local';
 
-    public function clean(int $surveyId, User $actor, string $reason, string $confirmation): ?SurveyCleanupAudit
-    {
-        return DB::transaction(function () use ($surveyId, $actor, $reason, $confirmation) {
+    public function clean(
+        int $surveyId,
+        User $actor,
+        string $reason,
+        string $confirmation,
+        ?array $statuses = null
+    ): ?SurveyCleanupAudit {
+        return DB::transaction(function () use ($surveyId, $actor, $reason, $confirmation, $statuses) {
             $survey = Survey::lockForUpdate()->find($surveyId);
             if (! $survey) {
                 return null;
             }
 
-            $snapshot = $this->snapshot($survey);
+            $snapshot = $this->snapshot($survey, $statuses);
             $participationIds = collect($snapshot['participations'])->pluck('id')->all();
             if (! $participationIds) {
                 throw new ConflictHttpException(
@@ -69,9 +74,12 @@ class SurveyCleanupService
         }, 3);
     }
 
-    private function snapshot(Survey $survey): array
+    private function snapshot(Survey $survey, ?array $statuses = null): array
     {
-        $participations = DB::table('surveyeds')->where('survey_id', $survey->id)->get();
+        $participations = DB::table('surveyeds')
+            ->where('survey_id', $survey->id)
+            ->when($statuses !== null, fn ($query) => $query->whereIn('status', $statuses))
+            ->get();
         $participationIds = $participations->pluck('id')->all();
         $measurements = $participationIds
             ? DB::table('surveyed_measurements')->whereIn('surveyed_id', $participationIds)->get()
