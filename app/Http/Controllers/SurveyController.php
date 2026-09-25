@@ -7,6 +7,7 @@ use App\Http\Requests\SurveyRequest\PublicSurveyIndexRequest;
 use App\Http\Requests\SurveyRequest\StoreSurveyRequest;
 use App\Http\Requests\SurveyRequest\UpdateSurveyRequest;
 use App\Http\Resources\PublicSurveyResource;
+use App\Http\Resources\SurveyPreviewResource;
 use App\Http\Resources\SurveyResource;
 use App\Models\Survey;
 use App\Services\SurveyService;
@@ -87,6 +88,29 @@ class SurveyController extends Controller
         }
 
         return new SurveyResource($survey);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/moontransparency/public/api/survey/{id}/preview",
+     *     operationId="previewSurvey",
+     *     summary="Obtener la vista previa de una encuesta en modo solo lectura",
+     *     tags={"Survey"},
+     *     security={{"bearerAuth": {}}},
+     *
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
+     *
+     *     @OA\Response(response=200, description="Encuesta lista para vista previa", @OA\JsonContent(ref="#/components/schemas/SurveyPreview")),
+     *     @OA\Response(response=401, description="No autenticado"),
+     *     @OA\Response(response=403, description="Sin permiso surveys.view"),
+     *     @OA\Response(response=404, description="Encuesta no encontrada")
+     * )
+     */
+    public function preview($id)
+    {
+        return new SurveyPreviewResource(
+            $this->surveyService->getSurveyPreviewById((int) $id)
+        );
     }
 
     /**

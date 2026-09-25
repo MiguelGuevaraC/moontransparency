@@ -9,6 +9,7 @@ use App\Http\Controllers\SurveyedExcelController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('survey', [SurveyController::class, 'index'])->middleware('permission:surveys.view');
+Route::get('survey/{id}/preview', [SurveyController::class, 'preview'])->middleware('permission:surveys.view');
 Route::get('survey/{id}', [SurveyController::class, 'show'])->middleware('permission:surveys.view');
 Route::get('survey/{survey}/household-options', [HouseholdOptionController::class, 'index'])
     ->middleware('permission:participations.manage')

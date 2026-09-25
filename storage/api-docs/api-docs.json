@@ -5819,6 +5819,52 @@
                 ]
             }
         },
+        "/moontransparency/public/api/survey/{id}/preview": {
+            "get": {
+                "tags": [
+                    "Survey"
+                ],
+                "summary": "Obtener la vista previa de una encuesta en modo solo lectura",
+                "operationId": "previewSurvey",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Encuesta lista para vista previa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SurveyPreview"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "Sin permiso surveys.view"
+                    },
+                    "404": {
+                        "description": "Encuesta no encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/moontransparency/public/api/survey-show/{id}": {
             "get": {
                 "tags": [
@@ -9459,6 +9505,43 @@
                     "ubigeo": {
                         "type": "string",
                         "example": "150101"
+                    }
+                },
+                "type": "object"
+            },
+            "SurveyPreview": {
+                "title": "Vista previa de encuesta",
+                "description": "Encuesta completa para representación visual sin captura de respuestas.",
+                "properties": {
+                    "preview_mode": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "read_only": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "accepts_responses": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "survey_name": {
+                        "type": "string",
+                        "example": "KPT línea base"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "INACTIVA"
+                    },
+                    "survey_questions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SurveyQuestion"
+                        }
                     }
                 },
                 "type": "object"

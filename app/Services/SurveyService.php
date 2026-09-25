@@ -23,6 +23,23 @@ class SurveyService
         return $survey;
     }
 
+    public function getSurveyPreviewById(int $id): Survey
+    {
+        return Survey::query()
+            ->with([
+                'proyect:id,name',
+                'postSurvey:id,survey_name,survey_type',
+                'preSurvey:id,survey_name,survey_type,post_survey_id',
+                'survey_questions' => fn ($query) => $query
+                    ->orderByRaw('CASE WHEN `order` IS NULL THEN 1 ELSE 0 END')
+                    ->orderBy('order')
+                    ->orderBy('id'),
+                'survey_questions.ods',
+                'survey_questions.survey_questions_options' => fn ($query) => $query->orderBy('id'),
+            ])
+            ->findOrFail($id);
+    }
+
 
 
     public function createSurvey(array $data): Survey
