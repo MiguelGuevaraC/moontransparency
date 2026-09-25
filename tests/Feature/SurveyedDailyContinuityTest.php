@@ -130,7 +130,7 @@ class SurveyedDailyContinuityTest extends TestCase
         $this->assertDatabaseHas('surveyed_responses', [
             'surveyed_id' => $surveyedId,
             'survey_question_id' => $weightQuestion->id,
-            'response_text' => '99.50',
+            'response_text' => '99.5',
         ]);
     }
 
@@ -203,7 +203,7 @@ class SurveyedDailyContinuityTest extends TestCase
             'survey_id' => $survey->id,
             'question_text' => 'Peso final',
             'question_type' => 'LIBRE',
-            'type_field' => 'NUMERO',
+            'type_field' => 'DECIMAL',
             'order' => 2,
             'is_required' => true,
         ]);

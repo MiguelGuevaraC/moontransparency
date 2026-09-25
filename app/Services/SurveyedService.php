@@ -23,7 +23,11 @@ class SurveyedService
 {
     protected $commonService;
 
-    public function __construct(CommonService $commonService)
+    public function __construct(
+        CommonService $commonService,
+        private SurveyResponseValueValidator $responseValueValidator,
+        private SurveyAlertService $surveyAlertService
+    )
     {
         $this->commonService = $commonService;
     }
@@ -66,6 +70,7 @@ class SurveyedService
                 'survey_id' => $data['survey_id'],
             ];
             $surveyed = Surveyed::where($participationKey)->lockForUpdate()->first();
+            $action = $surveyed ? 'UPDATED' : 'CREATED';
             if ($surveyed) {
                 $this->assertEditableBy($surveyed, $actor);
             }
@@ -98,6 +103,8 @@ class SurveyedService
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
             $this->synchronizeCoordinates($surveyed, $data);
+
+            $this->surveyAlertService->notifyAdministrators($surveyed, $actor, $action);
 
             return $this->getSurveyedById($surveyed->id);
         });
@@ -138,6 +145,8 @@ class SurveyedService
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
             $this->synchronizeCoordinates($surveyed, $data);
+
+            $this->surveyAlertService->notifyAdministrators($surveyed, $actor, 'UPDATED');
 
             return $this->getSurveyedById($surveyed->id);
         });
@@ -180,6 +189,8 @@ class SurveyedService
             ] + array_filter([
                 'updated_by' => $actor?->id ?? $this->authenticatedUserId(),
             ], static fn ($value) => $value !== null));
+
+            $this->surveyAlertService->notifyAdministrators($surveyed, $actor, 'FINALIZED');
 
             return $this->getSurveyedById($surveyed->id);
         });
@@ -414,7 +425,11 @@ class SurveyedService
             }
 
             if (array_key_exists('response_text', $response)) {
-                $answer->response_text = $response['response_text'];
+                $answer->response_text = $this->responseValueValidator->normalize(
+                    $question,
+                    $response['response_text'],
+                    "responses.$index.response_text"
+                );
             }
 
             if (

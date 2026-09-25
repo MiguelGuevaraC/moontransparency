@@ -15,7 +15,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="calculator_key", type="string", nullable=true, example="baseline.initial_wood_kg"),
  *     @OA\Property(property="calculator_value_type", type="string", nullable=true, enum={"string", "number", "options", "file", "location", "date", "time"}),
  *     @OA\Property(property="calculator_unit", type="string", nullable=true, enum={"kg", "g", "person", "day", "km", "degree"}),
- *     @OA\Property(property="question_type", type="string", example="multiple_choice")
+ *     @OA\Property(property="question_type", type="string", enum={"LIBRE", "OPCIONES", "UBICACION", "FILE"}),
+ *     @OA\Property(property="type_field", type="string", enum={"NUMERICO", "DECIMAL", "FECHA", "LARGO", "CORTO"}, example="DECIMAL")
  * )
  *
  * @OA\Schema(
@@ -26,7 +27,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="survey_id", type="integer", example=101),
  *     @OA\Property(property="question_text", type="string", example="¿Qué fuentes de energía utiliza en su hogar?"),
- *     @OA\Property(property="question_type", type="string", example="multiple_choice"),
+ *     @OA\Property(property="question_type", type="string", example="LIBRE"),
+ *     @OA\Property(property="type_field", type="string", example="DECIMAL"),
+ *     @OA\Property(property="accepts_decimals", type="boolean", example=true),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-01-26T21:44:24"),
  * )
  */
@@ -43,6 +46,7 @@ class SurveyQuestionResource extends JsonResource
             'calculator_unit' => $this->calculator_unit,
             'question_type' => $this->question_type ?? null,
             'type_field' => $this->type_field ?? null,
+            'accepts_decimals' => strtoupper((string) $this->type_field) === \App\Models\SurveyQuestion::FIELD_TYPE_DECIMAL,
 
             'eje' => $this->eje ?? null,
             'justification' => $this->justification ?? null,

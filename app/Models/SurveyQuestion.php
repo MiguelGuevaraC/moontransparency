@@ -9,6 +9,18 @@ class SurveyQuestion extends Model
 {
     use SoftDeletes;
 
+    public const FIELD_TYPE_DECIMAL = 'DECIMAL';
+
+    public const INTEGER_FIELD_TYPES = ['NUMERICO', 'NUMERO', 'NUMBER'];
+
+    public const FIELD_TYPE_OPTIONS = [
+        ['value' => 'NUMERICO', 'label' => 'Numérico (entero)'],
+        ['value' => self::FIELD_TYPE_DECIMAL, 'label' => 'Decimal'],
+        ['value' => 'FECHA', 'label' => 'Fecha'],
+        ['value' => 'LARGO', 'label' => 'Párrafo largo'],
+        ['value' => 'CORTO', 'label' => 'Párrafo corto'],
+    ];
+
     protected $fillable = [
         'id',
         'question_text',

@@ -37,7 +37,7 @@ class OfflineSyncRequest extends FormRequest
             'survey_question_id' => ['required', 'integer', 'min:1'],
             'survey_question_option_id' => ['nullable', 'array'],
             'survey_question_option_id.*' => ['integer', 'distinct', 'min:1'],
-            'response_text' => ['nullable', 'string', 'max:1000'],
+            'response_text' => ['nullable'],
             'attachment_key' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9_-]+$/'],
         ];
         $rules = [

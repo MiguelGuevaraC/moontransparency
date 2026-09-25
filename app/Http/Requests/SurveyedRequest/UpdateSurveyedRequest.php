@@ -46,7 +46,7 @@ class UpdateSurveyedRequest extends StoreRequest
             'responses.*.survey_question_id' => 'required|integer|exists:survey_questions,id',
             'responses.*.survey_question_option_id' => 'nullable|array',
             'responses.*.survey_question_option_id.*' => 'integer|exists:survey_question_options,id',
-            'responses.*.response_text' => 'nullable|string|max:1000',
+            'responses.*.response_text' => 'nullable',
             'responses.*.file' => 'nullable|file|max:5120|mimes:jpg,jpeg,png,pdf,doc,docx,xlsx,mp4,zip', // ajustar tipos/size según necesidad
 
         ];
@@ -102,9 +102,6 @@ class UpdateSurveyedRequest extends StoreRequest
             'responses.*.survey_question_option_id.array' => 'Las opciones seleccionadas deben ser un arreglo.',
             'responses.*.survey_question_option_id.*.integer' => 'El ID de la opción debe ser un número entero.',
             'responses.*.survey_question_option_id.*.exists' => 'Una de las opciones seleccionadas no existe.',
-
-            'responses.*.response_text.string' => 'La respuesta de texto debe ser una cadena.',
-            'responses.*.response_text.max' => 'La respuesta de texto no debe exceder los 1000 caracteres.',
 
             'responses.*.file.file' => 'El archivo debe ser un archivo válido.',
             'responses.*.file.max' => 'El archivo no debe exceder los 5 MB.',

@@ -31,7 +31,7 @@ namespace App\OpenApi;
  *
  *     @OA\Property(property="survey_question_id", type="integer", minimum=1, example=15),
  *     @OA\Property(property="survey_question_option_id", type="array", nullable=true, @OA\Items(type="integer"), example={3}),
- *     @OA\Property(property="response_text", type="string", nullable=true, maxLength=1000, example="12.5"),
+ *     @OA\Property(property="response_text", type="string", nullable=true, maxLength=1000, example="12.5", description="NUMERICO admite enteros; DECIMAL admite punto o coma y se normaliza con punto."),
  *     @OA\Property(property="file", type="string", format="binary", nullable=true)
  * )
  *
@@ -142,7 +142,7 @@ namespace App\OpenApi;
  *
  *     @OA\Property(property="survey_question_id", type="integer", minimum=1, example=15),
  *     @OA\Property(property="survey_question_option_id", type="array", nullable=true, uniqueItems=true, @OA\Items(type="integer")),
- *     @OA\Property(property="response_text", type="string", nullable=true, maxLength=1000, example="12.5"),
+ *     @OA\Property(property="response_text", type="string", nullable=true, maxLength=1000, example="12.5", description="NUMERICO admite enteros; DECIMAL admite punto o coma y se normaliza con punto."),
  *     @OA\Property(property="attachment_key", type="string", nullable=true, pattern="^[A-Za-z0-9_-]+$", example="evidence_1")
  * )
  *

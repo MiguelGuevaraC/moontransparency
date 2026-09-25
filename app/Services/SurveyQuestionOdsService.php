@@ -224,6 +224,7 @@ class SurveyQuestionOdsService
     {
         switch (strtoupper($type)) {
             case 'NUMERICO':
+            case 'DECIMAL':
                 return collect([
                     'Promedio' => (float) $responses->avg('response_text'),
                     'Mínimo' => (float) $responses->min('response_text'),

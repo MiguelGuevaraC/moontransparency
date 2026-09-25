@@ -205,7 +205,7 @@ class CalculatorParticipationResource extends JsonResource
             return 'location';
         }
 
-        if (in_array($fieldType, ['NUMERICO', 'NUMERO', 'NUMBER'], true)) {
+        if (in_array($fieldType, [...\App\Models\SurveyQuestion::INTEGER_FIELD_TYPES, \App\Models\SurveyQuestion::FIELD_TYPE_DECIMAL], true)) {
             return 'number';
         }
 

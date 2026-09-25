@@ -21,13 +21,16 @@ class SurveyQuestionService
 
     public function createSurveyQuestion(array $data): SurveyQuestion
     {
+        $data = $this->applyValueType($data);
         $proyect = SurveyQuestion::create($data);
+
         return $proyect;
     }
-    
+
     public function updateSurveyQuestion(SurveyQuestion $proyect, array $data): SurveyQuestion
     {
-      $proyect->update($data);
+        $proyect->update($this->applyValueType($data));
+
         return $proyect;
     }
 
@@ -36,4 +39,18 @@ class SurveyQuestionService
         return SurveyQuestion::find($id)?->delete() ?? false;
     }
 
+    private function applyValueType(array $data): array
+    {
+        $fieldType = strtoupper(trim((string) ($data['type_field'] ?? '')));
+
+        if (
+            ($fieldType === SurveyQuestion::FIELD_TYPE_DECIMAL
+                || in_array($fieldType, SurveyQuestion::INTEGER_FIELD_TYPES, true))
+            && empty($data['calculator_value_type'])
+        ) {
+            $data['calculator_value_type'] = 'number';
+        }
+
+        return $data;
+    }
 }

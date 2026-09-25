@@ -14,6 +14,10 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class SurveyedExcelService
 {
+    public function __construct(private SurveyResponseValueValidator $responseValueValidator)
+    {
+    }
+
     public function exportRows(?string $responseText = null, ?User $actor = null)
     {
         return DB::table('surveyeds')
@@ -137,12 +141,23 @@ class SurveyedExcelService
                 ];
             }
 
-            $responses = SurveyedResponse::query()->whereKey(array_keys($responseUpdates))->get()->keyBy('id');
+            $responses = SurveyedResponse::query()
+                ->with('survey_question')
+                ->whereKey(array_keys($responseUpdates))
+                ->get()
+                ->keyBy('id');
             if ($responses->count() !== count($responseUpdates)) {
                 throw ValidationException::withMessages(['file' => 'El archivo contiene IDs de respuesta inexistentes.']);
             }
             foreach ($responseUpdates as $id => $value) {
-                $responses[$id]->update(['response_text' => $value]);
+                $response = $responses[$id];
+                $response->update([
+                    'response_text' => $this->responseValueValidator->normalize(
+                        $response->survey_question,
+                        $value,
+                        'file'
+                    ),
+                ]);
             }
 
             $selections = SurveyedResponseOption::query()->whereKey(array_keys($optionUpdates))->get()->keyBy('id');

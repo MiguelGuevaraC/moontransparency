@@ -63,7 +63,7 @@ class GeobosquesSurveyConfigurationTest extends TestCase
             $questions[2],
             '¿Cuál es la distancia desde el bosque hasta el acceso más cercano? (carretera, trocha o camino, río navegable, otro acceso)',
             'LIBRE',
-            'NUMERICO',
+            'DECIMAL',
             []
         );
         $this->assertQuestion(
@@ -81,7 +81,7 @@ class GeobosquesSurveyConfigurationTest extends TestCase
             $questions[4],
             '¿Cuál es la distancia entre el bosque hasta su centro poblado/comunidad?',
             'LIBRE',
-            'NUMERICO',
+            'DECIMAL',
             []
         );
         $this->assertQuestion(
@@ -106,8 +106,8 @@ class GeobosquesSurveyConfigurationTest extends TestCase
                 'Se observan grandes focos de deforestación, incendios recurrentes o degradación por otra actividad.',
             ]
         );
-        $this->assertQuestion($questions[7], 'Latitud', 'LIBRE', 'NUMERICO', []);
-        $this->assertQuestion($questions[8], 'Longitud', 'LIBRE', 'NUMERICO', []);
+        $this->assertQuestion($questions[7], 'Latitud', 'LIBRE', 'DECIMAL', []);
+        $this->assertQuestion($questions[8], 'Longitud', 'LIBRE', 'DECIMAL', []);
 
         $this->assertSame('Unidad: km.', $questions[2]->justification);
         $this->assertSame('Unidad: km.', $questions[4]->justification);

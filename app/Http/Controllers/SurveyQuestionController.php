@@ -65,6 +65,24 @@ class SurveyQuestionController extends Controller
 
     /**
      * @OA\Get(
+     *     path="/moontransparency/public/api/surveyquestion-field-types",
+     *     operationId="listSurveyQuestionFieldTypes",
+     *     summary="Listar tipos de respuesta disponibles para el editor de encuestas",
+     *     tags={"Survey"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(response=200, description="Incluye NUMERICO y DECIMAL como tipos distintos"),
+     *     @OA\Response(response=403, description="Sin permiso surveys.view")
+     * )
+     */
+    public function fieldTypes()
+    {
+        return response()->json([
+            'data' => SurveyQuestion::FIELD_TYPE_OPTIONS,
+        ]);
+    }
+
+    /**
+     * @OA\Get(
      *     path="/moontransparency/public/api/surveyquestion/{id}",
      *     summary="Obtener detalles de un Survey por ID",
      *     tags={"Survey"},
