@@ -50,7 +50,7 @@ namespace App\OpenApi;
  *     @OA\Property(property="survey_id", type="integer", minimum=1, example=9),
  *     @OA\Property(property="latitude", type="number", format="double", nullable=true, minimum=-90, maximum=90, example=-6.39454),
  *     @OA\Property(property="longitude", type="number", format="double", nullable=true, minimum=-180, maximum=180, example=-79.822403),
- *     @OA\Property(property="day_number", type="integer", nullable=true, minimum=1, maximum=31, example=1, description="Solo para encuestas KPT; el límite efectivo proviene de expected_days."),
+ *     @OA\Property(property="day_number", type="integer", nullable=true, minimum=1, maximum=7, example=1, description="Solo para KPT línea base y KPT monitoreo; siempre corresponde a uno de los siete días."),
  *     @OA\Property(property="responses", type="array", @OA\Items(ref="#/components/schemas/SurveyAnswerInput"))
  * )
  *
@@ -125,7 +125,7 @@ namespace App\OpenApi;
  *     @OA\Property(property="household_id", type="integer", nullable=true),
  *     @OA\Property(property="survey_id", type="integer"),
  *     @OA\Property(property="supports_daily_measurements", type="boolean"),
- *     @OA\Property(property="expected_days", type="integer", nullable=true, minimum=1, maximum=31),
+ *     @OA\Property(property="expected_days", type="integer", nullable=true, minimum=7, maximum=7, description="Es 7 exclusivamente para KPT línea base y KPT monitoreo; en las demás encuestas es null."),
  *     @OA\Property(property="status", type="string", enum={"BORRADOR", "FINALIZADA"}),
  *     @OA\Property(property="can_edit", type="boolean", description="Solo es true para participaciones en BORRADOR."),
  *     @OA\Property(property="completed_at", type="string", format="date-time", nullable=true),
