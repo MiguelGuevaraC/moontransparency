@@ -27,6 +27,7 @@
   input,select{width:100%;background:#fff;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 8px;font-size:13px;}
   input:focus,select:focus{outline:2px solid rgba(33,130,218,.2);border-color:var(--accent2);}
   input.err{border-color:var(--danger);background:#fff1f1;}
+  input.survey-locked{background:#edf2f6;color:#506477;cursor:not-allowed;}
   .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
   button.btn{background:var(--accent2);color:#fff;border:none;border-radius:6px;padding:9px 14px;cursor:pointer;font-size:13px;font-weight:600;}
   button.btn.green{background:var(--accent);color:#fff;}
@@ -77,6 +78,7 @@
       Monitoreo: {{ $calculatorContext['monitoring_survey']['name'] }} ·
       Hogares cargados: {{ $calculatorContext['selected_households'] }}
     </p>
+    <p>Los datos KPT están protegidos y solo pueden modificarse desde las encuestas de origen.</p>
     @if (!empty($calculatorContext['warnings']))
       <ul>
         @foreach ($calculatorContext['warnings'] as $warning)
@@ -169,6 +171,7 @@ function avgNonZero(arr){
    CONFIGURACIÓN (ver celda 2 de Colab -> se inyecta en window.APP_CONFIG)
    ============================================================ */
 const CFG = window.APP_CONFIG;
+const KPT_FIELDS_LOCKED = Boolean(window.CALCULATOR_CONTEXT.loaded);
 
 /* ============================================================
    MODELO DE DATOS
@@ -223,7 +226,12 @@ function loadState(){
         if(!Array.isArray(parsed.config.nbpyRows)) parsed.config.nbpyRows = JSON.parse(JSON.stringify(CFG.nbpyRows));
         if(!Array.isArray(parsed.config.upyRows)) parsed.config.upyRows = JSON.parse(JSON.stringify(CFG.upyRows));
         if(!Array.isArray(parsed.config.dafRows)) parsed.config.dafRows = JSON.parse(JSON.stringify(CFG.dafRows));
-        STATE = parsed;
+        STATE = {
+          config: parsed.config,
+          families: KPT_FIELDS_LOCKED
+            ? JSON.parse(JSON.stringify(INITIAL_FAMILIES))
+            : parsed.families
+        };
         return true;
       }
     }
@@ -437,6 +445,7 @@ function validateAll(){
 }
 
 function clearAll(){
+  if(KPT_FIELDS_LOCKED) return;
   STATE.families = Array.from({length:N_FAM}, (_,i)=>newFamily(i));
 }
 
@@ -482,6 +491,11 @@ function numInput(value, onChange, opts){
   opts = opts||{};
   const inp = el('input',{type:'number', step:opts.step||'any', placeholder:opts.placeholder||''});
   inp.value = (value===null||value===undefined) ? '' : value;
+  if(opts.readonly){
+    inp.readOnly = true;
+    inp.classList.add('survey-locked');
+    inp.title = 'Este dato proviene de una encuesta y no puede editarse aquí.';
+  }
   inp.addEventListener('input', ()=>{
     const v = inp.value==='' ? (opts.allowEmpty? null : 0) : parseFloat(inp.value);
     if(v!==null && v<0) inp.classList.add('err'); else inp.classList.remove('err');
@@ -490,9 +504,15 @@ function numInput(value, onChange, opts){
   });
   return inp;
 }
-function textInput(value, onChange){
+function textInput(value, onChange, opts){
+  opts = opts||{};
   const inp = el('input',{type:'text'});
   inp.value = value||'';
+  if(opts.readonly){
+    inp.readOnly = true;
+    inp.classList.add('survey-locked');
+    inp.title = 'Este dato proviene de una encuesta y no puede editarse aquí.';
+  }
   inp.addEventListener('input', ()=>{ onChange(inp.value); saveState(); });
   return inp;
 }
@@ -645,7 +665,9 @@ function renderHawthorne(container,c){
 
 function renderActions(container){
   const card=el('div',{class:'card'}); card.appendChild(el('h3',{},'Acciones')); const row=el('div',{class:'row'});
-  row.appendChild(el('button',{class:'btn red',onclick:()=>{if(confirm('¿Borrar todos los datos ingresados?')){clearAll();saveState();renderAll();}}},'🗑️ Limpiar datos de familias'));
+  if(!KPT_FIELDS_LOCKED){
+    row.appendChild(el('button',{class:'btn red',onclick:()=>{if(confirm('¿Borrar todos los datos ingresados?')){clearAll();saveState();renderAll();}}},'🗑️ Limpiar datos de familias'));
+  }
   row.appendChild(el('button',{class:'btn',onclick:()=>{currentTab='res';runAndRender();}},'▶️ Calcular')); card.appendChild(row); container.appendChild(card);
 }
 
@@ -679,7 +701,7 @@ function renderCompositionCard(fam, scenario){
   card.appendChild(el('h3',{}, `Hogar y composición familiar diaria — ${nombre} — Familia ${currentFamily+1}`));
   const idw = el('div',{});
   idw.appendChild(el('label',{}, 'ID del Hogar (obligatorio para incluir esta familia en los promedios)'));
-  idw.appendChild(textInput(fam.id, v=>{fam.id=v;}));
+  idw.appendChild(textInput(fam.id, v=>{fam.id=v;}, {readonly:KPT_FIELDS_LOCKED}));
   card.appendChild(idw);
 
   const comp = fam[scenario].comp;
@@ -695,7 +717,7 @@ function renderCompositionCard(fam, scenario){
     const tr=el('tr',{},el('td',{},String(d+1)));
     ['ni','mu','h1','h2'].forEach(key=>{
       const td=el('td',{});
-      td.appendChild(numInput(comp[key][d],v=>{comp[key][d]=v;},{allowEmpty:true,step:'1'}));
+      td.appendChild(numInput(comp[key][d],v=>{comp[key][d]=v;},{allowEmpty:true,step:'1',readonly:KPT_FIELDS_LOCKED}));
       tr.appendChild(td);
     });
     table.appendChild(tr);
@@ -718,7 +740,7 @@ function dayTable(title, cols, unitNote){
     const tr = el('tr',{}, el('td',{}, String(d+1)));
     cols.forEach(c=>{
       const td = el('td',{});
-      td.appendChild(numInput(c.values[d], v=>c.onChange(d,v), {allowEmpty:true}));
+      td.appendChild(numInput(c.values[d], v=>c.onChange(d,v), {allowEmpty:true,readonly:KPT_FIELDS_LOCKED}));
       tr.appendChild(td);
     });
     table.appendChild(tr);
@@ -736,7 +758,7 @@ function renderLB(container){
   card.appendChild(el('h3',{}, 'Línea Base — Cocina tradicional (KPT!F59:HP98)'));
   const w = el('div',{});
   w.appendChild(el('label',{}, 'Peso inicial de leña (kg) — KPT!I76, igual cada día del protocolo'));
-  w.appendChild(numInput(fam.lb.pesoInicial, v=>{fam.lb.pesoInicial=v||0;}));
+  w.appendChild(numInput(fam.lb.pesoInicial, v=>{fam.lb.pesoInicial=v||0;}, {readonly:KPT_FIELDS_LOCKED}));
   card.appendChild(w);
   container.appendChild(card);
 
@@ -764,7 +786,7 @@ function renderMon(container){
   function pw(label,key){
     const w = el('div',{});
     w.appendChild(el('label',{}, label));
-    w.appendChild(numInput(fam.mon[key], v=>{fam.mon[key]=v||0;}));
+    w.appendChild(numInput(fam.mon[key], v=>{fam.mon[key]=v||0;}, {readonly:KPT_FIELDS_LOCKED}));
     grid.appendChild(w);
   }
   pw('Peso inicial cocina mejorada (kg) — KPT!I116', 'pesoInicialMej');
