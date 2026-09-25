@@ -253,7 +253,7 @@ class SurveyedHistoryTest extends TestCase
         $project = Proyect::create(['name' => 'Proyecto para reanudar']);
         $survey = Survey::create([
             'proyect_id' => $project->id,
-            'survey_name' => 'Encuesta para reanudar',
+            'survey_name' => 'KPT línea base para reanudar',
             'status' => 'ACTIVA',
         ]);
         $respondent = Respondent::create([
@@ -267,6 +267,7 @@ class SurveyedHistoryTest extends TestCase
         ]);
         $question = SurveyQuestion::create([
             'survey_id' => $survey->id,
+            'calculator_key' => 'baseline.initial_wood_kg',
             'question_text' => 'Peso medido',
             'question_type' => 'LIBRE',
             'order' => 1,

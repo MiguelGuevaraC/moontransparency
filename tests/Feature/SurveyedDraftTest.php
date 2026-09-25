@@ -75,6 +75,46 @@ class SurveyedDraftTest extends TestCase
         ]);
     }
 
+    public function test_it_updates_an_existing_draft_without_resending_the_dni(): void
+    {
+        [$survey, $firstQuestion, $secondQuestion] = $this->createSurveyWithTwoRequiredQuestions();
+        $created = $this->postJson('/api/response-survey', $this->payload($survey, [
+            [
+                'survey_question_id' => $firstQuestion->id,
+                'response_text' => 'Respuesta inicial',
+            ],
+        ]))->assertOk();
+
+        $payload = $this->payload($survey, [[
+            'survey_question_id' => $secondQuestion->id,
+            'response_text' => 'Respuesta editada desde el celular',
+        ]]);
+        unset($payload['number_document']);
+
+        $this->postJson('/api/response-survey/'.$created->json('data.id'), $payload)
+            ->assertOk()
+            ->assertJsonPath('data.respondent.number_document', 'DOC-001');
+
+        $this->assertDatabaseHas('surveyed_responses', [
+            'surveyed_id' => $created->json('data.id'),
+            'survey_question_id' => $secondQuestion->id,
+            'response_text' => 'Respuesta editada desde el celular',
+        ]);
+    }
+
+    public function test_non_kpt_surveys_reject_day_numbers(): void
+    {
+        $survey = $this->createSurvey();
+        $payload = $this->payload($survey, []);
+        $payload['day_number'] = 1;
+
+        $this->postJson('/api/response-survey', $payload)
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Los días de medición solo se permiten en encuestas KPT.');
+
+        $this->assertDatabaseCount('surveyed_measurements', 0);
+    }
+
     public function test_repeated_option_saves_do_not_create_active_duplicates(): void
     {
         $survey = $this->createSurvey();

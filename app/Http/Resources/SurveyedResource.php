@@ -43,6 +43,7 @@ class SurveyedResource extends JsonResource
     {
         $status = $this->status ?? Surveyed::STATUS_DRAFT;
         $actor = $request->user('sanctum') ?? $request->user();
+        $supportsDailyMeasurements = $this->survey?->supportsDailyMeasurements() ?? false;
         $geobosquesMap = app(GeobosquesMapService::class)->build(
             $this->latitude,
             $this->longitude
@@ -70,6 +71,10 @@ class SurveyedResource extends JsonResource
             ),
             'proyect_name' => $this?->survey?->proyect?->name ?? null,
             'survey_id' => $this->survey_id ?? null,
+            'supports_daily_measurements' => $supportsDailyMeasurements,
+            'expected_days' => $supportsDailyMeasurements
+                ? $this->survey->expectedDays()
+                : null,
             'status' => $status,
             'can_edit' => $status === Surveyed::STATUS_DRAFT && $this->resource->isEditableBy($actor),
             'completed_at' => $this->completed_at,

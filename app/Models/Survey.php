@@ -68,6 +68,11 @@ class Survey extends Model
         return max(1, min($days, (int) config('surveying.max_expected_days', 31)));
     }
 
+    public function supportsDailyMeasurements(): bool
+    {
+        return $this->calculatorKind() !== null;
+    }
+
     public function calculatorKind(): ?string
     {
         if ($this->survey_questions()

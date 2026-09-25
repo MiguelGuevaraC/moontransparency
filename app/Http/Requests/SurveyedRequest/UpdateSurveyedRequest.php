@@ -4,6 +4,7 @@ namespace App\Http\Requests\SurveyedRequest;
 
 use App\Http\Requests\Concerns\ResolvesSurveyExpectedDays;
 use App\Http\Requests\StoreRequest;
+use Illuminate\Validation\Validator;
 
 class UpdateSurveyedRequest extends StoreRequest
 {
@@ -29,7 +30,7 @@ class UpdateSurveyedRequest extends StoreRequest
         $expectedDays = $this->expectedDaysFor($this->input('survey_id'));
 
         return [
-            'number_document' => 'required|string|max:20',
+            'number_document' => 'sometimes|nullable|string|max:20',
             'names' => 'required|string|max:1000',
             'date_of_birth' => 'nullable|date',
             'phone' => 'nullable|string|max:255',
@@ -51,10 +52,22 @@ class UpdateSurveyedRequest extends StoreRequest
         ];
     }
 
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            if ($this->filled('day_number')
+                && ! $this->surveySupportsDailyMeasurements($this->input('survey_id'))) {
+                $validator->errors()->add(
+                    'day_number',
+                    'Los días de medición solo se permiten en encuestas KPT.'
+                );
+            }
+        });
+    }
+
     public function messages()
     {
         return [
-            'number_document.required' => 'El número de documento es obligatorio.',
             'number_document.string' => 'El número de documento debe ser una cadena de texto.',
             'number_document.max' => 'El número de documento no debe exceder los 20 caracteres.',
 

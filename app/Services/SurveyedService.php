@@ -251,7 +251,13 @@ class SurveyedService
 
         $person = Respondent::find($surveyed->respondent_id);
 
-        if (! $person || $person->number_document !== $data['number_document']) {
+        $submittedDocument = isset($data['number_document'])
+            ? trim((string) $data['number_document'])
+            : null;
+
+        if (! $person || ($submittedDocument !== null
+            && $submittedDocument !== ''
+            && $person->number_document !== $submittedDocument)) {
             throw ValidationException::withMessages([
                 'number_document' => 'El encuestado enviado no corresponde al registro que se intenta actualizar.',
             ]);
@@ -570,6 +576,13 @@ class SurveyedService
     {
         $explicitDay = isset($data['day_number']) ? (int) $data['day_number'] : null;
         $derivedDays = [];
+        $supportsDailyMeasurements = $surveyed->survey?->supportsDailyMeasurements() ?? false;
+
+        if ($explicitDay !== null && ! $supportsDailyMeasurements) {
+            throw ValidationException::withMessages([
+                'day_number' => 'Los días de medición solo se permiten en encuestas KPT.',
+            ]);
+        }
 
         foreach ($data['responses'] ?? [] as $index => $response) {
             $question = SurveyQuestion::whereKey($response['survey_question_id'] ?? null)
@@ -578,6 +591,12 @@ class SurveyedService
 
             if (! $question || $question->calculator_key !== 'measurement.day') {
                 continue;
+            }
+
+            if (! $supportsDailyMeasurements) {
+                throw ValidationException::withMessages([
+                    "responses.$index.survey_question_id" => 'La pregunta de día solo se permite en encuestas KPT.',
+                ]);
             }
 
             $optionIds = array_values(array_unique(array_map(

@@ -22,6 +22,7 @@ class PublicSurveyApiTest extends TestCase
         SurveyQuestion::create([
             'survey_id' => $first->id,
             'question_text' => 'Pregunta pública',
+            'calculator_key' => 'baseline.initial_wood_kg',
             'question_type' => 'LIBRE',
             'type_field' => 'CORTO',
             'is_required' => false,
@@ -35,8 +36,12 @@ class PublicSurveyApiTest extends TestCase
             ->assertJsonPath('data.0.name', 'Encuesta inicial')
             ->assertJsonPath('data.0.project.id', $project->id)
             ->assertJsonPath('data.0.questions_count', 1)
+            ->assertJsonPath('data.0.supports_daily_measurements', true)
+            ->assertJsonPath('data.0.expected_days', 7)
             ->assertJsonPath('data.0.detail_endpoint', url('/api/survey-show/'.$first->id))
             ->assertJsonPath('data.1.id', $second->id)
+            ->assertJsonPath('data.1.supports_daily_measurements', false)
+            ->assertJsonPath('data.1.expected_days', null)
             ->assertJsonMissing(['id' => $inactive->id]);
 
         $this->assertArrayNotHasKey('survey_questions', $response->json('data.0'));

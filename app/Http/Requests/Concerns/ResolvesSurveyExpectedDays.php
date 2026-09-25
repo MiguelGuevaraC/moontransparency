@@ -13,4 +13,9 @@ trait ResolvesSurveyExpectedDays
 
         return max(1, min($days, (int) config('surveying.max_expected_days', 31)));
     }
+
+    protected function surveySupportsDailyMeasurements($surveyId): bool
+    {
+        return Survey::find($surveyId)?->supportsDailyMeasurements() ?? false;
+    }
 }

@@ -9,6 +9,8 @@ class SurveyResource extends JsonResource
     public function toArray($request)
     {
         $requiresCoordinates = (bool) $this->requires_coordinates;
+        $kind = $this->calculatorKind();
+        $supportsDailyMeasurements = $kind !== null;
         // --- POST cuando soy PRE (usando ?->)
         $postSurveyObj = null;
         if ($this->survey_type === 'PRE') {
@@ -76,7 +78,7 @@ class SurveyResource extends JsonResource
             'proyect_id' => $this->proyect_id,
             'survey_name' => $this->survey_name,
             'survey_type' => $this->survey_type,
-            'kind' => $this->calculatorKind(),
+            'kind' => $kind,
             'description' => $this->description,
             'status' => $this->status,
             'display_order' => $this->display_order,
@@ -84,7 +86,10 @@ class SurveyResource extends JsonResource
             'coordinate_capture' => $requiresCoordinates
                 ? $this->coordinateCapture()
                 : null,
-            'expected_days' => $this->expectedDays(),
+            'supports_daily_measurements' => $supportsDailyMeasurements,
+            'expected_days' => $supportsDailyMeasurements
+                ? $this->expectedDays()
+                : null,
             'household_identifier' => $this->householdIdentifierConfiguration(),
 
             // estado y links
