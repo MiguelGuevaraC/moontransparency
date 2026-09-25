@@ -140,6 +140,9 @@ class CalculatorInputMapper
             ->keys()
             ->values()
             ->all();
+        if ($prefix === 'baseline') {
+            $missingMappings = array_values(array_diff($missingMappings, ['additional']));
+        }
         $warnings = [];
 
         if ($missingMappings) {
@@ -148,10 +151,12 @@ class CalculatorInputMapper
 
         $previousRemaining = null;
         $hasData = false;
-        $mappedDays = $days->map(function (array $day) use ($fieldKeys, &$previousRemaining, &$hasData, &$warnings) {
+        $mappedDays = $days->map(function (array $day) use ($fieldKeys, $prefix, &$previousRemaining, &$hasData, &$warnings) {
             $dayNumber = (int) $day['day_number'];
             $initial = $this->number($day, $fieldKeys['initial']);
-            $additional = $this->number($day, $fieldKeys['additional']);
+            $additional = $fieldKeys['additional']
+                ? $this->number($day, $fieldKeys['additional'])
+                : ($prefix === 'baseline' && $dayNumber > 1 ? 0.0 : null);
             $remaining = $this->number($day, $fieldKeys['remaining']);
             $charcoal = $this->number($day, $fieldKeys['charcoal']);
             $hasData = $hasData || collect([$initial, $additional, $remaining, $charcoal])->contains(fn ($value) => $value !== null);

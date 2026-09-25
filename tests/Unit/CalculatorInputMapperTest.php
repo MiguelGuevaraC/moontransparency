@@ -99,6 +99,37 @@ class CalculatorInputMapperTest extends TestCase
         );
     }
 
+    public function test_baseline_uses_zero_additional_weight_when_the_excel_instrument_has_no_such_field(): void
+    {
+        $fields = collect(array_merge(
+            $this->memberFields(),
+            [
+                $this->field('baseline_initial', 'baseline.initial_wood_kg'),
+                $this->field('baseline_remaining', 'baseline.remaining_wood_kg'),
+                $this->field('baseline_charcoal', 'baseline.charcoal_kg'),
+            ]
+        ));
+        $days = collect([
+            $this->day(1, [
+                'children' => 1, 'women' => 1, 'men' => 1, 'older_men' => 0,
+                'baseline_initial' => 10,
+                'baseline_remaining' => 7,
+                'baseline_charcoal' => 1,
+            ]),
+            $this->day(2, [
+                'baseline_remaining' => 5,
+                'baseline_charcoal' => .5,
+            ]),
+        ]);
+
+        $result = (new CalculatorInputMapper())->map($fields, $days);
+
+        $this->assertTrue($result['supported']);
+        $this->assertSame(0.0, $result['baseline']['days'][1]['additional_weight_kg']);
+        $this->assertSame(7.0, $result['baseline']['days'][1]['available_weight_kg']);
+        $this->assertTrue($result['baseline']['days'][1]['calculation_ready']);
+    }
+
     private function memberFields(): array
     {
         return [

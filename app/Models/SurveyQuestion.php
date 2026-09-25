@@ -11,6 +11,10 @@ class SurveyQuestion extends Model
 
     public const FIELD_TYPE_DECIMAL = 'DECIMAL';
 
+    public const RESPONSE_SCOPE_PARTICIPATION = 'PARTICIPATION';
+
+    public const RESPONSE_SCOPE_MEASUREMENT = 'MEASUREMENT';
+
     public const INTEGER_FIELD_TYPES = ['NUMERICO', 'NUMERO', 'NUMBER'];
 
     public const FIELD_TYPE_OPTIONS = [
@@ -24,9 +28,15 @@ class SurveyQuestion extends Model
     protected $fillable = [
         'id',
         'question_text',
+        'instrument_key',
         'calculator_key',
         'calculator_value_type',
         'calculator_unit',
+        'response_scope',
+        'applicable_days',
+        'scenario',
+        'section_key',
+        'section_title',
         'question_type',
         'type_field',
         'order',
@@ -37,6 +47,11 @@ class SurveyQuestion extends Model
         'created_at',
         'updated_at',
         'deleted_at',
+    ];
+
+    protected $casts = [
+        'applicable_days' => 'array',
+        'is_required' => 'boolean',
     ];
 
     protected $hidden = [
@@ -87,5 +102,32 @@ class SurveyQuestion extends Model
     public function surveyed_responses()
     {
         return $this->hasMany(SurveyedResponse::class, 'survey_question_id');
+    }
+
+    public function effectiveResponseScope(): string
+    {
+        if (in_array($this->response_scope, [
+            self::RESPONSE_SCOPE_PARTICIPATION,
+            self::RESPONSE_SCOPE_MEASUREMENT,
+        ], true)) {
+            return $this->response_scope;
+        }
+
+        if ($this->calculator_key === 'household.identifier') {
+            return self::RESPONSE_SCOPE_PARTICIPATION;
+        }
+
+        return $this->survey?->supportsDailyMeasurements()
+            ? self::RESPONSE_SCOPE_MEASUREMENT
+            : self::RESPONSE_SCOPE_PARTICIPATION;
+    }
+
+    public function appliesToDay(int $day): bool
+    {
+        if ($this->applicable_days === null || $this->applicable_days === []) {
+            return true;
+        }
+
+        return in_array($day, array_map('intval', $this->applicable_days), true);
     }
 }

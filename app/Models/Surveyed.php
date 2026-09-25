@@ -19,6 +19,7 @@ class Surveyed extends Model
         'respondent_id',
         'household_id',
         'survey_id',
+        'survey_variant',
         'status',
         'completed_at',
         'latitude',

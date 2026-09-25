@@ -71,6 +71,7 @@ class SurveyedResource extends JsonResource
             ),
             'proyect_name' => $this?->survey?->proyect?->name ?? null,
             'survey_id' => $this->survey_id ?? null,
+            'survey_variant' => $this->survey_variant,
             'supports_daily_measurements' => $supportsDailyMeasurements,
             'expected_days' => $supportsDailyMeasurements
                 ? $this->survey->expectedDays()

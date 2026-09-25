@@ -56,6 +56,7 @@ class OfflineSyncRequest extends FormRequest
             'items.*.email' => ['nullable', 'email', 'max:255'],
             'items.*.genero' => ['nullable', 'string', 'max:255'],
             'items.*.household_code' => ['nullable', 'string', 'max:64'],
+            'items.*.survey_variant' => ['nullable', Rule::in(['MONITORING_COMBINED', 'MONITORING_MOON_ONLY'])],
             'items.*.survey_id' => ['required', 'integer', 'min:1'],
             'items.*.latitude' => ['nullable', 'required_with:items.*.longitude', 'numeric', 'between:-90,90'],
             'items.*.longitude' => ['nullable', 'required_with:items.*.latitude', 'numeric', 'between:-180,180'],

@@ -17,8 +17,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Throwable;
 
 class OfflineSyncService
@@ -361,6 +361,7 @@ class OfflineSyncService
             'email' => $item['email'] ?? null,
             'genero' => $item['genero'] ?? null,
             'household_code' => $item['household_code'] ?? null,
+            'survey_variant' => $item['survey_variant'] ?? null,
             'survey_id' => $item['survey_id'],
             'latitude' => $item['latitude'] ?? null,
             'longitude' => $item['longitude'] ?? null,
@@ -413,6 +414,7 @@ class OfflineSyncService
             'calculator_survey_kind' => $surveyKind,
             'household_id' => $surveyed->household_id,
             'household_code' => $surveyed->household?->code,
+            'survey_variant' => $surveyed->survey_variant,
             'measurements' => $measurements,
         ];
     }

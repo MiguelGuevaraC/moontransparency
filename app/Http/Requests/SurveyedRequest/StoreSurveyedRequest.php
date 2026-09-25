@@ -40,6 +40,7 @@ class StoreSurveyedRequest extends StoreRequest
             'email' => 'nullable|email|max:255',
             'genero' => 'nullable|string|max:255',
             'household_code' => ['nullable', 'string', 'max:64'],
+            'survey_variant' => ['nullable', 'string', 'in:MONITORING_COMBINED,MONITORING_MOON_ONLY'],
 
             'survey_id' => 'required|integer|exists:surveys,id',
             'latitude' => 'nullable|required_with:longitude|numeric|between:-90,90',
@@ -116,6 +117,7 @@ class StoreSurveyedRequest extends StoreRequest
 
             'household_code.string' => 'El ID del hogar debe ser un texto.',
             'household_code.max' => 'El ID del hogar no debe superar los 64 caracteres.',
+            'survey_variant.in' => 'El caso de monitoreo seleccionado no es válido.',
 
             'survey_id.required' => 'El campo survey_id es obligatorio.',
             'survey_id.integer' => 'El campo survey_id debe ser un número entero.',

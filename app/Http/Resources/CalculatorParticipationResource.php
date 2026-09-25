@@ -76,19 +76,31 @@ class CalculatorParticipationResource extends JsonResource
             : null;
         $dailyRange = $expectedDays === null ? [] : range(1, $expectedDays);
         $measurements = $this->measurements->keyBy('day_number');
+        $participationAnswers = $this->surveyed_responses
+            ->whereNull('surveyed_measurement_id')
+            ->keyBy('survey_question_id');
         $recordedDays = $measurements->keys()
             ->map(static fn ($day) => (int) $day)
             ->filter(static fn (int $day) => in_array($day, $dailyRange, true))
             ->sort()
             ->values();
         $missingDays = collect($dailyRange)->diff($recordedDays)->values();
-        $days = collect($dailyRange)->map(function (int $day) use ($fields, $measurements) {
+        $days = collect($dailyRange)->map(function (int $day) use ($fields, $measurements, $participationAnswers) {
             $measurement = $measurements->get($day);
-            $answers = $measurement
+            $measurementAnswers = $measurement
                 ? $measurement->surveyed_responses->keyBy('survey_question_id')
                 : collect();
-            $values = $fields->mapWithKeys(function (array $field) use ($answers) {
-                $answer = $answers->get($field['question_id']);
+            $values = $fields->mapWithKeys(function (array $field) use ($day, $measurementAnswers, $participationAnswers) {
+                $appliesToDay = $field['applicable_days'] === null
+                    || in_array($day, $field['applicable_days'], true);
+                $appliesToScenario = $field['scenario'] === null
+                    || $field['scenario'] === $this->survey_variant;
+                $answers = $field['response_scope'] === \App\Models\SurveyQuestion::RESPONSE_SCOPE_PARTICIPATION
+                    ? $participationAnswers
+                    : $measurementAnswers;
+                $answer = $appliesToDay && $appliesToScenario
+                    ? $answers->get($field['question_id'])
+                    : null;
 
                 return [$field['key'] => $this->answerValue($answer, $field)];
             });
@@ -131,6 +143,7 @@ class CalculatorParticipationResource extends JsonResource
             ],
             'participation' => [
                 'id' => $this->id,
+                'survey_variant' => $this->survey_variant,
                 'status' => $status,
                 'data_state' => $status === Surveyed::STATUS_FINALIZED ? 'FINAL' : 'PARTIAL',
                 'is_partial' => $status !== Surveyed::STATUS_FINALIZED,
@@ -191,6 +204,11 @@ class CalculatorParticipationResource extends JsonResource
             'source_unit' => $sourceUnit,
             'conversion_factor' => $this->conversionFactor($sourceUnit, $unit),
             'required' => (bool) $question->is_required,
+            'response_scope' => $question->effectiveResponseScope(),
+            'applicable_days' => $question->applicable_days
+                ? array_map('intval', $question->applicable_days)
+                : null,
+            'scenario' => $question->scenario,
         ];
     }
 

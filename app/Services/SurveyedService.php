@@ -29,8 +29,7 @@ class SurveyedService
         CommonService $commonService,
         private SurveyResponseValueValidator $responseValueValidator,
         private SurveyAlertService $surveyAlertService
-    )
-    {
+    ) {
         $this->commonService = $commonService;
     }
 
@@ -39,19 +38,19 @@ class SurveyedService
         return Surveyed::query()
             ->visibleTo($actor)
             ->with([
-            'respondent',
-            'household',
-            'createdBy.rol',
-            'updatedBy.rol',
-            'reopenings.reopenedBy.rol',
-            'survey.proyect',
-            'survey.survey_questions.survey_questions_options',
-            'surveyed_responses.survey_question.survey_questions_options',
-            'surveyed_responses.surveyed_responses_options.survey_question_options',
-            'surveyed_responses.measurement',
-            'measurements.surveyed_responses.survey_question.survey_questions_options',
-            'measurements.surveyed_responses.surveyed_responses_options.survey_question_options',
-            'measurements.surveyed_responses.measurement',
+                'respondent',
+                'household',
+                'createdBy.rol',
+                'updatedBy.rol',
+                'reopenings.reopenedBy.rol',
+                'survey.proyect',
+                'survey.survey_questions.survey_questions_options',
+                'surveyed_responses.survey_question.survey_questions_options',
+                'surveyed_responses.surveyed_responses_options.survey_question_options',
+                'surveyed_responses.measurement',
+                'measurements.surveyed_responses.survey_question.survey_questions_options',
+                'measurements.surveyed_responses.surveyed_responses_options.survey_question_options',
+                'measurements.surveyed_responses.measurement',
             ])->find($id);
     }
 
@@ -104,6 +103,7 @@ class SurveyedService
                 $surveyed->update($surveyedChanges);
             }
 
+            $this->synchronizeSurveyVariant($surveyed, $data);
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
             $this->synchronizeHouseholdResponses($surveyed, $person, $household);
@@ -149,6 +149,7 @@ class SurveyedService
                 'updated_by' => $actor?->id ?? $this->authenticatedUserId(),
             ], static fn ($value) => $value !== null) + $this->coordinateData($data));
 
+            $this->synchronizeSurveyVariant($surveyed, $data);
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
             $this->synchronizeHouseholdResponses($surveyed, $person, $household);
@@ -186,6 +187,7 @@ class SurveyedService
 
             $household = $this->resolveHousehold($surveyed, $person, $data);
 
+            $this->synchronizeSurveyVariant($surveyed, $data);
             $measurement = $this->resolveMeasurement($surveyed, $data);
             $this->saveResponses($surveyed, $person, $data['responses'] ?? [], $measurement);
             $this->synchronizeHouseholdResponses($surveyed, $person, $household);
@@ -419,8 +421,7 @@ class SurveyedService
         Surveyed $surveyed,
         ?Household $currentHousehold,
         ?string $requestedCode
-    ): ?Household
-    {
+    ): ?Household {
         if ($requestedCode === null) {
             return $currentHousehold;
         }
@@ -460,8 +461,7 @@ class SurveyedService
         Surveyed $surveyed,
         ?Household $currentHousehold,
         ?string $requestedCode
-    ): ?Household
-    {
+    ): ?Household {
         if ($requestedCode === null && ! $currentHousehold) {
             return null;
         }
@@ -515,8 +515,7 @@ class SurveyedService
         Surveyed $surveyed,
         Respondent $person,
         ?Household $household
-    ): void
-    {
+    ): void {
         if (! $household) {
             return;
         }
@@ -663,6 +662,16 @@ class SurveyedService
 
         SurveyedResponse::where('surveyed_id', $surveyed->id)
             ->whereNull('surveyed_measurement_id')
+            ->whereHas('survey_question', function ($query) {
+                $query->where('response_scope', SurveyQuestion::RESPONSE_SCOPE_MEASUREMENT)
+                    ->orWhere(function ($legacy) {
+                        $legacy->whereNull('response_scope')
+                            ->where(function ($question) {
+                                $question->whereNull('calculator_key')
+                                    ->orWhere('calculator_key', '<>', 'household.identifier');
+                            });
+                    });
+            })
             ->update(['surveyed_measurement_id' => $measurement->id]);
 
         return $measurement;
@@ -685,10 +694,36 @@ class SurveyedService
                 ]);
             }
 
+            $scope = $question->response_scope
+                ?: ($measurement
+                    ? $question->effectiveResponseScope()
+                    : SurveyQuestion::RESPONSE_SCOPE_PARTICIPATION);
+            $answerMeasurement = $scope === SurveyQuestion::RESPONSE_SCOPE_MEASUREMENT
+                ? $measurement
+                : null;
+
+            if ($scope === SurveyQuestion::RESPONSE_SCOPE_MEASUREMENT && ! $answerMeasurement) {
+                throw ValidationException::withMessages([
+                    "responses.$index.survey_question_id" => 'La pregunta requiere indicar el día de medición.',
+                ]);
+            }
+
+            if ($answerMeasurement && ! $question->appliesToDay((int) $answerMeasurement->day_number)) {
+                throw ValidationException::withMessages([
+                    "responses.$index.survey_question_id" => "La pregunta no corresponde al día {$answerMeasurement->day_number}.",
+                ]);
+            }
+
+            if ($question->scenario !== null && $question->scenario !== $surveyed->survey_variant) {
+                throw ValidationException::withMessages([
+                    "responses.$index.survey_question_id" => 'La pregunta no corresponde al caso de monitoreo seleccionado.',
+                ]);
+            }
+
             $answerKeys = [
                 'respondent_id' => $person->id,
                 'surveyed_id' => $surveyed->id,
-                'surveyed_measurement_id' => $measurement?->id,
+                'surveyed_measurement_id' => $answerMeasurement?->id,
                 'survey_question_id' => $question->id,
             ];
             $answerQuery = SurveyedResponse::withTrashed()->where($answerKeys);
@@ -720,7 +755,7 @@ class SurveyedService
 
             $answer->respondent_id = $person->id;
             $answer->surveyed_id = $surveyed->id;
-            $answer->surveyed_measurement_id = $measurement?->id;
+            $answer->surveyed_measurement_id = $answerMeasurement?->id;
             $answer->survey_question_id = $question->id;
 
             if ($answer->trashed()) {
@@ -747,6 +782,15 @@ class SurveyedService
 
     private function validateRequiredResponses(Surveyed $surveyed): void
     {
+        $surveyed->loadMissing('survey');
+
+        if ($surveyed->survey?->calculatorKind() === Survey::KIND_MONITORING
+            && ! $surveyed->survey_variant) {
+            throw ValidationException::withMessages([
+                'survey_variant' => 'Debe seleccionar el caso de monitoreo antes de finalizar.',
+            ]);
+        }
+
         $requiredQuestions = SurveyQuestion::where('survey_id', $surveyed->survey_id)
             ->where('is_required', true)
             ->get();
@@ -757,38 +801,125 @@ class SurveyedService
 
         $answers = SurveyedResponse::where('surveyed_id', $surveyed->id)
             ->whereIn('survey_question_id', $requiredQuestions->pluck('id'))
-            ->with('surveyed_responses_options')
+            ->with(['surveyed_responses_options', 'measurement'])
             ->get()
-            ->keyBy('survey_question_id');
+            ->groupBy('survey_question_id');
 
         $errors = [];
 
         foreach ($requiredQuestions as $question) {
-            $answer = $answers->get($question->id);
-            $questionType = strtoupper((string) $question->question_type);
-
-            if ($question->calculator_key === 'location.latitude') {
-                $isAnswered = $surveyed->latitude !== null;
-            } elseif ($question->calculator_key === 'location.longitude') {
-                $isAnswered = $surveyed->longitude !== null;
-            } elseif ($questionType === 'OPCIONES') {
-                $isAnswered = $answer && $answer->surveyed_responses_options->isNotEmpty();
-            } elseif ($questionType === 'FILE') {
-                $isAnswered = $answer && filled($answer->file_path);
-            } else {
-                $isAnswered = $answer && filled($answer->response_text);
+            if ($question->scenario !== null && $question->scenario !== $surveyed->survey_variant) {
+                continue;
             }
 
-            if (! $isAnswered) {
-                $errors['responses.'.$question->id] = sprintf(
-                    'La pregunta obligatoria %s no tiene una respuesta válida.',
-                    $question->id
-                );
+            $questionAnswers = $answers->get($question->id, collect());
+            $days = $question->effectiveResponseScope() === SurveyQuestion::RESPONSE_SCOPE_MEASUREMENT
+                ? ($question->applicable_days ?: range(1, $surveyed->survey->expectedDays()))
+                : [null];
+
+            foreach ($days as $day) {
+                $answer = $day === null
+                    ? $questionAnswers->first(fn ($item) => $item->surveyed_measurement_id === null)
+                    : $questionAnswers->first(
+                        fn ($item) => (int) $item->measurement?->day_number === (int) $day
+                    );
+
+                if (! $this->hasValidRequiredAnswer($surveyed, $question, $answer)) {
+                    $suffix = $day === null ? '' : ".day_$day";
+                    $errors['responses.'.$question->id.$suffix] = $day === null
+                        ? "La pregunta obligatoria {$question->id} no tiene una respuesta válida."
+                        : "La pregunta obligatoria {$question->id} no tiene una respuesta válida para el día {$day}.";
+                }
             }
         }
 
         if ($errors) {
             throw ValidationException::withMessages($errors);
+        }
+    }
+
+    private function hasValidRequiredAnswer(
+        Surveyed $surveyed,
+        SurveyQuestion $question,
+        ?SurveyedResponse $answer
+    ): bool {
+        $questionType = strtoupper((string) $question->question_type);
+
+        if ($question->calculator_key === 'location.latitude') {
+            return $surveyed->latitude !== null;
+        }
+        if ($question->calculator_key === 'location.longitude') {
+            return $surveyed->longitude !== null;
+        }
+        if ($questionType === 'OPCIONES') {
+            return $answer && $answer->surveyed_responses_options->isNotEmpty();
+        }
+        if ($questionType === 'FILE') {
+            return $answer && filled($answer->file_path);
+        }
+
+        return $answer && filled($answer->response_text);
+    }
+
+    private function synchronizeSurveyVariant(Surveyed $surveyed, array $data): void
+    {
+        $survey = Survey::findOrFail($surveyed->survey_id);
+        $questionIds = collect($data['responses'] ?? [])
+            ->pluck('survey_question_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->all();
+        $derived = $questionIds
+            ? SurveyQuestion::where('survey_id', $survey->id)
+                ->whereIn('id', $questionIds)
+                ->whereNotNull('scenario')
+                ->pluck('scenario')
+                ->unique()
+                ->values()
+            : collect();
+
+        if ($derived->count() > 1) {
+            throw ValidationException::withMessages([
+                'survey_variant' => 'Las respuestas mezclan los dos casos de monitoreo.',
+            ]);
+        }
+
+        $explicit = isset($data['survey_variant']) && trim((string) $data['survey_variant']) !== ''
+            ? trim((string) $data['survey_variant'])
+            : null;
+        $derivedVariant = $derived->first();
+
+        if ($explicit && $derivedVariant && $explicit !== $derivedVariant) {
+            throw ValidationException::withMessages([
+                'survey_variant' => 'El caso seleccionado no coincide con las preguntas respondidas.',
+            ]);
+        }
+
+        $variant = $explicit ?? $derivedVariant ?? $surveyed->survey_variant;
+        if ($survey->calculatorKind() !== Survey::KIND_MONITORING) {
+            if ($variant !== null) {
+                throw ValidationException::withMessages([
+                    'survey_variant' => 'El caso de monitoreo solo se permite en KPT monitoreo.',
+                ]);
+            }
+
+            return;
+        }
+
+        if ($variant !== null && ! array_key_exists($variant, config('kpt_co2.variants', []))) {
+            throw ValidationException::withMessages([
+                'survey_variant' => 'El caso de monitoreo seleccionado no es válido.',
+            ]);
+        }
+
+        if ($surveyed->survey_variant && $variant && $surveyed->survey_variant !== $variant) {
+            throw ValidationException::withMessages([
+                'survey_variant' => 'No se puede cambiar el caso después de registrar respuestas.',
+            ]);
+        }
+
+        if ($variant && $surveyed->survey_variant !== $variant) {
+            $surveyed->update(['survey_variant' => $variant]);
         }
     }
 

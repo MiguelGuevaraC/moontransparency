@@ -90,6 +90,9 @@ class SurveyResource extends JsonResource
             'expected_days' => $supportsDailyMeasurements
                 ? $this->expectedDays()
                 : null,
+            'variants' => $kind === \App\Models\Survey::KIND_MONITORING
+                ? config('kpt_co2.variants', [])
+                : [],
             'household_identifier' => $this->householdIdentifierConfiguration(),
 
             // estado y links
