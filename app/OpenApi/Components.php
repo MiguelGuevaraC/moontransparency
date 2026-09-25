@@ -38,9 +38,9 @@ namespace App\OpenApi;
  * @OA\Schema(
  *     schema="SurveyedUpsertRequest",
  *     type="object",
- *     required={"number_document", "names", "survey_id"},
+ *     required={"names", "survey_id"},
  *
- *     @OA\Property(property="number_document", type="string", maxLength=20, example="74859621"),
+ *     @OA\Property(property="number_document", type="string", nullable=true, maxLength=20, example="74859621", description="Obligatorio al crear; puede omitirse al editar o finalizar una participación existente."),
  *     @OA\Property(property="names", type="string", maxLength=1000, example="María Quispe"),
  *     @OA\Property(property="date_of_birth", type="string", format="date", nullable=true),
  *     @OA\Property(property="phone", type="string", nullable=true, maxLength=255),
@@ -50,7 +50,7 @@ namespace App\OpenApi;
  *     @OA\Property(property="survey_id", type="integer", minimum=1, example=9),
  *     @OA\Property(property="latitude", type="number", format="double", nullable=true, minimum=-90, maximum=90, example=-6.39454),
  *     @OA\Property(property="longitude", type="number", format="double", nullable=true, minimum=-180, maximum=180, example=-79.822403),
- *     @OA\Property(property="day_number", type="integer", nullable=true, minimum=1, maximum=31, example=1, description="El límite efectivo proviene de expected_days de la encuesta."),
+ *     @OA\Property(property="day_number", type="integer", nullable=true, minimum=1, maximum=31, example=1, description="Solo para encuestas KPT; el límite efectivo proviene de expected_days."),
  *     @OA\Property(property="responses", type="array", @OA\Items(ref="#/components/schemas/SurveyAnswerInput"))
  * )
  *
@@ -124,6 +124,8 @@ namespace App\OpenApi;
  *     @OA\Property(property="respondent_names", type="string", nullable=true),
  *     @OA\Property(property="household_id", type="integer", nullable=true),
  *     @OA\Property(property="survey_id", type="integer"),
+ *     @OA\Property(property="supports_daily_measurements", type="boolean"),
+ *     @OA\Property(property="expected_days", type="integer", nullable=true, minimum=1, maximum=31),
  *     @OA\Property(property="status", type="string", enum={"BORRADOR", "FINALIZADA"}),
  *     @OA\Property(property="can_edit", type="boolean", description="Solo es true para participaciones en BORRADOR."),
  *     @OA\Property(property="completed_at", type="string", format="date-time", nullable=true),
@@ -159,12 +161,12 @@ namespace App\OpenApi;
  * @OA\Schema(
  *     schema="OfflineSyncItemInput",
  *     type="object",
- *     required={"client_participation_id", "client_updated_at", "action", "number_document", "names", "survey_id"},
+ *     required={"client_participation_id", "client_updated_at", "action", "names", "survey_id"},
  *
  *     @OA\Property(property="client_participation_id", type="string", format="uuid", description="Identificador estable generado una sola vez en el dispositivo."),
  *     @OA\Property(property="client_updated_at", type="string", format="date-time", description="Versión del elemento usada para resolver conflictos; gana la más reciente."),
  *     @OA\Property(property="action", type="string", enum={"SAVE_DRAFT", "FINALIZE"}),
- *     @OA\Property(property="number_document", type="string", maxLength=20),
+ *     @OA\Property(property="number_document", type="string", nullable=true, maxLength=20, description="Obligatorio en la primera sincronización. Puede omitirse en ediciones si client_participation_id ya está vinculado."),
  *     @OA\Property(property="names", type="string", maxLength=1000),
  *     @OA\Property(property="date_of_birth", type="string", format="date", nullable=true),
  *     @OA\Property(property="phone", type="string", nullable=true),
@@ -175,7 +177,7 @@ namespace App\OpenApi;
  *     @OA\Property(property="latitude", type="number", format="double", nullable=true, minimum=-90, maximum=90),
  *     @OA\Property(property="longitude", type="number", format="double", nullable=true, minimum=-180, maximum=180),
  *     @OA\Property(property="responses", type="array", @OA\Items(ref="#/components/schemas/OfflineSyncAnswerInput")),
- *     @OA\Property(property="measurements", type="array", maxItems=31, @OA\Items(ref="#/components/schemas/OfflineSyncMeasurementInput"))
+ *     @OA\Property(property="measurements", type="array", maxItems=31, description="Solo se admite para encuestas KPT.", @OA\Items(ref="#/components/schemas/OfflineSyncMeasurementInput"))
  * )
  *
  * @OA\Schema(
@@ -213,6 +215,10 @@ namespace App\OpenApi;
  *     @OA\Property(property="can_edit", type="boolean", nullable=true),
  *     @OA\Property(property="completed_at", type="string", format="date-time", nullable=true),
  *     @OA\Property(property="server_updated_at", type="string", format="date-time", nullable=true),
+ *     @OA\Property(property="calculator_ready", type="boolean", nullable=true),
+ *     @OA\Property(property="calculator_survey_kind", type="string", nullable=true, enum={"BASELINE", "MONITORING"}),
+ *     @OA\Property(property="household_id", type="integer", nullable=true),
+ *     @OA\Property(property="household_code", type="string", nullable=true),
  *     @OA\Property(property="measurements", type="array", @OA\Items(ref="#/components/schemas/OfflineSyncMeasurementResult")),
  *     @OA\Property(property="code", type="string", nullable=true, enum={"VALIDATION_ERROR", "RELATED_RESOURCE_NOT_FOUND", "CONFLICT", "DATABASE_CONFLICT", "SYNC_ERROR"}),
  *     @OA\Property(property="message", type="string", nullable=true),

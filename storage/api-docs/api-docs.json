@@ -8573,7 +8573,12 @@
                             },
                             "expected_days": {
                                 "type": "integer",
-                                "example": 7
+                                "example": 7,
+                                "nullable": true
+                            },
+                            "supports_daily_measurements": {
+                                "type": "boolean",
+                                "example": true
                             },
                             "missing_value": {
                                 "example": null,
@@ -10149,15 +10154,16 @@
             },
             "SurveyedUpsertRequest": {
                 "required": [
-                    "number_document",
                     "names",
                     "survey_id"
                 ],
                 "properties": {
                     "number_document": {
+                        "description": "Obligatorio al crear; puede omitirse al editar o finalizar una participación existente.",
                         "type": "string",
                         "maxLength": 20,
-                        "example": "74859621"
+                        "example": "74859621",
+                        "nullable": true
                     },
                     "names": {
                         "type": "string",
@@ -10211,7 +10217,7 @@
                         "nullable": true
                     },
                     "day_number": {
-                        "description": "El límite efectivo proviene de expected_days de la encuesta.",
+                        "description": "Solo para encuestas KPT; el límite efectivo proviene de expected_days.",
                         "type": "integer",
                         "maximum": 31,
                         "minimum": 1,
@@ -10462,6 +10468,15 @@
                     "survey_id": {
                         "type": "integer"
                     },
+                    "supports_daily_measurements": {
+                        "type": "boolean"
+                    },
+                    "expected_days": {
+                        "type": "integer",
+                        "maximum": 31,
+                        "minimum": 1,
+                        "nullable": true
+                    },
                     "status": {
                         "type": "string",
                         "enum": [
@@ -10578,7 +10593,6 @@
                     "client_participation_id",
                     "client_updated_at",
                     "action",
-                    "number_document",
                     "names",
                     "survey_id"
                 ],
@@ -10601,8 +10615,10 @@
                         ]
                     },
                     "number_document": {
+                        "description": "Obligatorio en la primera sincronización. Puede omitirse en ediciones si client_participation_id ya está vinculado.",
                         "type": "string",
-                        "maxLength": 20
+                        "maxLength": 20,
+                        "nullable": true
                     },
                     "names": {
                         "type": "string",
@@ -10657,6 +10673,7 @@
                         }
                     },
                     "measurements": {
+                        "description": "Solo se admite para encuestas KPT.",
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/OfflineSyncMeasurementInput"
@@ -10778,6 +10795,26 @@
                     "server_updated_at": {
                         "type": "string",
                         "format": "date-time",
+                        "nullable": true
+                    },
+                    "calculator_ready": {
+                        "type": "boolean",
+                        "nullable": true
+                    },
+                    "calculator_survey_kind": {
+                        "type": "string",
+                        "enum": [
+                            "BASELINE",
+                            "MONITORING"
+                        ],
+                        "nullable": true
+                    },
+                    "household_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "household_code": {
+                        "type": "string",
                         "nullable": true
                     },
                     "measurements": {
