@@ -2,11 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Http\Resources\CalculatorParticipationResource;
 use App\Models\OfflineSyncBatch;
 use App\Models\Proyect;
 use App\Models\Survey;
 use App\Models\Surveyed;
 use App\Models\SurveyQuestion;
+use App\Services\SurveyedService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +30,8 @@ class OfflineSyncTest extends TestCase
             ->assertJsonPath('status', 'FULL_SUCCESS')
             ->assertJsonPath('success_count', 1)
             ->assertJsonPath('items.0.surveyed_status', Surveyed::STATUS_DRAFT)
+            ->assertJsonPath('items.0.calculator_ready', true)
+            ->assertJsonPath('items.0.calculator_survey_kind', Survey::KIND_BASELINE)
             ->assertJsonCount(2, 'items.0.measurements');
 
         $surveyedId = OfflineSyncBatch::where('batch_id', $payload['batch_id'])
@@ -36,6 +40,13 @@ class OfflineSyncTest extends TestCase
         $this->assertDatabaseCount('surveyeds', 1);
         $this->assertDatabaseCount('surveyed_measurements', 2);
         $this->assertDatabaseCount('surveyed_responses', 2);
+
+        $calculatorData = (new CalculatorParticipationResource(
+            app(SurveyedService::class)->getSurveyedById((int) $surveyedId)
+        ))->resolve();
+        $fieldKey = $calculatorData['fields'][0]['key'];
+        $this->assertSame([1, 2], $calculatorData['recorded_days']->all());
+        $this->assertSame(10.0, $calculatorData['days'][0]['values'][$fieldKey]['value']);
 
         $this->postJson('/api/offline-sync', $payload)
             ->assertOk()
@@ -57,6 +68,7 @@ class OfflineSyncTest extends TestCase
         $second = $first;
         $second['batch_id'] = (string) Str::uuid();
         $second['items'][0]['client_updated_at'] = now()->addMinute()->toIso8601String();
+        unset($second['items'][0]['number_document']);
         $second['items'][0]['measurements'][0]['responses'][0]['response_text'] = '25';
 
         $this->postJson('/api/offline-sync', $second)
@@ -70,6 +82,38 @@ class OfflineSyncTest extends TestCase
             'survey_question_id' => $question->id,
             'response_text' => '25',
         ]);
+    }
+
+    public function test_a_new_offline_participation_still_requires_the_dni(): void
+    {
+        [$survey, $question] = $this->createSurveyAndQuestion();
+        $payload = $this->payload($survey, $question, '10');
+        unset($payload['items'][0]['number_document']);
+
+        $response = $this->postJson('/api/offline-sync', $payload)
+            ->assertStatus(207)
+            ->assertJsonPath('status', 'FAILED')
+            ->assertJsonPath('items.0.code', 'VALIDATION_ERROR');
+
+        $this->assertSame(
+            ['El DNI es obligatorio al registrar una participación nueva.'],
+            $response->json('items.0.errors')['items.0.number_document']
+        );
+
+        $this->assertDatabaseCount('surveyeds', 0);
+    }
+
+    public function test_offline_days_are_rejected_for_a_non_kpt_survey(): void
+    {
+        [$survey, $question] = $this->createSurveyAndQuestion('LIBRE', false);
+        $payload = $this->payload($survey, $question, '10');
+
+        $this->postJson('/api/offline-sync', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('items.0.measurements');
+
+        $this->assertDatabaseCount('surveyeds', 0);
+        $this->assertDatabaseCount('surveyed_measurements', 0);
     }
 
     public function test_reusing_a_batch_id_with_different_content_returns_a_conflict(): void
@@ -205,8 +249,10 @@ class OfflineSyncTest extends TestCase
         ];
     }
 
-    private function createSurveyAndQuestion(string $questionType = 'LIBRE'): array
-    {
+    private function createSurveyAndQuestion(
+        string $questionType = 'LIBRE',
+        bool $isKpt = true
+    ): array {
         $project = Proyect::create(['name' => 'Proyecto offline']);
         $survey = Survey::create([
             'proyect_id' => $project->id,
@@ -217,6 +263,7 @@ class OfflineSyncTest extends TestCase
         ]);
         $question = SurveyQuestion::create([
             'survey_id' => $survey->id,
+            'calculator_key' => $isKpt ? 'baseline.initial_wood_kg' : null,
             'question_text' => 'Valor capturado',
             'question_type' => $questionType,
             'type_field' => $questionType === 'FILE' ? null : 'NUMERICO',

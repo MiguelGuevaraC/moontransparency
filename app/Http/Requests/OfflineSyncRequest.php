@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ResolvesSurveyExpectedDays;
+use App\Models\Survey;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -48,7 +49,7 @@ class OfflineSyncRequest extends FormRequest
             'items.*.client_participation_id' => ['required', 'uuid'],
             'items.*.client_updated_at' => ['required', 'date'],
             'items.*.action' => ['required', Rule::in(['SAVE_DRAFT', 'FINALIZE'])],
-            'items.*.number_document' => ['required', 'string', 'max:20'],
+            'items.*.number_document' => ['nullable', 'string', 'max:20'],
             'items.*.names' => ['required', 'string', 'max:1000'],
             'items.*.date_of_birth' => ['nullable', 'date'],
             'items.*.phone' => ['nullable', 'string', 'max:255'],
@@ -85,6 +86,14 @@ class OfflineSyncRequest extends FormRequest
 
                 foreach ($this->input('items', []) as $itemIndex => $item) {
                     $expectedDays = $this->expectedDaysFor($item['survey_id'] ?? null);
+                    $survey = Survey::find($item['survey_id'] ?? null);
+                    if (! empty($item['measurements'])
+                        && ! $survey?->supportsDailyMeasurements()) {
+                        $validator->errors()->add(
+                            "items.$itemIndex.measurements",
+                            'Los días de medición solo se permiten en encuestas KPT.'
+                        );
+                    }
                     if (count($item['measurements'] ?? []) > $expectedDays) {
                         $validator->errors()->add(
                             "items.$itemIndex.measurements",

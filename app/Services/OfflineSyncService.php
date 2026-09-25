@@ -183,6 +183,8 @@ class OfflineSyncService
             );
         }
 
+        $item = $this->hydrateMappedRespondentDocument($item, $mapping, $itemIndex);
+
         $this->validateRelatedResources($item, $itemIndex);
         $baseData = $this->baseSurveyedData($item, $attachments);
         $surveyed = $mapping
@@ -309,6 +311,34 @@ class OfflineSyncService
         }
     }
 
+    private function hydrateMappedRespondentDocument(
+        array $item,
+        ?OfflineSyncParticipation $mapping,
+        int $itemIndex
+    ): array {
+        if (isset($item['number_document'])
+            && trim((string) $item['number_document']) !== '') {
+            return $item;
+        }
+
+        if (! $mapping) {
+            throw ValidationException::withMessages([
+                "items.$itemIndex.number_document" => 'El DNI es obligatorio al registrar una participación nueva.',
+            ]);
+        }
+
+        $surveyed = Surveyed::with('respondent')->find($mapping->surveyed_id);
+        if (! $surveyed?->respondent) {
+            throw new ConflictHttpException(
+                'La participación sincronizada ya no tiene un encuestado asociado.'
+            );
+        }
+
+        $item['number_document'] = $surveyed->respondent->number_document;
+
+        return $item;
+    }
+
     private function findExistingSurveyed(array $item): ?Surveyed
     {
         $respondent = Respondent::where('number_document', $item['number_document'])->first();
@@ -367,6 +397,8 @@ class OfflineSyncService
                 'surveyed_measurement_id' => $measurement->surveyed_measurement_id,
             ])->values()->all();
 
+        $surveyKind = $surveyed->survey?->calculatorKind();
+
         return [
             'client_participation_id' => $item['client_participation_id'],
             'status' => 'SYNCED',
@@ -377,6 +409,10 @@ class OfflineSyncService
             'can_edit' => $surveyed->status === Surveyed::STATUS_DRAFT,
             'completed_at' => $surveyed->completed_at?->toIso8601String(),
             'server_updated_at' => $surveyed->updated_at?->toIso8601String(),
+            'calculator_ready' => $surveyKind !== null && $surveyed->household_id !== null,
+            'calculator_survey_kind' => $surveyKind,
+            'household_id' => $surveyed->household_id,
+            'household_code' => $surveyed->household?->code,
             'measurements' => $measurements,
         ];
     }

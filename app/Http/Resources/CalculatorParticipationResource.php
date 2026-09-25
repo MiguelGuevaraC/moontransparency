@@ -18,7 +18,8 @@ use Illuminate\Support\Str;
  *         property="contract",
  *         type="object",
  *         @OA\Property(property="version", type="string", example="1.3"),
- *         @OA\Property(property="expected_days", type="integer", example=7),
+ *         @OA\Property(property="expected_days", type="integer", nullable=true, example=7),
+ *         @OA\Property(property="supports_daily_measurements", type="boolean", example=true),
  *         @OA\Property(property="missing_value", nullable=true, example=null),
  *         @OA\Property(
  *             property="units",
@@ -69,15 +70,19 @@ class CalculatorParticipationResource extends JsonResource
             ->values();
         $fields = $questions->map(fn ($question) => $this->fieldDefinition($question));
         $legacyHouseholdIdentifier = $this->legacyHouseholdIdentifier($fields);
-        $expectedDays = $this->survey?->expectedDays() ?? config('surveying.default_expected_days', 7);
+        $supportsDailyMeasurements = $this->survey?->supportsDailyMeasurements() ?? false;
+        $expectedDays = $supportsDailyMeasurements
+            ? $this->survey->expectedDays()
+            : null;
+        $dailyRange = $expectedDays === null ? [] : range(1, $expectedDays);
         $measurements = $this->measurements->keyBy('day_number');
         $recordedDays = $measurements->keys()
             ->map(static fn ($day) => (int) $day)
-            ->filter(static fn (int $day) => $day >= 1 && $day <= $expectedDays)
+            ->filter(static fn (int $day) => in_array($day, $dailyRange, true))
             ->sort()
             ->values();
-        $missingDays = collect(range(1, $expectedDays))->diff($recordedDays)->values();
-        $days = collect(range(1, $expectedDays))->map(function (int $day) use ($fields, $measurements) {
+        $missingDays = collect($dailyRange)->diff($recordedDays)->values();
+        $days = collect($dailyRange)->map(function (int $day) use ($fields, $measurements) {
             $measurement = $measurements->get($day);
             $answers = $measurement
                 ? $measurement->surveyed_responses->keyBy('survey_question_id')
@@ -105,6 +110,7 @@ class CalculatorParticipationResource extends JsonResource
             'contract' => [
                 'version' => config('surveying.calculator.contract_version', '1.3'),
                 'expected_days' => $expectedDays,
+                'supports_daily_measurements' => $supportsDailyMeasurements,
                 'missing_value' => null,
                 'units' => [
                     'weight' => 'kg',
