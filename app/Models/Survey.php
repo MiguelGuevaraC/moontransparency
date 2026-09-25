@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Survey extends Model
 {
@@ -16,6 +17,8 @@ class Survey extends Model
     public const STATUS_ACTIVE = 'ACTIVA';
 
     public const STATUS_INACTIVE = 'INACTIVA';
+
+    public const KPT_EXPECTED_DAYS = 7;
 
     protected $fillable = [
         'id',
@@ -63,9 +66,7 @@ class Survey extends Model
 
     public function expectedDays(): int
     {
-        $days = (int) ($this->expected_days ?: config('surveying.default_expected_days', 7));
-
-        return max(1, min($days, (int) config('surveying.max_expected_days', 31)));
+        return self::KPT_EXPECTED_DAYS;
     }
 
     public function supportsDailyMeasurements(): bool
@@ -87,7 +88,11 @@ class Survey extends Model
             return self::KIND_MONITORING;
         }
 
-        $name = mb_strtolower((string) $this->survey_name);
+        $name = Str::lower(Str::ascii((string) $this->survey_name));
+
+        if (! str_contains($name, 'kpt')) {
+            return null;
+        }
 
         return str_contains($name, 'linea base')
             ? self::KIND_BASELINE

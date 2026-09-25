@@ -88,7 +88,7 @@ class UpdateSurveyRequest extends StoreRequest
             'status' => 'nullable|string|in:ACTIVA,INACTIVA',
             'display_order' => 'nullable|integer|min:1|max:999999',
             'requires_coordinates' => 'nullable|boolean',
-            'expected_days' => 'nullable|integer|min:1|max:'.config('surveying.max_expected_days', 31),
+            'expected_days' => 'nullable|integer|in:'.Survey::KPT_EXPECTED_DAYS,
             'survey_type' => 'required|string|in:PRE,POST',
             'is_consentimiento' => 'nullable|boolean',
 

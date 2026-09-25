@@ -8,10 +8,7 @@ trait ResolvesSurveyExpectedDays
 {
     protected function expectedDaysFor($surveyId): int
     {
-        $configured = Survey::whereKey($surveyId)->value('expected_days');
-        $days = (int) ($configured ?: config('surveying.default_expected_days', 7));
-
-        return max(1, min($days, (int) config('surveying.max_expected_days', 31)));
+        return Survey::find($surveyId)?->expectedDays() ?? Survey::KPT_EXPECTED_DAYS;
     }
 
     protected function surveySupportsDailyMeasurements($surveyId): bool

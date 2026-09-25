@@ -20,16 +20,15 @@ class MenuAccessTest extends TestCase
 
         $response = $this->getJson('/api/menu')
             ->assertOk()
-            ->assertJsonCount(5, 'data')
-            ->assertJsonPath('data.0.code', 'home')
-            ->assertJsonPath('data.0.name', 'Inicio')
-            ->assertJsonPath('data.1.code', 'users_roles')
-            ->assertJsonPath('data.1.name', 'Usuarios y roles')
-            ->assertJsonPath('data.4.code', 'survey_history')
+            ->assertJsonCount(4, 'data')
+            ->assertJsonPath('data.0.code', 'users_roles')
+            ->assertJsonPath('data.0.name', 'Usuarios y roles')
+            ->assertJsonPath('data.3.code', 'survey_history')
+            ->assertJsonMissing(['code' => 'home'])
             ->assertJsonMissing(['code' => 'calculator'])
             ->assertJsonMissing(['code' => 'allies']);
 
-        $this->assertArrayNotHasKey('permissions', $response->json('data.4'));
+        $this->assertArrayNotHasKey('permissions', $response->json('data.3'));
     }
 
     public function test_login_returns_the_role_menus_for_dynamic_navigation(): void
@@ -41,8 +40,8 @@ class MenuAccessTest extends TestCase
             'password' => 'Password!2026',
         ])
             ->assertOk()
-            ->assertJsonPath('user.menu_codes.0', 'home')
-            ->assertJsonPath('user.menu_codes.1', 'users_roles')
+            ->assertJsonPath('user.menu_codes.0', 'users_roles')
+            ->assertJsonMissing(['code' => 'home'])
             ->assertJsonFragment([
                 'code' => 'survey_history',
                 'name' => 'Historial de Encuestas',

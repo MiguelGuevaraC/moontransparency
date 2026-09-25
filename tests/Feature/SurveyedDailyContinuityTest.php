@@ -156,11 +156,11 @@ class SurveyedDailyContinuityTest extends TestCase
         $this->assertDatabaseCount('surveyed_responses', 0);
     }
 
-    public function test_day_number_respects_the_limit_configured_on_the_survey(): void
+    public function test_kpt_days_are_fixed_from_one_to_seven_even_if_database_has_an_old_value(): void
     {
         [$survey, $dayQuestion, $dayOptions, $weightQuestion, $notesQuestion] = $this->createDailySurvey();
         $survey->update(['expected_days' => 3]);
-        $payload = $this->payload(
+        $validPayload = $this->payload(
             $survey,
             $dayQuestion,
             $dayOptions[4],
@@ -169,11 +169,27 @@ class SurveyedDailyContinuityTest extends TestCase
             4
         );
 
-        $this->postJson('/api/response-survey', $payload)
+        $created = $this->postJson('/api/response-survey', $validPayload)->assertOk();
+        $surveyedId = (int) $created->json('data.id');
+
+        $dayEight = SurveyQuestionOption::create([
+            'survey_question_id' => $dayQuestion->id,
+            'description' => '8',
+        ]);
+        $invalidPayload = $this->payload(
+            $survey,
+            $dayQuestion,
+            $dayEight,
+            $weightQuestion,
+            $notesQuestion,
+            8
+        );
+
+        $this->postJson("/api/response-survey/$surveyedId", $invalidPayload)
             ->assertUnprocessable()
             ->assertJsonValidationErrors('responses.0.survey_question_option_id');
 
-        $this->assertDatabaseCount('surveyeds', 0);
+        $this->assertDatabaseCount('surveyeds', 1);
     }
 
     private function createDailySurvey(): array

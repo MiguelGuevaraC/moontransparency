@@ -124,7 +124,7 @@ class SurveyedCalculatorApiTest extends TestCase
             ->assertJsonPath('data.days.0.values.'.$key.'.conversion_factor', 0.001);
     }
 
-    public function test_it_uses_the_number_of_days_configured_for_the_survey(): void
+    public function test_kpt_contract_always_uses_exactly_seven_days(): void
     {
         [$surveyed] = $this->createCalculatorParticipation();
         $surveyed->survey->update(['expected_days' => 3]);
@@ -132,9 +132,9 @@ class SurveyedCalculatorApiTest extends TestCase
 
         $this->getJson('/api/surveyed/'.$surveyed->id.'/calculator')
             ->assertOk()
-            ->assertJsonPath('data.contract.expected_days', 3)
-            ->assertJsonCount(3, 'data.days')
-            ->assertJsonPath('data.missing_days', [2]);
+            ->assertJsonPath('data.contract.expected_days', 7)
+            ->assertJsonCount(7, 'data.days')
+            ->assertJsonPath('data.missing_days', [2, 4, 5, 6, 7]);
     }
 
     public function test_calculator_contract_requires_authentication(): void
