@@ -363,6 +363,9 @@ Enviar el código seleccionado como `household_code`. Si también se envía la r
     "preview_mode": true,
     "read_only": true,
     "accepts_responses": false,
+    "iframe_url": "https://api.example.com/encuestas/10/vista-previa?expires=...&signature=...",
+    "viewer_url": "https://api.example.com/encuestas/10/vista-previa?expires=...&signature=...",
+    "expires_at": "2026-09-25T18:30:00-05:00",
     "id": 10,
     "survey_name": "KPT línea base",
     "status": "ACTIVA",
@@ -373,7 +376,23 @@ Enviar el código seleccionado como `household_code`. Si también se envía la r
 }
 ```
 
-Frontend debe reutilizar el mismo renderer del formulario, pero deshabilitar inputs, guardado, finalización y carga de archivos.
+Backend ya entrega la vista visual completa. Frontend solo debe colocar `data.iframe_url` como `src` del iframe:
+
+```html
+<iframe
+  src="{data.iframe_url}"
+  title="Vista previa de la encuesta"
+  sandbox="allow-scripts"
+  style="width:100%;height:80vh;border:0"
+></iframe>
+```
+
+- La URL es temporal, firmada y dura 30 minutos por defecto.
+- No requiere enviar el Bearer token dentro del iframe.
+- No se debe guardar la URL en base de datos ni reutilizar después de `expires_at`.
+- Si vence, frontend vuelve a llamar `GET /survey/{id}/preview`.
+- El iframe no permite guardar ni finalizar encuestas; todos los controles están en modo solo lectura.
+- El origen del panel debe estar incluido en `SURVEY_PREVIEW_EMBED_ORIGINS` del backend.
 
 **Errores:** `401`, `403`, `404`.
 

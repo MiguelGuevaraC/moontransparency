@@ -14,6 +14,7 @@ use App\Models\Survey;
 use App\Models\SurveyChangeLog;
 use App\Services\SurveyService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 
 class SurveyController extends Controller
@@ -98,22 +99,37 @@ class SurveyController extends Controller
      * @OA\Get(
      *     path="/moontransparency/public/api/survey/{id}/preview",
      *     operationId="previewSurvey",
-     *     summary="Obtener la vista previa de una encuesta en modo solo lectura",
+     *     summary="Obtener los datos y una URL temporal para mostrar la encuesta en un iframe",
      *     tags={"Survey"},
      *     security={{"bearerAuth": {}}},
      *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
      *
-     *     @OA\Response(response=200, description="Encuesta lista para vista previa", @OA\JsonContent(ref="#/components/schemas/SurveyPreview")),
+     *     @OA\Response(response=200, description="Encuesta y URL firmada listas para vista previa", @OA\JsonContent(ref="#/components/schemas/SurveyPreview")),
      *     @OA\Response(response=401, description="No autenticado"),
      *     @OA\Response(response=403, description="Sin permiso surveys.view"),
      *     @OA\Response(response=404, description="Encuesta no encontrada")
      * )
      */
-    public function preview($id)
+    public function preview(Request $request, $id)
     {
+        $survey = $this->surveyService->getSurveyPreviewById((int) $id);
+        $expiresAt = now()->addMinutes(
+            max(1, min((int) config('surveying.preview_link_ttl_minutes', 30), 120))
+        );
+        $relativeUrl = URL::temporarySignedRoute(
+            'surveys.preview.embed',
+            $expiresAt,
+            ['survey' => $survey->id],
+            false
+        );
+        $publicBaseUrl = config('surveying.preview_public_url')
+            ?: $request->getSchemeAndHttpHost().$request->getBaseUrl();
+
         return new SurveyPreviewResource(
-            $this->surveyService->getSurveyPreviewById((int) $id)
+            $survey,
+            rtrim($publicBaseUrl, '/').$relativeUrl,
+            $expiresAt->toIso8601String()
         );
     }
 

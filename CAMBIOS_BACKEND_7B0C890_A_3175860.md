@@ -185,11 +185,16 @@ La respuesta incluye la encuesta completa, preguntas ordenadas, opciones, ODS y 
 {
   "preview_mode": true,
   "read_only": true,
-  "accepts_responses": false
+  "accepts_responses": false,
+  "iframe_url": "https://api.example.com/encuestas/10/vista-previa?expires=...&signature=...",
+  "viewer_url": "https://api.example.com/encuestas/10/vista-previa?expires=...&signature=...",
+  "expires_at": "2026-09-25T18:30:00-05:00"
 }
 ```
 
-La vista previa funciona incluso si la encuesta está inactiva, porque está destinada al panel administrativo.
+La vista previa funciona incluso si la encuesta está inactiva, porque está destinada al panel administrativo. La URL firmada renderiza una vista HTML completa, adaptable y de solo lectura para usar directamente como `src` de un iframe. Incluye preguntas, opciones, tipos de campo, secciones y pestañas de siete días cuando la encuesta es KPT.
+
+La URL temporal no necesita Bearer token dentro del iframe, vence a los 30 minutos y solo puede embeberse desde los orígenes configurados en `SURVEY_PREVIEW_EMBED_ORIGINS`.
 
 ---
 
@@ -346,8 +351,8 @@ Además, se ampliaron los contratos de detalle de encuesta, participación, sinc
 Al cerrar el rango se ejecutó la suite completa:
 
 ```text
-158 tests
-1314 assertions
+160 tests
+1337 assertions
 OK
 ```
 

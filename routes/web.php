@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CalculatorViewController;
 use App\Http\Controllers\GeobosquesMapController;
+use App\Http\Controllers\SurveyPreviewViewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,5 +23,8 @@ Route::get('/calculadora', [CalculatorViewController::class, 'index'])->name('ca
 Route::get('/calculadora/embed', [CalculatorViewController::class, 'embed'])
     ->middleware('signed:relative')
     ->name('calculator.embed');
+Route::get('/encuestas/{survey}/vista-previa', [SurveyPreviewViewController::class, 'show'])
+    ->middleware('signed:relative')
+    ->name('surveys.preview.embed');
 Route::get('/mapa', [GeobosquesMapController::class, 'show'])
     ->name('geobosques.map');
