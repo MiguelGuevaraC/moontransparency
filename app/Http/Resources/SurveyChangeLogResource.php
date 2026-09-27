@@ -13,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     @OA\Property(property="id", type="integer", example=15),
  *     @OA\Property(property="survey_id", type="integer", example=4),
  *     @OA\Property(property="action", type="string", enum={"CREATED", "UPDATED", "DELETED"}),
- *     @OA\Property(property="entity_type", type="string", enum={"SURVEY", "QUESTION", "OPTION", "ODS"}),
+ *     @OA\Property(property="entity_type", type="string", enum={"SURVEY", "QUESTION", "OPTION", "ODS", "PARTICIPATION", "MEASUREMENT", "RESPONSE", "RESPONSE_OPTION"}),
  *     @OA\Property(property="entity_id", type="integer", nullable=true),
  *     @OA\Property(property="description", type="string", example="Se modificó una pregunta."),
  *     @OA\Property(property="changes", type="object", description="Campos modificados indexados por nombre, cada uno con old y new."),

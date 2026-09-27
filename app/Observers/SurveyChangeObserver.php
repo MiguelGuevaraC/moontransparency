@@ -4,6 +4,10 @@ namespace App\Observers;
 
 use App\Models\Survey;
 use App\Models\SurveyChangeLog;
+use App\Models\Surveyed;
+use App\Models\SurveyedMeasurement;
+use App\Models\SurveyedResponse;
+use App\Models\SurveyedResponseOption;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyQuestionOds;
 use App\Models\SurveyQuestionOption;
@@ -52,6 +56,15 @@ class SurveyChangeObserver
         $this->record($model, SurveyChangeLog::ACTION_DELETED, $changes);
     }
 
+    public function restored(Model $model): void
+    {
+        $changes = collect($this->auditableAttributes($model))
+            ->map(fn ($value) => ['old' => null, 'new' => $this->normalize($value)])
+            ->all();
+
+        $this->record($model, SurveyChangeLog::ACTION_CREATED, $changes);
+    }
+
     private function record(Model $model, string $action, array $changes): void
     {
         $surveyId = $this->surveyId($model);
@@ -82,6 +95,20 @@ class SurveyChangeObserver
             return $model->survey_id ? (int) $model->survey_id : null;
         }
 
+        if ($model instanceof Surveyed) {
+            return $model->survey_id ? (int) $model->survey_id : null;
+        }
+
+        if ($model instanceof SurveyedMeasurement
+            || $model instanceof SurveyedResponse
+            || $model instanceof SurveyedResponseOption) {
+            $surveyId = Surveyed::withTrashed()
+                ->whereKey($model->surveyed_id)
+                ->value('survey_id');
+
+            return $surveyId ? (int) $surveyId : null;
+        }
+
         if ($model instanceof SurveyQuestionOption) {
             $surveyId = SurveyQuestion::withTrashed()
                 ->whereKey($model->survey_question_id)
@@ -105,6 +132,10 @@ class SurveyChangeObserver
     {
         return match (true) {
             $model instanceof Survey => 'SURVEY',
+            $model instanceof Surveyed => 'PARTICIPATION',
+            $model instanceof SurveyedMeasurement => 'MEASUREMENT',
+            $model instanceof SurveyedResponse => 'RESPONSE',
+            $model instanceof SurveyedResponseOption => 'RESPONSE_OPTION',
             $model instanceof SurveyQuestion => 'QUESTION',
             $model instanceof SurveyQuestionOds => 'ODS',
             $model instanceof SurveyQuestionOption => 'OPTION',
@@ -116,6 +147,10 @@ class SurveyChangeObserver
     {
         $entity = match (true) {
             $model instanceof Survey => 'la encuesta',
+            $model instanceof Surveyed => "la participación #{$model->getKey()}",
+            $model instanceof SurveyedMeasurement => "el día {$model->day_number} de la participación #{$model->surveyed_id}",
+            $model instanceof SurveyedResponse => $this->responseDescription($model),
+            $model instanceof SurveyedResponseOption => "una opción de la participación #{$model->surveyed_id}",
             $model instanceof SurveyQuestion => 'una pregunta',
             $model instanceof SurveyQuestionOds => 'una vinculación ODS',
             $model instanceof SurveyQuestionOption => 'una opción de respuesta',
@@ -144,5 +179,20 @@ class SurveyChangeObserver
         }
 
         return (string) $value;
+    }
+
+    private function responseDescription(SurveyedResponse $response): string
+    {
+        $question = SurveyQuestion::withTrashed()
+            ->whereKey($response->survey_question_id)
+            ->value('question_text');
+
+        if (! $question) {
+            return "una respuesta de la participación #{$response->surveyed_id}";
+        }
+
+        return 'la respuesta de la pregunta "'
+            .mb_strimwidth($question, 0, 130, '...')
+            .'" de la participación #'.$response->surveyed_id;
     }
 }

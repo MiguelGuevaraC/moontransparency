@@ -4,9 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Ods;
 use App\Models\Proyect;
+use App\Models\Respondent;
 use App\Models\Rol;
 use App\Models\Survey;
 use App\Models\SurveyChangeLog;
+use App\Models\Surveyed;
+use App\Models\SurveyedResponse;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyQuestionOption;
 use App\Models\User;
@@ -208,6 +211,66 @@ class SurveyChangeHistoryTest extends TestCase
             ->assertJsonPath('data.0.user.id', $user->id)
             ->assertJsonPath('data.0.changes.survey_question_id.new', $question->id)
             ->assertJsonPath('data.0.changes.ods_id.new', $ods->id);
+    }
+
+    public function test_updating_participation_answers_records_them_in_the_survey_history(): void
+    {
+        $user = $this->actingAsAdministrator();
+        $project = Proyect::create(['name' => 'Proyecto con respuestas auditables']);
+        $survey = Survey::create([
+            'proyect_id' => $project->id,
+            'survey_name' => 'Encuesta con respuestas auditables',
+            'survey_type' => 'PRE',
+            'description' => 'Encuesta para auditar respuestas',
+            'status' => Survey::STATUS_ACTIVE,
+        ]);
+        $question = SurveyQuestion::create([
+            'survey_id' => $survey->id,
+            'question_text' => 'Cantidad consumida',
+            'question_type' => 'LIBRE',
+            'type_field' => 'DECIMAL',
+            'order' => 1,
+            'is_required' => true,
+        ]);
+        $respondent = Respondent::create([
+            'number_document' => 'DOC-ANSWER-HISTORY',
+            'names' => 'Persona con respuesta editable',
+        ]);
+        $participation = Surveyed::create([
+            'respondent_id' => $respondent->id,
+            'survey_id' => $survey->id,
+            'status' => Surveyed::STATUS_DRAFT,
+            'created_by' => $user->id,
+        ]);
+        SurveyedResponse::create([
+            'respondent_id' => $respondent->id,
+            'surveyed_id' => $participation->id,
+            'survey_question_id' => $question->id,
+            'response_text' => '10.50',
+        ]);
+
+        SurveyChangeLog::query()->delete();
+
+        $this->postJson("/api/response-survey/{$participation->id}", [
+            'number_document' => $respondent->number_document,
+            'names' => $respondent->names,
+            'survey_id' => $survey->id,
+            'responses' => [[
+                'survey_question_id' => $question->id,
+                'response_text' => '12.75',
+            ]],
+        ])->assertOk();
+
+        $this->getJson("/api/survey/{$survey->id}/history?entity_type=RESPONSE&per_page=100")
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.action', 'UPDATED')
+            ->assertJsonPath('data.0.entity_type', 'RESPONSE')
+            ->assertJsonPath('data.0.entity_id', SurveyedResponse::first()->id)
+            ->assertJsonPath('data.0.user.id', $user->id)
+            ->assertJsonPath('data.0.description', "Se modificó la respuesta de la pregunta \"Cantidad consumida\" de la participación #{$participation->id}.")
+            ->assertJsonPath('data.0.changes.response_text.old', '10.50')
+            ->assertJsonPath('data.0.changes.response_text.new', '12.75');
     }
 
     private function actingAsAdministrator(): User

@@ -144,7 +144,7 @@ class SurveyController extends Controller
      *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", minimum=1)),
      *     @OA\Parameter(name="action", in="query", required=false, @OA\Schema(type="string", enum={"CREATED", "UPDATED", "DELETED"})),
-     *     @OA\Parameter(name="entity_type", in="query", required=false, @OA\Schema(type="string", enum={"SURVEY", "QUESTION", "OPTION", "ODS"})),
+     *     @OA\Parameter(name="entity_type", in="query", required=false, @OA\Schema(type="string", enum={"SURVEY", "QUESTION", "OPTION", "ODS", "PARTICIPATION", "MEASUREMENT", "RESPONSE", "RESPONSE_OPTION"})),
      *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", minimum=1, maximum=100, default=25)),
      *
      *     @OA\Response(response=200, description="Historial paginado", @OA\JsonContent(type="object", @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/SurveyChangeLog")))),
@@ -161,7 +161,16 @@ class SurveyController extends Controller
                 SurveyChangeLog::ACTION_UPDATED,
                 SurveyChangeLog::ACTION_DELETED,
             ])],
-            'entity_type' => ['nullable', Rule::in(['SURVEY', 'QUESTION', 'OPTION', 'ODS'])],
+            'entity_type' => ['nullable', Rule::in([
+                'SURVEY',
+                'QUESTION',
+                'OPTION',
+                'ODS',
+                'PARTICIPATION',
+                'MEASUREMENT',
+                'RESPONSE',
+                'RESPONSE_OPTION',
+            ])],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
