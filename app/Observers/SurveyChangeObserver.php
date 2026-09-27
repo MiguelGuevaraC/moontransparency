@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Survey;
 use App\Models\SurveyChangeLog;
 use App\Models\SurveyQuestion;
+use App\Models\SurveyQuestionOds;
 use App\Models\SurveyQuestionOption;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -89,6 +90,14 @@ class SurveyChangeObserver
             return $surveyId ? (int) $surveyId : null;
         }
 
+        if ($model instanceof SurveyQuestionOds) {
+            $surveyId = SurveyQuestion::withTrashed()
+                ->whereKey($model->survey_question_id)
+                ->value('survey_id');
+
+            return $surveyId ? (int) $surveyId : null;
+        }
+
         return null;
     }
 
@@ -97,6 +106,7 @@ class SurveyChangeObserver
         return match (true) {
             $model instanceof Survey => 'SURVEY',
             $model instanceof SurveyQuestion => 'QUESTION',
+            $model instanceof SurveyQuestionOds => 'ODS',
             $model instanceof SurveyQuestionOption => 'OPTION',
             default => 'UNKNOWN',
         };
@@ -107,6 +117,7 @@ class SurveyChangeObserver
         $entity = match (true) {
             $model instanceof Survey => 'la encuesta',
             $model instanceof SurveyQuestion => 'una pregunta',
+            $model instanceof SurveyQuestionOds => 'una vinculación ODS',
             $model instanceof SurveyQuestionOption => 'una opción de respuesta',
             default => 'un elemento',
         };

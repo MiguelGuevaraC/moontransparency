@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Survey;
 use App\Models\SurveyQuestion;
+use App\Models\SurveyQuestionOds;
 use App\Models\SurveyQuestionOption;
 use App\Observers\SurveyChangeObserver;
 use Illuminate\Support\ServiceProvider;
@@ -29,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Survey::observe(SurveyChangeObserver::class);
         SurveyQuestion::observe(SurveyChangeObserver::class);
+        SurveyQuestionOds::observe(SurveyChangeObserver::class);
         SurveyQuestionOption::observe(SurveyChangeObserver::class);
     }
 }
