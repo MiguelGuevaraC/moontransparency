@@ -273,6 +273,39 @@ class SurveyChangeHistoryTest extends TestCase
             ->assertJsonPath('data.0.changes.response_text.new', '12.75');
     }
 
+    public function test_existing_surveys_receive_an_idempotent_initial_history_entry(): void
+    {
+        $this->actingAsAdministrator();
+        $project = Proyect::create(['name' => 'Proyecto con historial inicial']);
+        $survey = Survey::create([
+            'proyect_id' => $project->id,
+            'survey_name' => 'Encuesta existente sin historial',
+            'survey_type' => 'PRE',
+            'description' => 'Estado actual de la encuesta',
+            'status' => Survey::STATUS_ACTIVE,
+        ]);
+
+        SurveyChangeLog::query()->where('survey_id', $survey->id)->delete();
+
+        $migration = require database_path(
+            'migrations/2026_09_28_000001_initialize_history_for_existing_surveys.php'
+        );
+        $migration->up();
+        $migration->up();
+
+        $this->getJson("/api/survey/{$survey->id}/history?per_page=100")
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.action', 'CREATED')
+            ->assertJsonPath('data.0.entity_type', 'SURVEY')
+            ->assertJsonPath(
+                'data.0.description',
+                'Se inicializó el historial con el estado actual de la encuesta.'
+            )
+            ->assertJsonPath('data.0.changes.survey_name.old', null)
+            ->assertJsonPath('data.0.changes.survey_name.new', $survey->survey_name);
+    }
+
     private function actingAsAdministrator(): User
     {
         $user = User::create([
