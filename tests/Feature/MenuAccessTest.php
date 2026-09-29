@@ -49,6 +49,46 @@ class MenuAccessTest extends TestCase
             ->assertJsonMissing(['code' => 'calculator']);
     }
 
+    public function test_login_keeps_legacy_users_and_roles_menus_for_current_frontend(): void
+    {
+        $user = $this->userWithRole('admin-menu-legacy', 'Administrador');
+
+        $this->postJson('/api/login', [
+            'username' => $user->username,
+            'password' => 'Password!2026',
+        ])
+            ->assertOk()
+            ->assertJsonPath('user.menu_codes', ['users_roles', 'users', 'roles', 'respondents', 'surveys', 'survey_history'])
+            ->assertJsonPath('user.rol.menu_codes', ['users_roles', 'users', 'roles', 'respondents', 'surveys', 'survey_history'])
+            ->assertJsonPath('user.menus.1.path', '/usuarios')
+            ->assertJsonPath('user.menus.1.status', Menu::STATUS_ACTIVE)
+            ->assertJsonPath('user.menus.2.path', '/roles');
+
+        Sanctum::actingAs($user);
+
+        $this->getJson('/api/authenticate')
+            ->assertOk()
+            ->assertJsonPath('user.menu_codes', ['users_roles', 'users', 'roles', 'respondents', 'surveys', 'survey_history']);
+
+        $this->getJson('/api/rol/'.$user->rol_id)
+            ->assertOk()
+            ->assertJsonPath('data.menu_codes', ['users_roles', 'respondents', 'surveys', 'survey_history']);
+
+        $this->assertDatabaseHas('menus', ['code' => 'users', 'status' => Menu::STATUS_INACTIVE]);
+    }
+
+    public function test_login_does_not_add_legacy_menus_without_users_roles_access(): void
+    {
+        $user = $this->userWithRole('surveyor-menu-legacy', 'Encuestador');
+
+        $this->postJson('/api/login', [
+            'username' => $user->username,
+            'password' => 'Password!2026',
+        ])
+            ->assertOk()
+            ->assertJsonPath('user.menu_codes', ['respondents', 'surveys', 'survey_history']);
+    }
+
     public function test_public_platform_exposes_the_new_name_and_technological_tools(): void
     {
         config([
@@ -123,6 +163,42 @@ class MenuAccessTest extends TestCase
             'participations.import',
             'participations.export',
         ])->exists());
+    }
+
+    public function test_admin_roles_cannot_lose_users_and_roles_access(): void
+    {
+        Sanctum::actingAs($this->userWithRole('admin-menu-guard', 'Administrador'));
+        $history = Menu::where('code', 'survey_history')->firstOrFail();
+        $rolesView = Permission::where('route', 'roles.view')->firstOrFail();
+        $surveysView = Permission::where('route', 'surveys.view')->firstOrFail();
+
+        foreach (Rol::whereIn('name', ['Administrador', 'Administrador Moon'])->get() as $admin) {
+            $this->putJson("/api/rol/{$admin->id}/menus", ['menus' => [$history->id]])
+                ->assertUnprocessable()
+                ->assertJsonPath('errors.menus.0', 'Los roles Administrador deben conservar el acceso a Usuarios y roles.');
+
+            $this->putJson("/api/rol/{$admin->id}/setaccess", ['access' => [$surveysView->id]])
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors('permissions');
+
+            $this->deleteJson("/api/rol/{$admin->id}/permissions/{$rolesView->id}")
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors('permissions');
+
+            $this->assertTrue($admin->fresh()->menus()->where('code', 'users_roles')->exists());
+            $this->assertTrue($admin->fresh()->permissions()->where('route', 'roles.view')->exists());
+            $this->assertTrue($admin->fresh()->permissions()->where('route', 'users.create')->exists());
+        }
+
+        $admin = Rol::where('name', 'Administrador')->firstOrFail();
+        $usersRoles = Menu::where('code', 'users_roles')->firstOrFail();
+
+        $this->putJson("/api/rol/{$admin->id}/menus", ['menus' => [$usersRoles->id, $history->id]])
+            ->assertOk()
+            ->assertJsonPath('data.menu_codes', ['users_roles', 'survey_history']);
+
+        $this->deleteJson("/api/rol/{$admin->id}/permissions/{$surveysView->id}")
+            ->assertOk();
     }
 
     public function test_menu_assignment_rejects_unknown_menu_ids(): void

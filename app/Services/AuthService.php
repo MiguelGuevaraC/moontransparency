@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Menu;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
@@ -11,6 +12,12 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthService
 {
+    /**
+     * Menús anteriores a la unificación de "Usuarios y roles" (2026-09-18).
+     * Se siguen enviando en la navegación mientras el frontend no reconozca users_roles.
+     */
+    private const LEGACY_USERS_ROLES_MENU_CODES = ['users', 'roles'];
+
     /**
      * Maneja el proceso de inicio de sesión.
      *
@@ -41,6 +48,8 @@ class AuthService
             ];
         }
 
+        $this->addLegacyUsersRolesMenus($user);
+
         // Autentica al usuario
         Auth::login($user);
 
@@ -62,6 +71,9 @@ class AuthService
     public function authenticate(): array
     {
         $user = auth()->user()?->load(['rol.permissions', 'rol.menus']);
+        if ($user) {
+            $this->addLegacyUsersRolesMenus($user);
+        }
         // Llama al método login para realizar la autenticación
         return [
             'status' => $user !== null,
@@ -99,5 +111,25 @@ class AuthService
         return response()->json([
             'message' => 'Se cerró sesión Exitosamente',
         ]);
+    }
+
+    private function addLegacyUsersRolesMenus(User $user): void
+    {
+        $menus = $user->rol?->menus;
+        $position = $menus?->search(fn (Menu $menu) => $menu->code === 'users_roles');
+        if ($position === null || $position === false) {
+            return;
+        }
+
+        $legacyMenus = Menu::query()
+            ->whereIn('code', self::LEGACY_USERS_ROLES_MENU_CODES)
+            ->whereNotIn('code', $menus->pluck('code'))
+            ->orderBy('sort_order')
+            ->get()
+            ->each(function (Menu $menu) {
+                $menu->status = Menu::STATUS_ACTIVE;
+            });
+
+        $menus->splice($position + 1, 0, $legacyMenus->all());
     }
 }

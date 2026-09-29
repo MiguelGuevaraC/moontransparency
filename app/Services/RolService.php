@@ -6,6 +6,7 @@ use App\Models\Menu;
 use App\Models\Permission;
 use App\Models\Permission_rol;
 use App\Models\Rol;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -17,6 +18,12 @@ class RolService
         'participations.import',
         'participations.export',
     ];
+
+    private const ADMIN_ROLES = ['Administrador', 'Administrador Moon'];
+
+    private const USERS_ROLES_MENU_CODE = 'users_roles';
+
+    private const USERS_ROLES_ACCESS_MESSAGE = 'Los roles Administrador deben conservar el acceso a Usuarios y roles.';
 
     public function getRolById(int $id): ?Rol
     {
@@ -108,6 +115,10 @@ class RolService
                     ->whereNotIn('route', self::SURVEYOR_FORBIDDEN_PERMISSIONS))
                 ->get();
 
+            if ($this->protectedPermissionIds($role)->diff($permissions->pluck('id'))->isNotEmpty()) {
+                throw ValidationException::withMessages(['permissions' => self::USERS_ROLES_ACCESS_MESSAGE]);
+            }
+
             Permission_rol::where('rol_id', $role->id)->delete();
             foreach ($permissions as $permission) {
                 $this->restoreAssignment($role, $permission);
@@ -134,6 +145,10 @@ class RolService
 
     public function revokePermission(Rol $role, Permission $permission): Rol
     {
+        if ($this->protectedPermissionIds($role)->contains($permission->id)) {
+            throw ValidationException::withMessages(['permissions' => self::USERS_ROLES_ACCESS_MESSAGE]);
+        }
+
         Permission_rol::where('rol_id', $role->id)
             ->where('permission_id', $permission->id)
             ->delete();
@@ -148,6 +163,10 @@ class RolService
                 ->whereIn('id', $menuIds)
                 ->where('status', Menu::STATUS_ACTIVE)
                 ->get();
+
+            if ($this->isAdmin($role) && ! $menus->contains('code', self::USERS_ROLES_MENU_CODE)) {
+                throw ValidationException::withMessages(['menus' => self::USERS_ROLES_ACCESS_MESSAGE]);
+            }
 
             $role->menus()->sync($menus->pluck('id')->all());
 
@@ -220,5 +239,22 @@ class RolService
     private function isSurveyor(Rol $role): bool
     {
         return $role->name === 'Encuestador';
+    }
+
+    private function isAdmin(Rol $role): bool
+    {
+        return in_array($role->name, self::ADMIN_ROLES, true);
+    }
+
+    private function protectedPermissionIds(Rol $role): Collection
+    {
+        if (! $this->isAdmin($role)) {
+            return collect();
+        }
+
+        return DB::table('menu_permissions')
+            ->join('menus', 'menus.id', '=', 'menu_permissions.menu_id')
+            ->where('menus.code', self::USERS_ROLES_MENU_CODE)
+            ->pluck('menu_permissions.permission_id');
     }
 }
