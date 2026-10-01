@@ -106,12 +106,26 @@ class SurveyedDraftTest extends TestCase
     {
         $survey = $this->createSurvey();
         $payload = $this->payload($survey, []);
-        $payload['day_number'] = 1;
+        $payload['day_number'] = 2;
 
         $this->postJson('/api/response-survey', $payload)
             ->assertUnprocessable()
             ->assertJsonPath('message', 'Los días de medición solo se permiten en encuestas KPT.');
 
+        $this->assertDatabaseCount('surveyed_measurements', 0);
+    }
+
+    public function test_non_kpt_surveys_ignore_the_default_first_day(): void
+    {
+        $survey = $this->createSurvey();
+        $payload = $this->payload($survey, []);
+        $payload['day_number'] = 1;
+
+        $this->postJson('/api/response-survey', $payload)
+            ->assertOk()
+            ->assertJsonPath('data.status', Surveyed::STATUS_DRAFT);
+
+        $this->assertDatabaseCount('surveyeds', 1);
         $this->assertDatabaseCount('surveyed_measurements', 0);
     }
 

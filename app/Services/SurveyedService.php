@@ -577,6 +577,12 @@ class SurveyedService
         $derivedDays = [];
         $supportsDailyMeasurements = $surveyed->survey?->supportsDailyMeasurements() ?? false;
 
+        // Una encuesta sin días (por ejemplo, Presión sobre el Bosque) equivale
+        // a un único día: el panel envía day_number=1 por defecto y se ignora.
+        if ($explicitDay === 1 && ! $supportsDailyMeasurements) {
+            $explicitDay = null;
+        }
+
         if ($explicitDay !== null && ! $supportsDailyMeasurements) {
             throw ValidationException::withMessages([
                 'day_number' => 'Los días de medición solo se permiten en encuestas KPT.',

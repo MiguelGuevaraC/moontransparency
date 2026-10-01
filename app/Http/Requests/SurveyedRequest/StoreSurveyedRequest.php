@@ -62,8 +62,7 @@ class StoreSurveyedRequest extends StoreRequest
             $numberDocument = $this->input('number_document');
             $surveyId = $this->input('survey_id');
 
-            if ($this->filled('day_number')
-                && ! $this->surveySupportsDailyMeasurements($surveyId)) {
+            if ($this->rejectsDayNumberFor($surveyId, $this->input('day_number'))) {
                 $validator->errors()->add(
                     'day_number',
                     'Los días de medición solo se permiten en encuestas KPT.'

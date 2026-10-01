@@ -56,8 +56,7 @@ class UpdateSurveyedRequest extends StoreRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
-            if ($this->filled('day_number')
-                && ! $this->surveySupportsDailyMeasurements($this->input('survey_id'))) {
+            if ($this->rejectsDayNumberFor($this->input('survey_id'), $this->input('day_number'))) {
                 $validator->errors()->add(
                     'day_number',
                     'Los días de medición solo se permiten en encuestas KPT.'
