@@ -2527,6 +2527,35 @@
                 ]
             }
         },
+        "/moontransparency/public/api/forest-pressure/embed-link": {
+            "post": {
+                "tags": [
+                    "Presión sobre el Bosque"
+                ],
+                "summary": "Generar para la web de Moon Group un enlace temporal del dashboard de Presión sobre el Bosque",
+                "description": "El dashboard calcula el Índice de Presión sobre el Bosque (IPB V2) con las participaciones finalizadas de la Encuesta de Presión sobre el Bosque.",
+                "operationId": "createForestPressureEmbedLink",
+                "parameters": [
+                    {
+                        "name": "UUID",
+                        "in": "header",
+                        "description": "Clave de acceso de la web pública",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "URL firmada y temporal para usar como iframe o abrir en una pestaña"
+                    },
+                    "401": {
+                        "description": "UUID ausente o inválido"
+                    }
+                }
+            }
+        },
         "/moon_transparency/public/api/dashboard": {
             "get": {
                 "tags": [
@@ -4366,6 +4395,7 @@
                     "Portal publico"
                 ],
                 "summary": "Obtener la identidad y navegacion del Portal de Impacto Moon Group",
+                "description": "Solo expone Herramientas Digitales: Dashboard de Sostenibilidad, Calculadora de CO2 y Presión sobre el Bosque, cada una con nombre, frase y descripción.",
                 "operationId": "publicPlatformConfiguration",
                 "parameters": [
                     {
@@ -4380,7 +4410,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Navegacion publica y herramientas tecnologicas"
+                        "description": "Navegacion publica con las herramientas digitales"
                     },
                     "401": {
                         "description": "UUID ausente o invalido"
@@ -5824,7 +5854,7 @@
                 "tags": [
                     "Survey"
                 ],
-                "summary": "Obtener la vista previa de una encuesta en modo solo lectura",
+                "summary": "Obtener los datos y una URL temporal para mostrar la encuesta en un iframe",
                 "operationId": "previewSurvey",
                 "parameters": [
                     {
@@ -5839,7 +5869,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Encuesta lista para vista previa",
+                        "description": "Encuesta y URL firmada listas para vista previa",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -5905,7 +5935,12 @@
                             "enum": [
                                 "SURVEY",
                                 "QUESTION",
-                                "OPTION"
+                                "OPTION",
+                                "ODS",
+                                "PARTICIPATION",
+                                "MEASUREMENT",
+                                "RESPONSE",
+                                "RESPONSE_OPTION"
                             ]
                         }
                     },
@@ -9630,7 +9665,12 @@
                         "enum": [
                             "SURVEY",
                             "QUESTION",
-                            "OPTION"
+                            "OPTION",
+                            "ODS",
+                            "PARTICIPATION",
+                            "MEASUREMENT",
+                            "RESPONSE",
+                            "RESPONSE_OPTION"
                         ]
                     },
                     "entity_id": {
@@ -9675,6 +9715,19 @@
                     "accepts_responses": {
                         "type": "boolean",
                         "example": false
+                    },
+                    "iframe_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "example": "https://api.example.com/encuestas/1/vista-previa?expires=...&signature=..."
+                    },
+                    "viewer_url": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date-time"
                     },
                     "id": {
                         "type": "integer",
@@ -9764,6 +9817,11 @@
                         "type": "string",
                         "example": "¿Qué fuentes de energía utiliza en su hogar?"
                     },
+                    "instrument_key": {
+                        "type": "string",
+                        "example": "monitoring.moon_only.remaining",
+                        "nullable": true
+                    },
                     "calculator_key": {
                         "type": "string",
                         "example": "baseline.initial_wood_kg",
@@ -9813,6 +9871,28 @@
                             "CORTO"
                         ],
                         "example": "DECIMAL"
+                    },
+                    "response_scope": {
+                        "type": "string",
+                        "enum": [
+                            "PARTICIPATION",
+                            "MEASUREMENT"
+                        ]
+                    },
+                    "applicable_days": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "nullable": true
+                    },
+                    "scenario": {
+                        "type": "string",
+                        "enum": [
+                            "MONITORING_COMBINED",
+                            "MONITORING_MOON_ONLY"
+                        ],
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -9833,6 +9913,10 @@
                         "type": "string",
                         "example": "¿Qué fuentes de energía utiliza en su hogar?"
                     },
+                    "instrument_key": {
+                        "type": "string",
+                        "nullable": true
+                    },
                     "question_type": {
                         "type": "string",
                         "example": "LIBRE"
@@ -9844,6 +9928,24 @@
                     "accepts_decimals": {
                         "type": "boolean",
                         "example": true
+                    },
+                    "response_scope": {
+                        "type": "string",
+                        "enum": [
+                            "PARTICIPATION",
+                            "MEASUREMENT"
+                        ]
+                    },
+                    "applicable_days": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "nullable": true
+                    },
+                    "scenario": {
+                        "type": "string",
+                        "nullable": true
                     },
                     "created_at": {
                         "type": "string",
@@ -10429,6 +10531,15 @@
                         "example": "HOG-000123",
                         "nullable": true
                     },
+                    "survey_variant": {
+                        "description": "Obligatorio al finalizar KPT monitoreo.",
+                        "type": "string",
+                        "enum": [
+                            "MONITORING_COMBINED",
+                            "MONITORING_MOON_ONLY"
+                        ],
+                        "nullable": true
+                    },
                     "survey_id": {
                         "type": "integer",
                         "minimum": 1,
@@ -10883,6 +10994,14 @@
                         "example": "HOG-000123",
                         "nullable": true
                     },
+                    "survey_variant": {
+                        "type": "string",
+                        "enum": [
+                            "MONITORING_COMBINED",
+                            "MONITORING_MOON_ONLY"
+                        ],
+                        "nullable": true
+                    },
                     "survey_id": {
                         "type": "integer",
                         "minimum": 1
@@ -11050,6 +11169,14 @@
                     },
                     "household_code": {
                         "type": "string",
+                        "nullable": true
+                    },
+                    "survey_variant": {
+                        "type": "string",
+                        "enum": [
+                            "MONITORING_COMBINED",
+                            "MONITORING_MOON_ONLY"
+                        ],
                         "nullable": true
                     },
                     "measurements": {
@@ -11385,6 +11512,10 @@
         {
             "name": "Donation",
             "description": "Donation"
+        },
+        {
+            "name": "Presión sobre el Bosque",
+            "description": "Presión sobre el Bosque"
         },
         {
             "name": "Dashboard",

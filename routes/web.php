@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CalculatorViewController;
+use App\Http\Controllers\ForestPressureController;
 use App\Http\Controllers\GeobosquesMapController;
 use App\Http\Controllers\SurveyPreviewViewController;
 use Illuminate\Support\Facades\Route;
@@ -26,5 +27,8 @@ Route::get('/calculadora/embed', [CalculatorViewController::class, 'embed'])
 Route::get('/encuestas/{survey}/vista-previa', [SurveyPreviewViewController::class, 'show'])
     ->middleware('signed:relative')
     ->name('surveys.preview.embed');
+Route::get('/presion-bosque/embed', [ForestPressureController::class, 'embed'])
+    ->middleware('signed:relative')
+    ->name('forest-pressure.embed');
 Route::get('/mapa', [GeobosquesMapController::class, 'show'])
     ->name('geobosques.map');

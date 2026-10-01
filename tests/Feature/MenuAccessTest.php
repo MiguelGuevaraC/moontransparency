@@ -94,21 +94,28 @@ class MenuAccessTest extends TestCase
         config([
             'app.uuid' => 'public-platform-key',
             'co2.calculator_public_url' => 'https://develop.garzasoft.com/moontransparency/public',
-            'platform.sustainability_dashboard_url' => 'https://app.powerbi.com/dashboard',
         ]);
 
         $this->withHeader('UUID', 'public-platform-key')
             ->getJson('/api/platform/public')
             ->assertOk()
             ->assertJsonPath('data.name', 'Portal de Impacto Moon Group')
+            ->assertJsonCount(1, 'data.navigation')
+            ->assertJsonPath('data.navigation.0.name', 'Herramientas Digitales')
+            ->assertJsonPath('data.navigation.0.children.0.type', 'external')
+            ->assertJsonMissingPath('data.navigation.0.children.0.url')
+            ->assertJsonPath('data.navigation.0.children.0.tagline', 'Información que impulsa decisiones sostenibles')
             ->assertJsonPath(
-                'data.navigation.2.children.0.url',
-                'https://app.powerbi.com/dashboard'
-            )
-            ->assertJsonPath(
-                'data.navigation.2.children.1.embed_link_endpoint',
+                'data.navigation.0.children.1.embed_link_endpoint',
                 'https://develop.garzasoft.com/moontransparency/public/api/calculator/co2/embed-link'
             )
+            ->assertJsonPath('data.navigation.0.children.1.tagline', 'Medir para reducir nuestra huella')
+            ->assertJsonPath('data.navigation.0.children.2.code', 'forest_pressure')
+            ->assertJsonPath('data.navigation.0.children.2.name', 'Presión sobre el Bosque')
+            ->assertJsonPath('data.navigation.0.children.2.tagline', 'Comprender para conservar')
+            ->assertJsonPath('data.navigation.0.children.2.type', 'iframe')
+            ->assertJsonMissing(['code' => 'projects'])
+            ->assertJsonMissing(['code' => 'contact'])
             ->assertJsonMissing(['code' => 'allies'])
             ->assertJsonMissing(['code' => 'surveys']);
     }
