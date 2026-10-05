@@ -671,9 +671,14 @@ class SurveyedController extends Controller
      *     security={{"bearerAuth": {}}},
      *
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),
+     *     @OA\RequestBody(required=false, @OA\JsonContent(
+     *         @OA\Property(property="force", type="boolean", example=true),
+     *         @OA\Property(property="confirmation", type="string", example="ELIMINAR LINEA BASE")
+     *     )),
      *
      *     @OA\Response(response=200, description="Encuesta eliminado", @OA\JsonContent(@OA\Property(property="message", type="string", example="Encuesta eliminado exitosamente"))),
     *     @OA\Response(response=403, description="Solo Administrador y Administrador Moon pueden eliminar participaciones"),
+     *     @OA\Response(response=422, description="La línea base finalizada está protegida o la confirmación forzada es inválida"),
      *     @OA\Response(response=404, description="No encontrado", @OA\JsonContent(@OA\Property(property="error", type="string", example="Encuesta No Encontrada"))),
      * )
      */
@@ -693,10 +698,22 @@ class SurveyedController extends Controller
             ], 404);
         }
 
-        $survey = $this->surveyService->destroyById($id);
+        $force = $request->boolean('force');
+        if ($force && $request->input('confirmation') !== SurveyedService::FORCE_DELETE_BASELINE_CONFIRMATION) {
+            return response()->json([
+                'message' => 'Para forzar la eliminación escriba exactamente: '.SurveyedService::FORCE_DELETE_BASELINE_CONFIRMATION,
+                'errors' => [
+                    'confirmation' => ['La confirmación de eliminación forzada no es válida.'],
+                ],
+            ], 422);
+        }
+
+        $survey = $this->surveyService->destroyById($id, $force, $request->user());
 
         return response()->json([
-            'message' => 'Esta respuesta de encuesta eliminada exitosamente',
+            'message' => $force
+                ? 'Participación eliminada de forma forzada. El hogar dejó de estar habilitado para monitoreo.'
+                : 'Esta respuesta de encuesta eliminada exitosamente',
         ], 200);
     }
 }

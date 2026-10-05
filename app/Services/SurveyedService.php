@@ -16,6 +16,7 @@ use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -23,6 +24,8 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class SurveyedService
 {
+    public const FORCE_DELETE_BASELINE_CONFIRMATION = 'ELIMINAR LINEA BASE';
+
     protected $commonService;
 
     public function __construct(
@@ -1069,9 +1072,44 @@ class SurveyedService
         }
     }
 
-    public function destroyById($id)
+    public function destroyById($id, bool $force = false, ?User $actor = null)
     {
-        return Surveyed::find($id)?->delete() ?? false;
+        return DB::transaction(function () use ($id, $force, $actor) {
+            $surveyed = Surveyed::with(['survey.postSurvey', 'household'])
+                ->lockForUpdate()
+                ->find($id);
+
+            if (! $surveyed) {
+                return false;
+            }
+
+            $linkedMonitoring = $surveyed->survey?->postSurvey;
+            $isProtectedBaseline = $surveyed->status === Surveyed::STATUS_FINALIZED
+                && $surveyed->household_id !== null
+                && $surveyed->survey?->survey_type === 'PRE'
+                && $linkedMonitoring !== null;
+
+            if ($isProtectedBaseline && ! $force) {
+                $householdCode = $surveyed->household?->code ?? (string) $surveyed->household_id;
+
+                throw ValidationException::withMessages([
+                    'surveyed' => "No se puede eliminar esta línea base finalizada porque el hogar {$householdCode} habilita la encuesta de monitoreo '{$linkedMonitoring->survey_name}'. Use la eliminación forzada solo si desea que el hogar deje de estar disponible para monitoreo.",
+                ]);
+            }
+
+            if ($isProtectedBaseline) {
+                Log::warning('Eliminación forzada de línea base finalizada vinculada a monitoreo', [
+                    'surveyed_id' => $surveyed->id,
+                    'household_id' => $surveyed->household_id,
+                    'household_code' => $surveyed->household?->code,
+                    'baseline_survey_id' => $surveyed->survey_id,
+                    'monitoring_survey_id' => $linkedMonitoring->id,
+                    'performed_by' => $actor?->id,
+                ]);
+            }
+
+            return $surveyed->delete();
+        });
     }
 
     private function assertEditableBy(Surveyed $surveyed, ?User $actor): void

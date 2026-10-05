@@ -2,10 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\Household;
 use App\Models\Proyect;
+use App\Models\Respondent;
+use App\Models\Rol;
 use App\Models\Survey;
+use App\Models\Surveyed;
 use App\Models\SurveyQuestion;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class HouseholdSurveyLinkTest extends TestCase
@@ -146,6 +152,57 @@ class HouseholdSurveyLinkTest extends TestCase
                 'data.household_identifier.options_endpoint',
                 url('/api/survey-show/'.$monitoring->id.'/household-options')
             );
+    }
+
+    public function test_finalized_linked_baseline_requires_explicit_confirmation_to_delete(): void
+    {
+        [$baseline] = $this->linkedSurveys();
+        $household = Household::create(['code' => 'HOGAR PROTEGIDO']);
+        $respondent = Respondent::create([
+            'number_document' => 'DOC-PROTECTED',
+            'names' => 'Persona protegida',
+        ]);
+        $finalized = Surveyed::create([
+            'survey_id' => $baseline->id,
+            'respondent_id' => $respondent->id,
+            'household_id' => $household->id,
+            'status' => Surveyed::STATUS_FINALIZED,
+            'completed_at' => now(),
+        ]);
+
+        $administrator = User::create([
+            'number_document' => 'DOC-ADMIN-DELETE',
+            'names' => 'Administrador de participaciones',
+            'username' => 'admin-delete-baseline',
+            'password' => 'Password!2026',
+            'status' => User::STATUS_ACTIVE,
+            'rol_id' => Rol::where('name', 'Administrador')->value('id'),
+        ]);
+        Sanctum::actingAs($administrator);
+
+        $endpoint = '/api/surveyed/'.$finalized->id;
+
+        $this->deleteJson($endpoint)
+            ->assertUnprocessable()
+            ->assertJsonPath(
+                'message',
+                "No se puede eliminar esta línea base finalizada porque el hogar HOGAR PROTEGIDO habilita la encuesta de monitoreo 'KPT monitoreo'. Use la eliminación forzada solo si desea que el hogar deje de estar disponible para monitoreo."
+            );
+        $this->assertDatabaseHas('surveyeds', [
+            'id' => $finalized->id,
+            'deleted_at' => null,
+        ]);
+
+        $this->deleteJson($endpoint, [
+            'force' => true,
+            'confirmation' => 'ELIMINAR LINEA BASE',
+        ])
+            ->assertOk()
+            ->assertJsonPath(
+                'message',
+                'Participación eliminada de forma forzada. El hogar dejó de estar habilitado para monitoreo.'
+            );
+        $this->assertSoftDeleted('surveyeds', ['id' => $finalized->id]);
     }
 
     private function createAndFinalizeBaseline(
