@@ -50,6 +50,10 @@ class KptCo2SurveyConfigurator
             $baseline = $this->synchronizeSurvey($project, $definitions['baseline'], $allowParticipations);
             $monitoring = $this->synchronizeSurvey($project, $definitions['monitoring'], $allowParticipations);
 
+            // preSurvey es hasOne: otra PRE apuntando al monitoreo desplazaría a la línea base KPT.
+            Survey::where('post_survey_id', $monitoring->id)
+                ->where('id', '<>', $baseline->id)
+                ->update(['post_survey_id' => null]);
             $baseline->update(['post_survey_id' => $monitoring->id]);
             if ($monitoring->post_survey_id !== null) {
                 $monitoring->update(['post_survey_id' => null]);

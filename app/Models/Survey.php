@@ -137,6 +137,8 @@ class Survey extends Model
     // Una POST pertenece a una PRE
     public function preSurvey()
     {
-        return $this->hasOne(Survey::class, 'post_survey_id');
+        // Orden explícito: si por datos heredados hubiera más de una PRE, gana la más reciente
+        // en lugar de la que MySQL devuelva primero.
+        return $this->hasOne(Survey::class, 'post_survey_id')->orderByDesc('id');
     }
 }

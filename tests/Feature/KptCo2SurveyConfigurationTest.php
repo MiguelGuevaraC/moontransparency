@@ -81,6 +81,21 @@ class KptCo2SurveyConfigurationTest extends TestCase
         );
     }
 
+    public function test_configuration_leaves_kpt_baseline_as_the_only_pre_of_monitoring(): void
+    {
+        $project = Proyect::create(['name' => 'Proyecto KPT con PRE previa']);
+        $previousPre = $this->survey($project, 'Identificación / Uso actual de las cocinas', 'PRE');
+        $monitoring = $this->survey($project, 'KPT monitoreo', 'POST');
+        $previousPre->update(['post_survey_id' => $monitoring->id]);
+        $baseline = $this->survey($project, 'KPT línea base', 'PRE');
+
+        app(KptCo2SurveyConfigurator::class)->configure($project);
+
+        $this->assertNull($previousPre->fresh()->post_survey_id);
+        $this->assertSame($monitoring->id, (int) $baseline->fresh()->post_survey_id);
+        $this->assertSame($baseline->id, $monitoring->fresh()->preSurvey?->id);
+    }
+
     public function test_configuration_is_idempotent(): void
     {
         $project = Proyect::create(['name' => 'Proyecto KPT']);

@@ -251,16 +251,13 @@ class SurveyService
                 // Actualizar la encuesta (POST)
                 $proyect->update($data);
 
-                // Si otra PRE previamente apuntaba a esta POST y no es la seleccionada, limpiarla
-                $oldPre = Survey::where('post_survey_id', $surveyId)
-                    ->whereNull('deleted_at')
+                // Limpiar todas las demás PRE que apuntaban a esta POST: preSurvey es hasOne
+                // y con más de una PRE vinculada el monitoreo validaría contra la equivocada.
+                Survey::where('post_survey_id', $surveyId)
+                    ->where('id', '<>', $pre->id)
                     ->lockForUpdate()
-                    ->first();
-
-                if ($oldPre && intval($oldPre->id) !== intval($pre->id)) {
-                    $oldPre->post_survey_id = null;
-                    $oldPre->save();
-                }
+                    ->get()
+                    ->each(fn (Survey $oldPre) => $oldPre->update(['post_survey_id' => null]));
 
                 // Asignar la PRE seleccionada a esta POST (si aún no está)
                 if (intval($pre->post_survey_id) !== intval($surveyId)) {
@@ -307,9 +304,12 @@ class SurveyService
 
                     // Asegurar que el campo que vamos a guardar sea el id de la POST
                     $data['post_survey_id'] = $post->id;
+                } else {
+                    // Un post_survey_id vacío no desvincula la POST: el panel lo envía en null
+                    // al editar y rompería el monitoreo de hogares de la línea base.
+                    unset($data['post_survey_id']);
                 }
 
-                // Actualizamos la PRE con los datos (se permite quitar post_survey_id si viene explícito)
                 $proyect->update($data);
 
                 $proyect->refresh();
