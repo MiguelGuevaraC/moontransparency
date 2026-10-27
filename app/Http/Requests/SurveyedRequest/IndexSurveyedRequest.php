@@ -38,6 +38,7 @@ class IndexSurveyedRequest extends IndexRequest
             'to' => 'nullable|date|after_or_equal:from',
             'survey.survey_type' => 'nullable|string',
             'survey_kind' => 'nullable|string|in:BASELINE,MONITORING',
+            'calculator_only' => 'nullable|in:0,1,true,false',
             'status' => 'nullable|string|in:BORRADOR,FINALIZADA',
             'response_text' => 'nullable|string|max:1000',
             'response_text_lena' => 'nullable|string|max:1000',

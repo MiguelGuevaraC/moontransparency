@@ -176,6 +176,18 @@ class SurveyedController extends Controller
                 ->whereNull('surveyed_responses.deleted_at')
                 ->whereNull('survey_questions.deleted_at');
 
+        if ($request->boolean('calculator_only')) {
+            $query->whereHas('survey.survey_questions', function ($questionQuery) {
+                $questionQuery
+                    ->whereNotNull('calculator_key')
+                    ->where(function ($calculatorKeys) {
+                        $calculatorKeys
+                            ->where('calculator_key', 'like', 'baseline.%')
+                            ->orWhere('calculator_key', 'like', 'monitoring.%');
+                    });
+            });
+        }
+
         if ($request->filled('response_text')) {
             $query = $query->whereHas('surveyed_responses', function ($q) use ($request) {
                 $q->where(DB::raw('upper(response_text)'), 'like', DB::raw("upper('%{$request->input('response_text')}%')"));
